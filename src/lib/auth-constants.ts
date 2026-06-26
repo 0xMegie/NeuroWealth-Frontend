@@ -83,7 +83,7 @@ export const PROTECTED_PREFIXES = [
 ] as const;
 
 /** Routes that should redirect authenticated users away (e.g. /login → /dashboard) */
-export const AUTH_ONLY_PATHS = ["/login", "/signup", "/signin"] as const;
+export const AUTH_ONLY_PATHS = ["/login", "/signup"] as const;
 
 /** Checks whether a pathname requires authentication */
 export function isProtectedPath(pathname: string): boolean {
