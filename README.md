@@ -19,6 +19,12 @@ Next.js uses the **SWC compiler** for both development (Fast Refresh) and produc
 No Babel configuration is present; SWC is the default when using Next.js 13+. The SWC binary
 is resolved automatically by Next.js — no extra install step is needed.
 
+**Platform-specific dependency**: `@tailwindcss/oxide-linux-x64-gnu` is listed under
+`optionalDependencies` in `package.json`. This is the native Rust engine binary for
+Tailwind CSS v4 on Linux x86-64 GNU targets (e.g. most CI and Codespace environments).
+It is marked optional so `yarn install` does not fail on macOS or Windows — Tailwind CSS
+falls back to a pure-JS engine on those platforms automatically. No manual action needed.
+
 ## Quick start
 
 Requirements: Node.js 20+, Yarn (Corepack supported)
@@ -156,6 +162,21 @@ The mock auth flow stores the session in `localStorage` using `SESSION_STORAGE_K
 - Use `data-qa` only for smoke-flow anchors, with kebab-case names that describe the flow and
   action, for example `landing-primary-cta-button`, `wallet-connect-button`, and
   `transaction-submit-button`.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, CI gates, branch rules, and
+PR checklist.
+
+### Issue queues
+
+| Queue | Purpose |
+|-------|---------|
+| [Audit issues](/.github/audit-issues/) | 30 engineering/platform issues — auth, CI, performance, docs |
+| [Backlog](/.github/backlog/) | 50 scoped feature and design work items |
+| [Issues index](/.github/ISSUES.md) | Label guide and queue overview |
+
+When picking up work, choose an item from the audit queue (engineering clean-up) or the
+backlog (features), then open a GitHub issue using the closest
+[issue template](/.github/ISSUE_TEMPLATE/).
 
 ## Security
 

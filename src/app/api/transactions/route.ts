@@ -78,6 +78,12 @@ export async function POST(request: NextRequest) {
         },
       );
 
+      if (!response.ok) {
+        return NextResponse.json(
+          errorResponse(ERROR_CODE.BACKEND_ERROR, "Transaction service temporarily unavailable."),
+          { status: HTTP_STATUS.SERVICE_UNAVAILABLE },
+        );
+      }
       const text = await response.text();
 
       return new NextResponse(text, {
@@ -85,6 +91,7 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type":
             response.headers.get("Content-Type") ?? "application/json",
+          "Cache-Control": "no-store",
         },
       });
     } catch (error) {

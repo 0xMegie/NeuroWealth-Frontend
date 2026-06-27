@@ -87,6 +87,12 @@ export async function PUT(request: NextRequest) {
         cache: "no-store",
       });
 
+      if (!res.ok) {
+        return NextResponse.json(
+          errorResponse(ERROR_CODE.BACKEND_ERROR, "Strategy service temporarily unavailable."),
+          { status: HTTP_STATUS.SERVICE_UNAVAILABLE, headers: { "Cache-Control": "no-store" } },
+        );
+      }
       const text = await res.text();
       return new NextResponse(text, {
         status: res.status,
