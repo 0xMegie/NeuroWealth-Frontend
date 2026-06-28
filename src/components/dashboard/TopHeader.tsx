@@ -25,7 +25,7 @@ export default function TopHeader() {
     <header
       className="
         fixed top-0 right-0 left-0
-        md:left-64
+        sm:left-14 lg:left-64
         h-16 z-20
         bg-app-bg/80 backdrop-blur-sm
         border-b border-surface-border
