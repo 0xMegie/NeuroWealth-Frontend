@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { RealtimeDashboard } from "@/components/dashboard/RealtimeDashboard";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,11 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-      <Suspense fallback={<DashboardSkeleton />}>
-        <RealtimeDashboard />
-      </Suspense>
+      <OnboardingGate>
+        <Suspense fallback={<DashboardSkeleton />}>
+          <RealtimeDashboard />
+        </Suspense>
+      </OnboardingGate>
     </ProtectedRoute>
   );
 }

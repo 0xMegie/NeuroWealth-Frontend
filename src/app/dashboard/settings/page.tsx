@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Bell, ChevronRight, Globe, Monitor, Palette, Shield, UserRound, Wallet } from "lucide-react";
+import { Bell, ChevronRight, Globe, LayoutDashboard, Monitor, Palette, Shield, UserRound, Wallet } from "lucide-react";
 import SettingsLoading from "./loading";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
+import OnboardingSettings from "@/components/settings/OnboardingSettings";
 import { useI18n } from "@/contexts/I18nContext";
 
 export const dynamic = "force-dynamic";
@@ -149,6 +150,11 @@ function SettingsContent() {
           action={<LinkAction href="/profile" label={t.region.openAction} />}
         />
       </SettingsSection>
+
+      <section aria-labelledby="section-onboarding">
+        <h2 id="section-onboarding" className="sr-only">Onboarding</h2>
+        <OnboardingSettings />
+      </section>
     </div>
   );
 }
