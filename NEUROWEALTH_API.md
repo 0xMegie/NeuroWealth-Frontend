@@ -4,10 +4,10 @@ This document specifies the HTTP API contract between the NeuroWealth frontend a
 
 ## Overview
 
-- **Base URL**: Configured via `NEUROWEALTH_API_BASE_URL` environment variable
+<!-- - **Base URL**: Configured via `NEUROWEALTH_API_BASE_URL` environment variable
 - **Authentication**: Bearer token in `Authorization` header (server-side only)
 - **Response format**: All responses must conform to the unified envelope
-- **Timeout**: 10 seconds (configurable per request via `apiRequest` options)
+- **Timeout**: 10 seconds (configurable per request via `apiRequest` options) -->
 
 ## Environment Variables
 
