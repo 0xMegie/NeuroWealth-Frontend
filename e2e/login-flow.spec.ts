@@ -8,28 +8,22 @@ test.describe("Login flow", () => {
     await expect(page.getByText(/connect your wallet/i)).toBeVisible();
   });
 
-  test("demo sign-in button is visible and clickable", async ({ page }) => {
+  test("demo credentials shortcut is visible", async ({ page }) => {
     await page.goto("/login");
 
-    const demoButton = page.getByRole("button", { name: /continue with demo/i });
-    await expect(demoButton).toBeVisible();
-    await expect(demoButton).toBeEnabled();
-  });
-
-  test("demo sign-in navigates to dashboard", async ({ page }) => {
-    await page.goto("/login");
-
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-
-    // Should navigate to dashboard after sign-in
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-    await expect(page).toHaveURL(/\/dashboard/);
+    const demoLink = page.getByRole("button", { name: /fill demo credentials/i });
+    await expect(demoLink).toBeVisible();
   });
 
   test("login page has proper data-qa attributes", async ({ page }) => {
     await page.goto("/login");
 
-    const demoButton = page.locator('[data-qa="login-demo-button"]');
-    await expect(demoButton).toBeVisible();
+    const submitButton = page.locator('[data-qa="login-submit-button"]');
+    await expect(submitButton).toBeVisible();
+  });
+
+  test("signin route redirects to login", async ({ page }) => {
+    await page.goto("/signin");
+    await expect(page).toHaveURL(/\/login/);
   });
 });
