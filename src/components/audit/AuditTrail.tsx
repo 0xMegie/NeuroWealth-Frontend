@@ -132,7 +132,7 @@ export function AuditTrail() {
 
       {/* Desktop Table */}
       <div className="audit-table-wrapper">
-        <table className="audit-table" role="grid">
+        <table className="audit-table">
           <thead>
             <tr>
               <th>Event Type</th>
