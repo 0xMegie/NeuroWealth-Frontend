@@ -66,7 +66,7 @@ export function Drawer({
         className={`absolute top-0 bottom-0 ${positionClass} z-10 w-full sm:w-[360px] bg-white dark:bg-zinc-900 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out motion-reduce:transform-none motion-reduce:transition-none motion-reduce:duration-0 ${slideClass}`}
       >
         {/* Header — 16px padding */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-2ark:border-zinc-700">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-700">
           <h2 id="drawer-title" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {title}
           </h2>
