@@ -29,11 +29,15 @@ Required secrets stored in GitHub → Settings → Secrets and variables → Act
 | `WHATSAPP_ACCESS_TOKEN` | API access token |
 | `WHATSAPP_PHONE_NUMBER_ID` | Linked phone number ID |
 | `WHATSAPP_WABA_ID` | WhatsApp Business Account ID |
-| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | PostgreSQL connection |
-| `WALLET_ENCRYPTION_KEY` | 32-byte hex key (generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`) |
 | `VERCEL_TOKEN` | Vercel personal access token |
 | `VERCEL_ORG_ID` | Vercel org/team ID |
 | `VERCEL_PROJECT_ID` | Vercel project ID |
+
+This frontend has no database client and never persists wallet secrets — see
+[`src/lib/wallet-persistence.ts`](../src/lib/wallet-persistence.ts), which stores
+only the connected wallet's public key and provider id (non-sensitive) in
+`localStorage`. `DB_*` and `WALLET_ENCRYPTION_KEY` secrets belong to a separate
+backend deployment and are not required here.
 
 ---
 
@@ -97,11 +101,6 @@ Monitor: **GitHub → Actions → Deploy to Production**
 - [ ] Staging deploy verified — test deposit, balance check, withdrawal flows
 - [ ] No browser console errors or warnings on staging
 - [ ] `STELLAR_NETWORK=mainnet` confirmed in production Vercel env vars
-- [ ] `WALLET_ENCRYPTION_KEY` is unique per environment and stored in a password manager
-- [ ] Database migrations run on production DB if schema changed:
-  ```bash
-  psql -d neurowealth -f backend/migrations/001_create_users_table.sql
-  ```
 - [ ] CHANGELOG updated
 - [ ] Smoke-test production URL after deploy
 

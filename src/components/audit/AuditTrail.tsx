@@ -5,6 +5,7 @@ import { AuditEvent, mockAuditService } from "@/lib/mock-audit";
 import { Download, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuditTableSkeleton } from "@/components/ui/Skeleton";
+import { formatTimestamp } from "@/lib/formatters";
 
 type EventTypeFilter = "all" | AuditEvent["eventType"];
 
@@ -158,7 +159,7 @@ export function AuditTrail() {
                     </span>
                   </td>
                   <td className="audit-timestamp">
-                    {event.timestamp.toLocaleString()}
+                    {formatTimestamp(event.timestamp.toISOString())}
                   </td>
                   <td>{event.actor}</td>
                   <td className="audit-ip">{event.ipAddress || "N/A"}</td>
@@ -208,7 +209,7 @@ export function AuditTrail() {
                 <div className="audit-card-row">
                   <span className="audit-card-label">Timestamp</span>
                   <span className="audit-card-value">
-                    {event.timestamp.toLocaleString()}
+                    {formatTimestamp(event.timestamp.toISOString())}
                   </span>
                 </div>
                 <div className="audit-card-row">

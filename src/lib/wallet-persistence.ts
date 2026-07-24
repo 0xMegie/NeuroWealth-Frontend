@@ -3,6 +3,14 @@ import {
   STORAGE_KEYS,
 } from "@/lib/storage-keys";
 
+/**
+ * Persists only public wallet metadata (public key, provider id, display
+ * name) in localStorage. This is non-sensitive — a Stellar public key is
+ * safe to expose — so no encryption key is required. Private keys/signing
+ * never pass through this module; wallet providers (Freighter, etc.) hold
+ * those and sign in the browser extension, not here.
+ */
+
 export interface PersistedWalletState {
   connected: boolean;
   providerId: string;

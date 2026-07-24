@@ -63,12 +63,6 @@ export async function POST(request: NextRequest) {
         cache: "no-store",
       });
 
-      if (!response.ok) {
-        return NextResponse.json(
-          errorResponse(ERROR_CODE.BACKEND_ERROR, "Transaction service temporarily unavailable."),
-          { status: HTTP_STATUS.SERVICE_UNAVAILABLE },
-        );
-      }
       const text = await response.text();
 
       return new NextResponse(text, {
