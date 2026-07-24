@@ -10,20 +10,8 @@ import {
   successResponse,
 } from "@/lib/api-response";
 import { portfolioQuerySchema, zodErrorToDetails } from "@/lib/validation/api";
+import { createServerFetcher } from "@/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
-
-function resolveEndpoint(baseUrl: string, pathOrUrl: string): string {
-  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
-    return pathOrUrl;
-  }
-
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  const normalizedPath = pathOrUrl.startsWith("/")
-    ? pathOrUrl.slice(1)
-    : pathOrUrl;
-
-  return new URL(normalizedPath, normalizedBase).toString();
-}
 
 export async function GET(request: NextRequest) {
   const parsedQuery = portfolioQuerySchema.safeParse({
@@ -42,7 +30,6 @@ export async function GET(request: NextRequest) {
   }
 
   const scenario = resolveSandboxScenario(parsedQuery.data.scenario);
-  const apiBaseUrl = process.env.NEUROWEALTH_API_BASE_URL;
   const portfolioPath =
     process.env.NEUROWEALTH_PORTFOLIO_PATH ?? "/portfolio/overview";
 
@@ -56,7 +43,9 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (!apiBaseUrl) {
+  const fetchBackend = createServerFetcher();
+
+  if (!fetchBackend) {
     return NextResponse.json(successResponse(buildScenarioPayload("live")), {
       headers: {
         "Cache-Control": "no-store",
@@ -66,7 +55,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(resolveEndpoint(apiBaseUrl, portfolioPath), {
+    const response = await fetchBackend(portfolioPath, {
       cache: "no-store",
       headers: {
         Accept: "application/json",

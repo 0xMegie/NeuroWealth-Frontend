@@ -17,19 +17,7 @@ import {
 } from "@/lib/validation/api";
 import { NextRequest, NextResponse } from "next/server";
 import { isSandboxScenario, resolveSandboxScenario } from "@/lib/api-sandbox";
-
-function resolveEndpoint(baseUrl: string, pathOrUrl: string): string {
-  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
-    return pathOrUrl;
-  }
-
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  const normalizedPath = pathOrUrl.startsWith("/")
-    ? pathOrUrl.slice(1)
-    : pathOrUrl;
-
-  return new URL(normalizedPath, normalizedBase).toString();
-}
+import { createServerFetcher } from "@/lib/api-client";
 
 export async function POST(request: NextRequest) {
   const bodyResult = await readJsonBody(request);
@@ -52,31 +40,28 @@ export async function POST(request: NextRequest) {
   const payload = parsedPayload.data;
   const kind = parseTransactionKind(payload.kind);
   const values = payload.values;
-  const apiBaseUrl = process.env.NEUROWEALTH_API_BASE_URL;
   const transactionPath =
     process.env.NEUROWEALTH_TRANSACTIONS_PATH ?? "/transactions";
   const scenario = resolveSandboxScenario(
     request.nextUrl.searchParams.get("scenario"),
   );
+  const fetchBackend = createServerFetcher();
 
-  if (apiBaseUrl && !isSandboxScenario(scenario)) {
+  if (fetchBackend && !isSandboxScenario(scenario)) {
     try {
-      const response = await fetch(
-        resolveEndpoint(apiBaseUrl, transactionPath),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            ...payload,
-            kind,
-            values,
-          }),
-          cache: "no-store",
+      const response = await fetchBackend(transactionPath, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify({
+          ...payload,
+          kind,
+          values,
+        }),
+        cache: "no-store",
+      });
 
       if (!response.ok) {
         return NextResponse.json(

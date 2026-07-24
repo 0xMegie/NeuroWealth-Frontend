@@ -12,23 +12,18 @@ import {
   successResponse,
 } from "@/lib/api-response";
 import { strategyUpdateSchema, zodErrorToDetails } from "@/lib/validation/api";
+import { createServerFetcher } from "@/lib/api-client";
 
 const STRATEGY_COOKIE_KEY = STORAGE_KEYS.STRATEGY_PREFERENCE;
 
-function resolveEndpoint(baseUrl: string, path: string): string {
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
-  return new URL(normalizedPath, normalizedBase).toString();
-}
-
 export async function GET(request: NextRequest) {
-  const apiBaseUrl = process.env.NEUROWEALTH_API_BASE_URL;
   const strategyPath =
     process.env.NEUROWEALTH_STRATEGY_PATH ?? "/strategy/preference";
+  const fetchBackend = createServerFetcher();
 
-  if (apiBaseUrl) {
+  if (fetchBackend) {
     try {
-      const res = await fetch(resolveEndpoint(apiBaseUrl, strategyPath), {
+      const res = await fetchBackend(strategyPath, {
         cache: "no-store",
         headers: { Accept: "application/json" },
       });
@@ -71,13 +66,13 @@ export async function PUT(request: NextRequest) {
 
   const { strategy } = parsed.data;
 
-  const apiBaseUrl = process.env.NEUROWEALTH_API_BASE_URL;
   const strategyPath =
     process.env.NEUROWEALTH_STRATEGY_PATH ?? "/strategy/preference";
+  const fetchBackend = createServerFetcher();
 
-  if (apiBaseUrl) {
+  if (fetchBackend) {
     try {
-      const res = await fetch(resolveEndpoint(apiBaseUrl, strategyPath), {
+      const res = await fetchBackend(strategyPath, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

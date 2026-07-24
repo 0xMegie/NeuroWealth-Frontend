@@ -17,7 +17,11 @@
  *   All proxied requests must include:
  *     Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN>
  *   Use createServerApiClient() in route handlers instead of calling fetch
- *   directly so the token is attached consistently.
+ *   directly so the token is attached consistently. If the backend endpoint
+ *   returns its own raw JSON shape rather than this app's {success,data}
+ *   envelope (or the caller needs to forward status/content-type verbatim),
+ *   use createServerFetcher() instead — same auth injection, no envelope
+ *   parsing.
  *
  * ── Timeout ───────────────────────────────────────────────────────────────────
  *
@@ -95,6 +99,25 @@ function resolveRequestUrl(pathOrUrl: string, baseUrl?: string): string {
   }
 
   return new URL(pathOrUrl, baseUrl).toString();
+}
+
+/**
+ * Resolve a backend path against a base URL, treating the path as relative
+ * even when it starts with "/" so a base URL with its own path prefix (e.g.
+ * "https://api.example.com/v1") is preserved instead of being replaced by an
+ * absolute-path resolution.
+ */
+export function resolveServerEndpoint(baseUrl: string, pathOrUrl: string): string {
+  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
+    return pathOrUrl;
+  }
+
+  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  const normalizedPath = pathOrUrl.startsWith("/")
+    ? pathOrUrl.slice(1)
+    : pathOrUrl;
+
+  return new URL(normalizedPath, normalizedBase).toString();
 }
 
 function mergeSignalWithTimeout(
@@ -301,5 +324,45 @@ export function createServerApiClient(): (<T>(
       headers.set("Authorization", `Bearer ${token}`);
     }
     return apiRequest<T>(path, { ...options, baseUrl, headers });
+  };
+}
+
+/**
+ * Create a pre-configured raw fetch for server-side route handlers that proxy
+ * to the real backend (NEUROWEALTH_API_BASE_URL) but need the unparsed
+ * Response — e.g. because the backend returns its own JSON shape rather than
+ * this app's {success,data} envelope, or the caller needs to forward the
+ * backend's status/content-type verbatim instead of unwrapping it.
+ *
+ * Automatically injects:
+ *   - Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN>
+ * and resolves `path` against NEUROWEALTH_API_BASE_URL via resolveServerEndpoint.
+ *
+ * Usage in a Next.js route handler:
+ *   const fetchBackend = createServerFetcher();
+ *   if (!fetchBackend) {
+ *     // NEUROWEALTH_API_BASE_URL is not set — fall back to demo data
+ *   } else {
+ *     const response = await fetchBackend("/portfolio/overview", { cache: "no-store" });
+ *   }
+ *
+ * Returns null when NEUROWEALTH_API_BASE_URL is not configured so callers
+ * can cleanly branch to demo/mock mode without checking env themselves.
+ */
+export function createServerFetcher(): ((
+  path: string,
+  init?: RequestInit,
+) => Promise<Response>) | null {
+  const baseUrl = process.env.NEUROWEALTH_API_BASE_URL;
+  if (!baseUrl) return null;
+
+  const token = process.env.NEUROWEALTH_API_AUTH_TOKEN;
+
+  return function serverFetch(path: string, init: RequestInit = {}): Promise<Response> {
+    const headers = new Headers(init.headers);
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return fetch(resolveServerEndpoint(baseUrl, path), { ...init, headers });
   };
 }
