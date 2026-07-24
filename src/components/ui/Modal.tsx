@@ -69,7 +69,7 @@ export function Modal({
       >
         {/* Header — 16px padding */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h2 id="modal-title" className="text-lg font-semibold text-zinc-90dark:text-zinc-100">
+          <h2 id="modal-title" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {title}
           </h2>
           {!preventClose && (
