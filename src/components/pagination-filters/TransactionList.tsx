@@ -4,6 +4,7 @@ import React from "react";
 import FilterChips from "./FilterChips";
 import Pagination from "./Pagination";
 import { useTransactionList, buildFilterOptions, MOCK_TRANSACTIONS } from "../../hooks/useTransactionList";
+import { formatNumber } from "@/lib/formatters";
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   completed: { bg: "rgba(16,185,129,0.12)", color: "#10b981" },
@@ -62,7 +63,7 @@ export default function TransactionList() {
                   </span>
                 </td>
                 <td style={{ padding: "10px 12px", color: "#e5e7eb", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                  {tx.amount.toLocaleString()} {tx.currency}
+                  {formatNumber(tx.amount)} {tx.currency}
                 </td>
                 <td style={{ padding: "10px 12px" }}>
                   <span style={{

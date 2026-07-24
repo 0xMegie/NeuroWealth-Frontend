@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { random as seededRandom } from "@/lib/seeded-rng";
+import { formatNumber } from "@/lib/formatters";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ function makeDeposit(): StreamEvent {
     id: nextId(),
     kind: "deposit",
     title: "Deposit received",
-    description: `+$${amount.toLocaleString()} USDC deposited and routed to active strategy.`,
+    description: `+$${formatNumber(amount)} USDC deposited and routed to active strategy.`,
     amountDelta: amount,
     yieldDelta: +(amount * 0.0002).toFixed(2),
     apyDelta: +(seededRandom() * 0.08).toFixed(2),
@@ -95,7 +96,7 @@ function makeWithdrawal(): StreamEvent {
     id: nextId(),
     kind: "withdrawal",
     title: "Withdrawal processed",
-    description: `-$${amount.toLocaleString()} liquidity released to destination wallet.`,
+    description: `-$${formatNumber(amount)} liquidity released to destination wallet.`,
     amountDelta: -amount,
     yieldDelta: 0,
     apyDelta: -(seededRandom() * 0.04),

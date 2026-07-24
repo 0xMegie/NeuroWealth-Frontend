@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useId } from "react";
+import { formatNumber } from "@/lib/formatters";
 
 export interface PaginationProps {
   totalItems: number;
@@ -179,7 +180,7 @@ export default function Pagination({
 
       {/* Count */}
       <span style={{ fontSize: 12, color: "#6b7280", marginLeft: "auto" }}>
-        {start}–{end} of {totalItems.toLocaleString()}
+        {start}–{end} of {formatNumber(totalItems)}
       </span>
     </nav>
   );

@@ -18,7 +18,7 @@ import {
   TransactionHistoryPage,
 } from "@/lib/transaction-history";
 import { apiRequest } from "@/lib/api-client";
-import { formatTimestamp } from "@/lib/formatters";
+import { formatCurrency, formatTimestamp } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -160,11 +160,7 @@ function kindLabel(kind: HistoryKind): string {
 
 function formatAmount(amount: number | null, kind: HistoryKind): string {
   if (amount === null) return "—";
-  const abs = Math.abs(amount).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  });
+  const abs = formatCurrency(Math.abs(amount));
   if (kind === "withdrawal" || amount < 0) return `-${abs}`;
   return `+${abs}`;
 }

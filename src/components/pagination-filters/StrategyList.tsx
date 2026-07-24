@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import FilterChips, { FilterOption } from "./FilterChips";
 import Pagination from "./Pagination";
+import { formatNumber } from "@/lib/formatters";
 
 interface Strategy {
   id: string;
@@ -404,7 +405,7 @@ export default function StrategyList() {
                     color: "#a5b4fc",
                   }}
                 >
-                  {strategy.participants.toLocaleString()}
+                  {formatNumber(strategy.participants)}
                 </p>
               </div>
             </div>
