@@ -52,12 +52,12 @@ test("PUT /api/strategy returns 200 with valid strategy", async () => {
   assert.equal(body.data.strategy, "balanced");
 });
 
-test("PUT /api/strategy returns 422 for invalid strategy", async () => {
+test("PUT /api/strategy returns 400 for invalid strategy", async () => {
   const req = makePutRequest({ strategy: "invalid" });
   const res = await PUT(req);
   const body = await res.json();
 
-  assert.equal(res.status, 422);
+  assert.equal(res.status, 400);
   assert.equal(body.success, false);
   assert.equal(body.error.code, "VALIDATION_ERROR");
 });
