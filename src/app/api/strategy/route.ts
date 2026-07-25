@@ -89,13 +89,20 @@ export async function PUT(request: NextRequest) {
         );
       }
       const text = await res.text();
-      return new NextResponse(text, {
+      const response = new NextResponse(text, {
         status: res.status,
         headers: {
           "Content-Type": res.headers.get("Content-Type") ?? "application/json",
           "Cache-Control": "no-store",
         },
       });
+      // Sync local cookie with the backend's successful response
+      response.cookies.set(STRATEGY_COOKIE_KEY, strategy, {
+        path: "/",
+        sameSite: "lax",
+        httpOnly: false,
+      });
+      return response;
     } catch {
       // fall through to local fallback
     }
