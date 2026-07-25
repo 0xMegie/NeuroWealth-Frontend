@@ -21,6 +21,9 @@ import {
   required,
   type ValidationErrors,
   createDebouncedAsyncCheck,
+  hasNumber,
+  hasSpecialChar,
+  hasUppercase,
 } from "@/lib/form-validation";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 
@@ -34,12 +37,12 @@ function getPasswordStrength(password: string) {
   if (password.length < 8) return { level: 1, label: "Weak", color: "#ef4444" };
   if (
     password.length < 12 ||
-    !/[A-Z]/.test(password) ||
-    !/[0-9]/.test(password)
+    !hasUppercase(password) ||
+    !hasNumber(password)
   ) {
     return { level: 2, label: "Fair", color: "#f59e0b" };
   }
-  if (!/[!@#$%^&*]/.test(password)) {
+  if (!hasSpecialChar(password)) {
     return { level: 3, label: "Good", color: "#3b82f6" };
   }
   return { level: 4, label: "Strong", color: "#10b981" };
@@ -341,12 +344,12 @@ export default function SignUpPage() {
                       label: "At least 8 characters",
                     },
                     {
-                      ok: /[A-Z]/.test(password),
+                      ok: hasUppercase(password),
                       label: "One uppercase letter",
                     },
-                    { ok: /[0-9]/.test(password), label: "One number" },
+                    { ok: hasNumber(password), label: "One number" },
                     {
-                      ok: /[!@#$%^&*]/.test(password),
+                      ok: hasSpecialChar(password),
                       label: "One special character",
                     },
                   ].map((rule) => (
