@@ -1,25 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useState } from "react";
+import nextDynamic from "next/dynamic";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 
-const LineChartWrapper = dynamic(
+const LineChartWrapper = nextDynamic(
   () => import("@/components/charts/LineChartWrapper").then(m => ({ default: m.LineChartWrapper })),
   { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
 );
 
-const AreaChartWrapper = dynamic(
+const AreaChartWrapper = nextDynamic(
   () => import("@/components/charts/AreaChartWrapper").then(m => ({ default: m.AreaChartWrapper })),
   { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
 );
 
-const BarChartWrapper = dynamic(
+const BarChartWrapper = nextDynamic(
   () => import("@/components/charts/BarChartWrapper").then(m => ({ default: m.BarChartWrapper })),
   { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
 );
 
-const DonutChartWrapper = dynamic(
+const DonutChartWrapper = nextDynamic(
   () => import("@/components/charts/DonutChartWrapper").then(m => ({ default: m.DonutChartWrapper })),
   { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
 );
@@ -236,7 +236,7 @@ export default function ChartStyleGuidePage() {
               height={260}
               showGrid
               color={chartTheme.colors.primary}
-              formatter={(v) => [`$${Number(v).toLocaleString()}`, "Value"]}
+              formatter={(v: React.ReactNode) => [`$${Number(v).toLocaleString()}`, "Value"]}
             />
           </div>
           <CodeBlock
@@ -277,7 +277,7 @@ import { chartTheme } from "@/lib/chart-theme";
               xAxisKey="name"
               height={260}
               color={chartTheme.colors.primary}
-              formatter={(v) => [`$${Number(v).toLocaleString()}`, "Portfolio"]}
+              formatter={(v: React.ReactNode) => [`$${Number(v).toLocaleString()}`, "Portfolio"]}
             />
           </div>
           <CodeBlock
@@ -314,7 +314,7 @@ import { chartTheme } from "@/lib/chart-theme";
                 height={220}
                 color={chartTheme.colors.accent}
                 strokeDasharray={chartTheme.patterns.accent}
-                formatter={(v) => [`$${Number(v).toLocaleString()}`, "Yield"]}
+                formatter={(v: React.ReactNode) => [`$${Number(v).toLocaleString()}`, "Yield"]}
               />
             </div>
             <div className="rounded-xl border border-slate-700/60 bg-dark-800/60 p-5">
@@ -328,7 +328,7 @@ import { chartTheme } from "@/lib/chart-theme";
                 height={220}
                 color={chartTheme.colors.warning}
                 strokeDasharray={chartTheme.patterns.warning}
-                formatter={(v) => [`$${Number(v).toLocaleString()}`, "Amount"]}
+                formatter={(v: React.ReactNode) => [`$${Number(v).toLocaleString()}`, "Amount"]}
               />
             </div>
           </div>

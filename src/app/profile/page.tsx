@@ -29,6 +29,11 @@ interface ValidationErrors {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const LOCALES = [
+  { value: "en", label: "English" },
+  { value: "fr", label: "Français" },
+];
+
 const TIMEZONES = [
   { value: "UTC", label: "UTC — Coordinated Universal Time" },
   { value: "America/New_York", label: "America/New_York — EST (UTC−5)" },
@@ -353,7 +358,7 @@ export default function ProfilePage() {
                 onChange={(e) => handleChange("locale", e.target.value)}
                 aria-invalid={!!errors.locale}
               >
-                {LOCALES.map((l) => (
+                {LOCALES.map((l: { value: string; label: string }) => (
                   <option key={l.value} value={l.value}>
                     {l.label}
                   </option>
@@ -361,7 +366,7 @@ export default function ProfilePage() {
               </select>
             ) : (
               <p className="profile-value">
-                {LOCALES.find((l) => l.value === saved.locale)?.label ||
+                {LOCALES.find((l: { value: string; label: string }) => l.value === saved.locale)?.label ||
                   saved.locale}
               </p>
             )}

@@ -41,6 +41,13 @@ export function useDateRangeFilter(data: FilteredData[]) {
 }
 
 /**
+ * useDateFilter
+ *
+ * Local-state date filter — returns date/setDate with filtered results.
+ */
+export { useLocalDateFilter as useDateFilter };
+
+/**
  * useLocalDateFilter
  *
  * Mock hook for filtering by single date selection with local state.

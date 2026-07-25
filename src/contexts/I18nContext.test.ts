@@ -170,8 +170,8 @@ test("i18n: dashboard.realtime status keys exist", () => {
 
     const statusKeys = ["live", "paused", "idle"];
     for (const key of statusKeys) {
-        assert.ok(enStatus[key as any], `en status must have '${key}'`);
-        assert.ok(frStatus[key as any], `fr status must have '${key}'`);
+        assert.ok(enStatus[key as keyof typeof enStatus], `en status must have '${key}'`);
+        assert.ok(frStatus[key as keyof typeof frStatus], `fr status must have '${key}'`);
     }
 });
 

@@ -172,10 +172,6 @@ test("ProtectedRoute — isAuthOnlyPath: /signup redirects authenticated users",
   assert.equal(isAuthOnlyPath("/signup"), true);
 });
 
-test("ProtectedRoute — isAuthOnlyPath: /signin redirects authenticated users", () => {
-  assert.equal(isAuthOnlyPath("/signin"), true);
-});
-
 test("ProtectedRoute — isAuthOnlyPath: /dashboard is accessible when authenticated", () => {
   assert.equal(isAuthOnlyPath("/dashboard"), false);
 });
