@@ -1,7 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Globe, Clock, DollarSign, Save, X, AlertCircle, CheckCircle2, Sun, Moon, Monitor } from "lucide-react";
+import {
+  Globe,
+  Clock,
+  DollarSign,
+  Save,
+  X,
+  AlertCircle,
+  CheckCircle2,
+  Sun,
+  Moon,
+  Monitor,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
@@ -84,7 +95,10 @@ export default function PreferencesPage() {
       setSaved(draft);
       setStatus("success");
       setEditing(false);
-      mockAuditService.logEvent("settings_change", { section: "preferences", changes: draft });
+      mockAuditService.logEvent("settings_change", {
+        section: "preferences",
+        changes: draft,
+      });
       setTimeout(() => setStatus("idle"), 3000);
     } catch {
       setStatus("error");
@@ -153,7 +167,8 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {LOCALES.find((l) => l.value === saved.locale)?.label || saved.locale}
+                {LOCALES.find((l) => l.value === saved.locale)?.label ||
+                  saved.locale}
               </p>
             )}
           </div>
@@ -173,15 +188,14 @@ export default function PreferencesPage() {
 
         <div className="settings-card-body">
           <div className="settings-field">
-            <label className="settings-label">
-              {t.appearance.themeLabel}
-            </label>
+            <label className="settings-label">{t.appearance.themeLabel}</label>
             {editing ? (
               <div className="theme-options">
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "light" })}
                   className={`theme-option ${draft.theme === "light" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "light"}
                 >
                   <Sun size={16} />
                   <span>{t.appearance.light}</span>
@@ -190,6 +204,7 @@ export default function PreferencesPage() {
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "dark" })}
                   className={`theme-option ${draft.theme === "dark" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "dark"}
                 >
                   <Moon size={16} />
                   <span>{t.appearance.dark}</span>
@@ -198,6 +213,7 @@ export default function PreferencesPage() {
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "system" })}
                   className={`theme-option ${draft.theme === "system" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "system"}
                 >
                   <Monitor size={16} />
                   <span>{t.appearance.system}</span>
@@ -234,7 +250,9 @@ export default function PreferencesPage() {
               <select
                 id="timezone"
                 value={draft.timezone}
-                onChange={(e) => setDraft({ ...draft, timezone: e.target.value })}
+                onChange={(e) =>
+                  setDraft({ ...draft, timezone: e.target.value })
+                }
                 className="settings-select"
               >
                 {TIMEZONES.map((tz) => (
@@ -245,7 +263,8 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {TIMEZONES.find((tz) => tz.value === saved.timezone)?.label || saved.timezone}
+                {TIMEZONES.find((tz) => tz.value === saved.timezone)?.label ||
+                  saved.timezone}
               </p>
             )}
           </div>
@@ -258,7 +277,9 @@ export default function PreferencesPage() {
               <select
                 id="currency"
                 value={draft.currencyFormat}
-                onChange={(e) => setDraft({ ...draft, currencyFormat: e.target.value })}
+                onChange={(e) =>
+                  setDraft({ ...draft, currencyFormat: e.target.value })
+                }
                 className="settings-select"
               >
                 {CURRENCIES.map((c) => (
@@ -269,8 +290,8 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {CURRENCIES.find((c) => c.value === saved.currencyFormat)?.label ||
-                  saved.currencyFormat}
+                {CURRENCIES.find((c) => c.value === saved.currencyFormat)
+                  ?.label || saved.currencyFormat}
               </p>
             )}
           </div>
@@ -284,14 +305,32 @@ export default function PreferencesPage() {
       )}
 
       {editing && (
-        <div className="settings-action-bar" role="group" aria-label="Save or cancel changes">
-          {isDirty && <span className="settings-dirty-indicator">{t.actions.unsaved}</span>}
+        <div
+          className="settings-action-bar"
+          role="group"
+          aria-label="Save or cancel changes"
+        >
+          {isDirty && (
+            <span className="settings-dirty-indicator">
+              {t.actions.unsaved}
+            </span>
+          )}
           <div className="settings-actions">
-            <Button onClick={handleCancel} variant="ghost" size="md" disabled={saving}>
+            <Button
+              onClick={handleCancel}
+              variant="ghost"
+              size="md"
+              disabled={saving}
+            >
               <X size={16} />
               {t.actions.cancel}
             </Button>
-            <Button onClick={handleSave} size="md" disabled={saving} aria-busy={saving}>
+            <Button
+              onClick={handleSave}
+              size="md"
+              disabled={saving}
+              aria-busy={saving}
+            >
               {saving ? (
                 <>
                   <span className="settings-spinner" aria-hidden="true" />
