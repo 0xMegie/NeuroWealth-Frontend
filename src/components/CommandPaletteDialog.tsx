@@ -28,6 +28,7 @@ export function CommandPaletteDialog({ onClose }: CommandPaletteDialogProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const liveRegionRef = useRef<HTMLDivElement>(null);
 
   const mockActions = [
     {
@@ -71,7 +72,15 @@ export function CommandPaletteDialog({ onClose }: CommandPaletteDialogProps) {
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [query]);
+    // Announce result count change to screen readers
+    if (liveRegionRef.current) {
+      const count = filteredCommands.length;
+      liveRegionRef.current.textContent =
+        count === 0
+          ? `No results found for "${query}"`
+          : `${count} result${count === 1 ? "" : "s"} found`;
+    }
+  }, [query, filteredCommands.length]);
 
   useEffect(() => {
     if (listRef.current && filteredCommands.length > 0) {
@@ -189,6 +198,13 @@ export function CommandPaletteDialog({ onClose }: CommandPaletteDialogProps) {
           })}
         </ul>
       </div>
+      <div
+        ref={liveRegionRef}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
     </div>
   );
 }
