@@ -11,7 +11,12 @@ import { NotificationToggle } from "./notifications/NotificationToggle";
 import { useAuth, useI18n } from "@/contexts";
 import { Button } from "./ui/Button";
 import { LocaleSwitcher } from "./LocaleSwitcher";
-import { GlobalSearch } from "./search/GlobalSearch";
+import dynamic from "next/dynamic";
+
+const GlobalSearch = dynamic(
+  () => import("./search/GlobalSearch").then((mod) => mod.GlobalSearch),
+  { ssr: false }
+);
 import { NavLinks, NavMobileLinks } from "./navbar/NavLinks";
 import { NavWalletStatus } from "./navbar/NavWalletStatus";
 
@@ -19,6 +24,7 @@ export function Navbar() {
   const { user, signOut } = useAuth();
   const { messages } = useI18n();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isDesktopSearchActive, setIsDesktopSearchActive] = useState(false);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
   useFocusTrap(mobileSearchRef, isMobileSearchOpen);
 
@@ -40,7 +46,29 @@ export function Navbar() {
         <NavLinks />
 
         <search className="hidden md:block md:flex-1 md:max-w-xl">
-          <GlobalSearch placeholder="Search pages, actions, or records" />
+          {isDesktopSearchActive ? (
+            <GlobalSearch
+              placeholder="Search pages, actions, or records"
+              autoFocus
+              onRequestClose={() => setIsDesktopSearchActive(false)}
+            />
+          ) : (
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                placeholder="Search pages, actions, or records"
+                onFocus={() => setIsDesktopSearchActive(true)}
+                onClick={() => setIsDesktopSearchActive(true)}
+                className="h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 pl-10 pr-10 text-sm text-white shadow-inner shadow-black/20 outline-none transition focus:border-sky-400/60 focus:ring-2 focus:ring-sky-400/20"
+                readOnly
+              />
+            </div>
+          )}
         </search>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-3 md:gap-4">
