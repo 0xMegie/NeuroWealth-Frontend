@@ -6,12 +6,17 @@ import styles from "./portfolio-dashboard.module.css";
 import {
   PortfolioPayload,
   PortfolioScenario,
+  AllocationItem,
+  ActivityItem,
   parseScenario,
 } from "@/lib/portfolio";
 import {
   formatApy,
   formatCurrency,
   formatSignedCurrency,
+  formatPercent,
+  formatSignedPercent,
+  formatTimestamp,
   formatSyncLabel,
 } from "@/lib/formatters";
 import { ApiRequestError, apiRequest } from "@/lib/api-client";
@@ -19,6 +24,31 @@ import { useSandbox, ScenarioType } from "@/contexts/SandboxContext";
 import { AllocationChart } from "./AllocationChart";
 import { useI18n } from "@/contexts/I18nContext";
 import { AppMessages } from "@/lib/i18n/messages";
+import {
+  ArrowDown,
+  ArrowUp,
+  Shuffle,
+  Sparkles,
+  PieChart,
+  Activity,
+} from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+const toneMap: Record<string, string> = {
+  primary: "#3b82f6",
+  accent: "#10b981",
+  warning: "#f59e0b",
+  "neutral-strong": "#64748b",
+  "neutral-soft": "#94a3b8",
+};
+
+const activityLabels: Record<string, string> = {
+  deposit: "Deposit",
+  withdrawal: "Withdrawal",
+  rebalance: "Rebalance",
+  yield: "Yield",
+};
 
 
 type ThemeMode = "light" | "dark";
@@ -64,14 +94,49 @@ function buildDonutBackground(allocation: AllocationItem[]): string {
 function renderActivityIcon(kind: ActivityItem["kind"]) {
   switch (kind) {
     case "deposit":
-      return <ArrowDownIcon />;
+      return <ArrowDown />;
     case "withdrawal":
-      return <ArrowUpIcon />;
+      return <ArrowUp />;
     case "rebalance":
-      return <ShuffleIcon />;
+      return <Shuffle />;
     default:
-      return <SparkIcon />;
+      return <Sparkles />;
   }
+}
+
+function SummarySkeleton() {
+  return (
+    <>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className={styles.card}>
+          <Skeleton className="h-4 w-20 mb-2" />
+          <Skeleton className="h-7 w-28" />
+        </div>
+      ))}
+    </>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  helper,
+  tone,
+  mono,
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  tone: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className={styles.card}>
+      <p className={styles.controlLabel}>{label}</p>
+      <p className={`${mono ? "font-mono" : ""} text-lg font-bold text-text-primary`}>{value}</p>
+      <p className="text-xs text-text-muted">{helper}</p>
+    </div>
+  );
 }
 
 function renderSourceLabel(source: PortfolioPayload["source"], t: AppMessages["dashboard"]["portfolio"]) {
@@ -372,9 +437,10 @@ export function PortfolioDashboard() {
                     </div>
                   ) : (
                     <EmptyState
-                      copy={t.emptyAllocation}
-                      cta={t.loadSample}
-                      icon={<PieIcon />}
+                      icon={<PieChart />}
+                      heading={t.emptyAllocation}
+                      body={t.loadSample}
+                      ctaLabel={t.loadSample}
                       onAction={resetToLivePreview}
                     />
                   )}
@@ -457,9 +523,10 @@ export function PortfolioDashboard() {
                     </div>
                   ) : (
                     <EmptyState
-                      copy={t.emptyActivity}
-                      cta={t.loadSample}
-                      icon={<ActivityIcon />}
+                      icon={<Activity />}
+                      heading={t.emptyActivity}
+                      body={t.loadSample}
+                      ctaLabel={t.loadSample}
                       onAction={resetToLivePreview}
                     />
                   )}

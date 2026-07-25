@@ -1,6 +1,7 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { setActiveLocale, getActiveLocale, getActiveIntlLocale } from "./locale-state";
+import type { AppLocale } from "./messages";
 
 describe("locale-state", () => {
   beforeEach(() => {
@@ -13,19 +14,19 @@ describe("locale-state", () => {
     });
 
     it("updates activeLocale when setActiveLocale is called", () => {
-      setActiveLocale("es");
-      assert.equal(getActiveLocale(), "es");
+      setActiveLocale("fr");
+      assert.equal(getActiveLocale(), "fr");
     });
 
     it("supports multiple locale switches", () => {
       setActiveLocale("fr");
       assert.equal(getActiveLocale(), "fr");
 
-      setActiveLocale("de");
-      assert.equal(getActiveLocale(), "de");
-
       setActiveLocale("en");
       assert.equal(getActiveLocale(), "en");
+
+      setActiveLocale("fr");
+      assert.equal(getActiveLocale(), "fr");
     });
   });
 
@@ -35,24 +36,14 @@ describe("locale-state", () => {
       assert.equal(getActiveIntlLocale(), "en-US");
     });
 
-    it("returns correct intl locale for es", () => {
-      setActiveLocale("es");
-      assert.equal(getActiveIntlLocale(), "es-ES");
-    });
-
     it("returns correct intl locale for fr", () => {
       setActiveLocale("fr");
       assert.equal(getActiveIntlLocale(), "fr-FR");
     });
 
-    it("returns correct intl locale for de", () => {
-      setActiveLocale("de");
-      assert.equal(getActiveIntlLocale(), "de-DE");
-    });
-
     it("reflects changes when locale is switched", () => {
-      setActiveLocale("es");
-      assert.equal(getActiveIntlLocale(), "es-ES");
+      setActiveLocale("fr");
+      assert.equal(getActiveIntlLocale(), "fr-FR");
 
       setActiveLocale("en");
       assert.equal(getActiveIntlLocale(), "en-US");

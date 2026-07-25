@@ -15,7 +15,7 @@ import {
   formatSyncLabel,
   formatDate,
 } from "./formatters";
-import { setActiveLocale, getActiveLocale } from "./locale-state";
+import { setActiveLocale, getActiveLocale } from "./i18n/locale-state";
 
 describe("formatters", () => {
   // Mock locale to ensure consistent test results
@@ -259,20 +259,20 @@ describe("formatters", () => {
 
   // Locale-aware formatting tests (Issue #540)
   describe("locale-aware formatting", () => {
-    it("formats currency differently in Spanish locale", () => {
-      setActiveLocale("es");
+    it("formats currency differently in French locale", () => {
+      setActiveLocale("fr");
       const result = formatCurrency(1234.56);
-      // Spanish uses different separators than English
+      // French uses different separators than English
       assert.ok(result.length > 0);
-      assert.equal(getActiveLocale(), "es");
+      assert.equal(getActiveLocale(), "fr");
     });
 
-    it("formats currency differently in German locale", () => {
-      setActiveLocale("de");
+    it("formatting is locale-aware", () => {
+      setActiveLocale("fr");
       const result = formatCurrency(1234.56);
-      // German uses different separators and currency symbol positioning
+      // French uses different separators and currency symbol positioning
       assert.ok(result.length > 0);
-      assert.equal(getActiveLocale(), "de");
+      assert.equal(getActiveLocale(), "fr");
     });
 
     it("locale switch affects date formatting", () => {
@@ -296,12 +296,12 @@ describe("formatters", () => {
       setActiveLocale("en");
       const enResult = formatTimestamp(testTimestamp);
 
-      setActiveLocale("de");
-      const deResult = formatTimestamp(testTimestamp);
+      setActiveLocale("fr");
+      const frResult = formatTimestamp(testTimestamp);
 
       assert.ok(enResult.length > 0);
-      assert.ok(deResult.length > 0);
-      assert.equal(getActiveLocale(), "de");
+      assert.ok(frResult.length > 0);
+      assert.equal(getActiveLocale(), "fr");
     });
 
     it("preserves formatting across multiple locale switches", () => {
@@ -310,8 +310,8 @@ describe("formatters", () => {
       setActiveLocale("en");
       const en1 = formatPercent(testValue);
 
-      setActiveLocale("es");
-      const es = formatPercent(testValue);
+      setActiveLocale("fr");
+      const fr1 = formatPercent(testValue);
 
       setActiveLocale("en");
       const en2 = formatPercent(testValue);
@@ -319,7 +319,7 @@ describe("formatters", () => {
       // English formatting should be consistent across switches
       assert.equal(en1, en2);
       assert.ok(en1.includes("%"));
-      assert.ok(es.includes("%"));
+      assert.ok(fr1.includes("%"));
     });
 
     it("formatCompactCurrency is locale-aware", () => {
@@ -328,14 +328,14 @@ describe("formatters", () => {
       setActiveLocale("en");
       const enResult = formatCompactCurrency(value);
 
-      setActiveLocale("de");
-      const deResult = formatCompactCurrency(value);
+      setActiveLocale("fr");
+      const frResult = formatCompactCurrency(value);
 
       assert.ok(enResult.length > 0);
-      assert.ok(deResult.length > 0);
+      assert.ok(frResult.length > 0);
       // Both should be compact, but formatting may differ
       assert.ok(enResult.length <= 8);
-      assert.ok(deResult.length <= 8);
+      assert.ok(frResult.length <= 8);
     });
   });
 });

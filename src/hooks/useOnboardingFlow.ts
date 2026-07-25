@@ -44,7 +44,7 @@ export function useOnboardingFlow({
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      const { completed, lastStep } = JSON.parse(raw) as Partial<OnboardingState & { lastStep: number }>;
+      const { completed, lastStep } = JSON.parse(raw) as { completed?: boolean; lastStep?: number };
       if (completed) {
         setIsCompleted(true);
       } else if (typeof lastStep === 'number') {

@@ -59,7 +59,7 @@ describe("useNotifications", () => {
     });
 
     assert.equal(result.current.unreadCount, 0);
-    result.current.notifications.forEach((n) => {
+    result.current.notifications.forEach((n: { isRead: boolean }) => {
       assert.equal(n.isRead, true);
     });
   });
