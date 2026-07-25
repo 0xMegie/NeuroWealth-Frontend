@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
 import { logger } from "@/lib/logger";
 
@@ -70,29 +70,32 @@ export function SandboxProvider({ children }: SandboxProviderProps) {
     }
   }, [scenarios, isClient, isSandboxMode]);
 
-  const updateScenario = (module: ModuleType, scenario: ScenarioType) => {
+  const updateScenario = useCallback((module: ModuleType, scenario: ScenarioType) => {
     if (isSandboxMode) {
       setScenarios((prev) => ({ ...prev, [module]: scenario }));
     }
-  };
+  }, [isSandboxMode]);
 
-  const getCurrentScenario = (module: ModuleType): ScenarioType => {
+  const getCurrentScenario = useCallback((module: ModuleType): ScenarioType => {
     return scenarios[module] || "success";
-  };
+  }, [scenarios]);
 
-  const resetAllScenarios = () => {
+  const resetAllScenarios = useCallback(() => {
     if (isSandboxMode) {
       setScenarios(defaultScenarios);
     }
-  };
+  }, [isSandboxMode]);
 
-  const value: SandboxContextType = {
-    scenarios,
-    updateScenario,
-    getCurrentScenario,
-    resetAllScenarios,
-    isSandboxMode,
-  };
+  const value = useMemo<SandboxContextType>(
+    () => ({
+      scenarios,
+      updateScenario,
+      getCurrentScenario,
+      resetAllScenarios,
+      isSandboxMode,
+    }),
+    [scenarios, updateScenario, getCurrentScenario, resetAllScenarios, isSandboxMode]
+  );
 
   return (
     <SandboxContext.Provider value={value}>

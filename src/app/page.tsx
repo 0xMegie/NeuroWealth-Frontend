@@ -5,8 +5,6 @@ import { HeroSection } from "@/features/landing/HeroSection";
 import { HomeFooter } from "@/features/landing/HomeFooter";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "NeuroWealth — AI-Powered Yield on Stellar",
   description:

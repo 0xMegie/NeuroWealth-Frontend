@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/notifications/ToastProvider";
 import { useI18n } from "@/contexts/I18nContext";
+import { AppMessages } from "@/lib/i18n/messages";
+
 import {
   useRealtimeStream,
   type StreamEvent,
@@ -39,7 +41,7 @@ function statusDot(status: StreamStatus) {
   return "bg-slate-600";
 }
 
-function statusLabel(status: StreamStatus, t: any) {
+function statusLabel(status: StreamStatus, t: AppMessages["dashboard"]["realtime"]) {
   if (status === "running") return t.status.live;
   if (status === "stopped") return t.status.paused;
   return t.status.idle;
@@ -58,7 +60,7 @@ function kindIcon(kind: StreamEventKind) {
 
 // ── Event log panel ───────────────────────────────────────────────────────────
 
-function EventLog({ events, t }: { events: StreamEvent[], t: any }) {
+function EventLog({ events, t }: { events: StreamEvent[], t: AppMessages["dashboard"]["realtime"] }) {
   if (events.length === 0) {
     return (
       <p className="text-xs text-slate-500 py-3 text-center">{t.noEvents}</p>
