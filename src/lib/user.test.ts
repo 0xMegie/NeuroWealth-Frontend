@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import {
   adaptMockAuthUser,
   adaptApiUser,
@@ -10,35 +11,35 @@ import {
 describe("user module", () => {
   describe("getUserInitials", () => {
     it("extracts initials correctly", () => {
-      expect(getUserInitials("John Doe")).toBe("JD");
-      expect(getUserInitials("Jane")).toBe("J");
-      expect(getUserInitials("  foo  bar  ")).toBe("FB");
-      expect(getUserInitials("")).toBe("??");
-      expect(getUserInitials("  ")).toBe("??");
+      assert.equal(getUserInitials("John Doe"), "JD");
+      assert.equal(getUserInitials("Jane"), "J");
+      assert.equal(getUserInitials("  foo  bar  "), "FB");
+      assert.equal(getUserInitials(""), "??");
+      assert.equal(getUserInitials("  "), "??");
     });
   });
 
   describe("truncateWalletAddress", () => {
     it("truncates long addresses", () => {
-      expect(truncateWalletAddress("0x1234567890abcdef1234567890abcdef")).toBe("0x1234...cdef");
+      assert.equal(truncateWalletAddress("0x1234567890abcdef1234567890abcdef"), "0x1234...cdef");
     });
 
     it("returns short addresses as is", () => {
-      expect(truncateWalletAddress("0x1234567890")).toBe("0x1234567890");
+      assert.equal(truncateWalletAddress("0x1234567890"), "0x1234567890");
     });
 
     it("returns already truncated addresses as is", () => {
-      expect(truncateWalletAddress("0x12...cdef")).toBe("0x12...cdef");
+      assert.equal(truncateWalletAddress("0x12...cdef"), "0x12...cdef");
     });
   });
 
   describe("getUserAddressLabel", () => {
     it("returns truncated label when address exists", () => {
-      expect(getUserAddressLabel({ walletAddress: "0x1234567890abcdef1234567890abcdef" })).toBe("0x1234...cdef");
+      assert.equal(getUserAddressLabel({ walletAddress: "0x1234567890abcdef1234567890abcdef" }), "0x1234...cdef");
     });
 
     it("returns undefined when address is missing", () => {
-      expect(getUserAddressLabel({ walletAddress: undefined })).toBeUndefined();
+      assert.equal(getUserAddressLabel({ walletAddress: undefined }), undefined);
     });
   });
 
@@ -50,8 +51,8 @@ describe("user module", () => {
         name: "Foo Bar",
         createdAt: "2023-01-01",
       });
-      expect(user.displayName).toBe("Foo Bar");
-      expect(user.avatarInitials).toBe("FB");
+      assert.equal(user.displayName, "Foo Bar");
+      assert.equal(user.avatarInitials, "FB");
     });
 
     it("falls back to email prefix for display name", () => {
@@ -61,8 +62,8 @@ describe("user module", () => {
         name: "",
         createdAt: "2023-01-01",
       });
-      expect(user.displayName).toBe("foo");
-      expect(user.avatarInitials).toBe("F");
+      assert.equal(user.displayName, "foo");
+      assert.equal(user.avatarInitials, "F");
     });
 
     it("falls back to wallet address", () => {
@@ -73,7 +74,7 @@ describe("user module", () => {
         walletAddress: "0xabc",
         createdAt: "2023-01-01",
       });
-      expect(user.displayName).toBe("0xabc");
+      assert.equal(user.displayName, "0xabc");
     });
 
     it("falls back to id", () => {
@@ -83,7 +84,7 @@ describe("user module", () => {
         name: "",
         createdAt: "2023-01-01",
       });
-      expect(user.displayName).toBe("usr-123");
+      assert.equal(user.displayName, "usr-123");
     });
   });
 
@@ -94,24 +95,24 @@ describe("user module", () => {
         displayName: "API Name",
         name: "Other Name",
       });
-      expect(user.displayName).toBe("API Name");
+      assert.equal(user.displayName, "API Name");
     });
 
     it("falls back to name, then email, then wallet, then id", () => {
-      expect(adaptApiUser({ id: "1", name: "Other Name" }).displayName).toBe("Other Name");
-      expect(adaptApiUser({ id: "1", email: "test@x.com" }).displayName).toBe("test");
-      expect(adaptApiUser({ id: "1", address: "0xabc" }).displayName).toBe("0xabc");
-      expect(adaptApiUser({ id: "1" }).displayName).toBe("1");
+      assert.equal(adaptApiUser({ id: "1", name: "Other Name" }).displayName, "Other Name");
+      assert.equal(adaptApiUser({ id: "1", email: "test@x.com" }).displayName, "test");
+      assert.equal(adaptApiUser({ id: "1", address: "0xabc" }).displayName, "0xabc");
+      assert.equal(adaptApiUser({ id: "1" }).displayName, "1");
     });
 
     it("picks walletAddress or address", () => {
-      expect(adaptApiUser({ id: "1", walletAddress: "0x123" }).walletAddress).toBe("0x123");
-      expect(adaptApiUser({ id: "1", address: "0x456" }).walletAddress).toBe("0x456");
+      assert.equal(adaptApiUser({ id: "1", walletAddress: "0x123" }).walletAddress, "0x123");
+      assert.equal(adaptApiUser({ id: "1", address: "0x456" }).walletAddress, "0x456");
     });
 
     it("picks avatarUrl or avatar", () => {
-      expect(adaptApiUser({ id: "1", avatarUrl: "url1" }).avatarUrl).toBe("url1");
-      expect(adaptApiUser({ id: "1", avatar: "url2" }).avatarUrl).toBe("url2");
+      assert.equal(adaptApiUser({ id: "1", avatarUrl: "url1" }).avatarUrl, "url1");
+      assert.equal(adaptApiUser({ id: "1", avatar: "url2" }).avatarUrl, "url2");
     });
 
     it("defaults to 'User' if everything is empty or whitespace", () => {
@@ -121,7 +122,7 @@ describe("user module", () => {
         name: "",
         email: null,
       });
-      expect(user.displayName).toBe("User");
+      assert.equal(user.displayName, "User");
     });
   });
 });

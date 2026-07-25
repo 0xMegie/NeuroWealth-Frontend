@@ -33,7 +33,7 @@ test("GET /api/transaction-history returns 200 with default params", async () =>
 
   // Verify default pagination
   assert.equal(body.data.page, 1);
-  assert.equal(body.data.pageSize, 20);
+  assert.equal(body.data.pageSize, 10);
   assert.ok(body.data.totalPages >= 1);
   assert.ok(body.data.items.length <= body.data.pageSize);
 });
