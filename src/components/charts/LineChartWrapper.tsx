@@ -1,7 +1,20 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { BaseChart, ChartTooltip, type ChartTooltipFormatter } from "./BaseChart";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
+  BaseChart,
+  ChartTooltip,
+  type ChartTooltipFormatter,
+  usePrefersReducedMotion,
+} from "./BaseChart";
 import { chartTheme, chartDimensions } from "@/lib/chart-theme";
 import type { ChartDatum } from "@/lib/mock-chart-data";
 
@@ -17,6 +30,7 @@ interface LineChartWrapperProps<T extends ChartDatum> {
   strokeDasharray?: string;
   dot?: boolean | object;
   formatter?: ChartTooltipFormatter;
+  "aria-label"?: string;
 }
 
 export function LineChartWrapper<T extends ChartDatum = ChartDatum>({
@@ -31,9 +45,12 @@ export function LineChartWrapper<T extends ChartDatum = ChartDatum>({
   strokeDasharray = chartTheme.patterns.primary,
   dot = false,
   formatter,
+  "aria-label": ariaLabel,
 }: LineChartWrapperProps<T>) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   return (
-    <BaseChart height={height}>
+    <BaseChart height={height} aria-label={ariaLabel}>
       <LineChart data={data} margin={chartDimensions.margin}>
         {showGrid && (
           <CartesianGrid
@@ -46,15 +63,26 @@ export function LineChartWrapper<T extends ChartDatum = ChartDatum>({
           dataKey={xAxisKey}
           axisLine={chartTheme.axis.axisLine}
           tickLine={chartTheme.axis.tickLine}
-          tick={{ fontSize: chartTheme.axis.fontSize, fill: chartTheme.axis.fill }}
+          tick={{
+            fontSize: chartTheme.axis.fontSize,
+            fill: chartTheme.axis.fill,
+          }}
         />
         <YAxis
           axisLine={chartTheme.axis.axisLine}
           tickLine={chartTheme.axis.tickLine}
-          tick={{ fontSize: chartTheme.axis.fontSize, fill: chartTheme.axis.fill }}
+          tick={{
+            fontSize: chartTheme.axis.fontSize,
+            fill: chartTheme.axis.fill,
+          }}
         />
         <Tooltip content={<ChartTooltip formatter={formatter} />} />
-        {showLegend && <Legend wrapperStyle={chartTheme.legend.wrapperStyle} iconType={chartTheme.legend.iconType} />}
+        {showLegend && (
+          <Legend
+            wrapperStyle={chartTheme.legend.wrapperStyle}
+            iconType={chartTheme.legend.iconType}
+          />
+        )}
         <Line
           type="monotone"
           dataKey={dataKey}
@@ -62,6 +90,7 @@ export function LineChartWrapper<T extends ChartDatum = ChartDatum>({
           strokeWidth={strokeWidth}
           strokeDasharray={strokeDasharray}
           dot={dot}
+          isAnimationActive={!prefersReducedMotion}
           activeDot={{ r: 4, stroke: color, strokeWidth: 2, fill: "#fff" }}
         />
       </LineChart>
