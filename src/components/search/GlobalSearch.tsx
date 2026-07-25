@@ -8,9 +8,9 @@ import {
   SearchGroup,
   SearchResultItem,
   hasAnySearchResults,
-} from "@/lib/mock-search-index";
+  getSearchDataProvider,
+} from "@/lib/search-service";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { getSearchDataProvider } from "@/lib/search-service";
 
 interface GlobalSearchProps {
   placeholder?: string;

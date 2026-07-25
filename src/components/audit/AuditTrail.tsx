@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AuditEvent, mockAuditService } from "@/lib/mock-audit";
+import { AuditEvent, getAuditService } from "@/lib/audit-service";
 import { Download, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuditTableSkeleton } from "@/components/ui/Skeleton";
@@ -19,7 +19,7 @@ export function AuditTrail() {
     setLoading(true);
     // Simulate async fetch of audit events
     const timer = setTimeout(async () => {
-      const data = await mockAuditService.getEvents();
+      const data = await getAuditService().getEvents();
       setEvents(data);
       setLoading(false);
     }, 800);
@@ -38,7 +38,7 @@ export function AuditTrail() {
     });
 
   const handleExport = async () => {
-    const csv = await mockAuditService.exportAsCSV();
+    const csv = await getAuditService().exportAsCSV();
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

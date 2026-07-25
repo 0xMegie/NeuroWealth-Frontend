@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { ProfileFormSkeleton } from "@/components/ui/Skeleton";
 
-import { ProfileData, DEFAULT_PROFILE, mockProfileService } from "@/lib/mock-services";
+import { ProfileData, DEFAULT_PROFILE, getProfileAdapter } from "@/lib/profile-adapter";
 
 interface ValidationErrors {
   displayName?: string;
@@ -159,7 +159,7 @@ export default function ProfilePage() {
   useEffect(() => {
     // Simulate async profile load
     const timer = setTimeout(() => {
-      const loaded = mockProfileService.loadProfile();
+      const loaded = getProfileAdapter().loadProfile();
       setSaved(loaded);
       setDraft(loaded);
       setProfileLoading(false);
@@ -207,7 +207,7 @@ export default function ProfilePage() {
     setSaveError("");
 
     try {
-      await mockProfileService.saveProfile(draft);
+      await getProfileAdapter().saveProfile(draft);
       setSaved(draft);
       setSaveStatus("success");
       setEditing(false);
