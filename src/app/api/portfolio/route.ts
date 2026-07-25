@@ -2,7 +2,7 @@ import {
   buildScenarioPayload,
   normalizePortfolioPayload,
 } from "@/lib/portfolio";
-import { isSandboxScenario, resolveSandboxScenario } from "@/lib/api-sandbox";
+import { isSandboxScenario, parseSandboxScenario } from "@/lib/sandbox-scenario";
 import {
   ERROR_CODE,
   HTTP_STATUS,
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const scenario = resolveSandboxScenario(parsedQuery.data.scenario);
+  const scenario = parseSandboxScenario(parsedQuery.data.scenario);
   const portfolioPath =
     process.env.NEUROWEALTH_PORTFOLIO_PATH ?? "/portfolio/overview";
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 export const dynamic = "force-dynamic";
 import { mockAuditService } from "@/lib/mock-audit";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 
 interface SecurityData {
   twoFactorEnabled: boolean;
@@ -15,7 +16,7 @@ interface SecurityData {
   loginAlerts: boolean;
 }
 
-const STORAGE_KEY = "nw_security";
+const STORAGE_KEY = STORAGE_KEYS.SECURITY;
 const DEFAULT: SecurityData = {
   twoFactorEnabled: false,
   lastPasswordChange: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
