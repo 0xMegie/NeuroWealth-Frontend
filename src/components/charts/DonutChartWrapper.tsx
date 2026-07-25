@@ -1,8 +1,17 @@
 "use client";
 
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
-import { BaseChart, ChartTooltip, type ChartTooltipFormatter, usePrefersReducedMotion } from "./BaseChart";
-import { chartTheme, getChartColor, getChartStrokeDasharray } from "@/lib/chart-theme";
+import {
+  BaseChart,
+  ChartTooltip,
+  type ChartTooltipFormatter,
+  usePrefersReducedMotion,
+} from "./BaseChart";
+import {
+  chartTheme,
+  getChartColor,
+  getChartStrokeDasharray,
+} from "@/lib/chart-theme";
 import type { AssetAllocationSlice } from "@/lib/mock-chart-data";
 
 interface DonutChartWrapperProps {
@@ -12,6 +21,7 @@ interface DonutChartWrapperProps {
   outerRadius?: number;
   showLegend?: boolean;
   formatter?: ChartTooltipFormatter;
+  "aria-label"?: string;
 }
 
 export function DonutChartWrapper({
@@ -21,11 +31,12 @@ export function DonutChartWrapper({
   outerRadius = 100,
   showLegend = false,
   formatter,
+  "aria-label": ariaLabel,
 }: DonutChartWrapperProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <BaseChart height={height}>
+    <BaseChart height={height} aria-label={ariaLabel}>
       <PieChart>
         <Pie
           data={data}
@@ -40,15 +51,28 @@ export function DonutChartWrapper({
           {data.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
-              fill={entry.tone ? getChartColor(entry.tone) : chartTheme.colors.primary}
+              fill={
+                entry.tone
+                  ? getChartColor(entry.tone)
+                  : chartTheme.colors.primary
+              }
               stroke={chartTheme.tooltip.contentStyle.backgroundColor}
-              strokeDasharray={entry.tone ? getChartStrokeDasharray(entry.tone) : chartTheme.patterns.primary}
+              strokeDasharray={
+                entry.tone
+                  ? getChartStrokeDasharray(entry.tone)
+                  : chartTheme.patterns.primary
+              }
               strokeWidth={2}
             />
           ))}
         </Pie>
         <Tooltip content={<ChartTooltip formatter={formatter} />} />
-        {showLegend && <Legend wrapperStyle={chartTheme.legend.wrapperStyle} iconType={chartTheme.legend.iconType} />}
+        {showLegend && (
+          <Legend
+            wrapperStyle={chartTheme.legend.wrapperStyle}
+            iconType={chartTheme.legend.iconType}
+          />
+        )}
       </PieChart>
     </BaseChart>
   );
