@@ -8,10 +8,11 @@ import {
   SearchGroup,
   SearchResultItem,
   hasAnySearchResults,
-} from "@/lib/mock-search-index";
+  getSearchDataProvider,
+  SEARCH_DEBOUNCE_MS,
+} from "@/lib/search-service";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getSearchDataProvider, SEARCH_DEBOUNCE_MS } from "@/lib/search-service";
 
 interface GlobalSearchProps {
   placeholder?: string;
