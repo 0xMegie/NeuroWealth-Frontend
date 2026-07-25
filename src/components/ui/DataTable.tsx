@@ -1,6 +1,7 @@
 "use client";
 
-import {
+import React, {
+  type KeyboardEvent,
   type ReactNode,
   useEffect,
   useId,
@@ -74,7 +75,7 @@ export interface DataTableProps<T> {
   /** Accessible caption / description. */
   caption?: string;
   emptyMessage?: string;
-  /** Optional row click handler (also makes rows keyboard-activatable). */
+  /** Optional row click handler (also makes rows keyboard-activatable with Enter/Space). */
   onRowClick?: (row: T) => void;
   className?: string;
   /** Rows per page for client-side pagination. 0 or undefined shows all rows. */
@@ -211,6 +212,14 @@ export function DataTable<T extends object>({
     if (column.render) return column.render(row);
     const value = column.accessor(row);
     return value == null || value === "" ? "—" : String(value);
+  };
+
+  const handleRowKeyDown = (event: KeyboardEvent<HTMLElement>, row: T) => {
+    if (!onRowClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onRowClick(row);
+    }
   };
 
   const SortIcon = ({ column }: { column: DataTableColumn<T> }) => {
@@ -422,6 +431,9 @@ export function DataTable<T extends object>({
                 <tr
                   key={rowKey(row)}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={onRowClick ? (event) => handleRowKeyDown(event, row) : undefined}
+                  role={onRowClick ? "button" : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
                   className={cn(
                     "transition-colors",
                     striped && "even:bg-slate-50/70 dark:even:bg-white/[0.02]",
@@ -458,6 +470,9 @@ export function DataTable<T extends object>({
             <li
               key={rowKey(row)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={onRowClick ? (event) => handleRowKeyDown(event, row) : undefined}
+              role={onRowClick ? "button" : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
               className={cn(
                 "rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900/60",
                 onRowClick && "cursor-pointer active:bg-slate-50 dark:active:bg-white/5",
