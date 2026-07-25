@@ -18,6 +18,8 @@ import { ApiRequestError, apiRequest } from "@/lib/api-client";
 import { useSandbox, ScenarioType } from "@/contexts/SandboxContext";
 import { AllocationChart } from "./AllocationChart";
 import { useI18n } from "@/contexts/I18nContext";
+import { AppMessages } from "@/lib/i18n/messages";
+
 
 type ThemeMode = "light" | "dark";
 
@@ -72,7 +74,7 @@ function renderActivityIcon(kind: ActivityItem["kind"]) {
   }
 }
 
-function renderSourceLabel(source: PortfolioPayload["source"], t: any) {
+function renderSourceLabel(source: PortfolioPayload["source"], t: AppMessages["dashboard"]["portfolio"]) {
   if (source === "api") {
     return t.liveWidgets;
   }
