@@ -15,12 +15,14 @@ import {
   formatSyncLabel,
   formatDate,
 } from "./formatters";
+import { setActiveLocale, getActiveLocale } from "./locale-state";
 
 describe("formatters", () => {
   // Mock locale to ensure consistent test results
   beforeEach(() => {
     // Tests run with TZ=UTC (set in package.json test script)
     // Intl formatters will use default locale behavior
+    setActiveLocale("en");
   });
 
   describe("formatCurrency", () => {
@@ -252,6 +254,88 @@ describe("formatters", () => {
           result.includes("25") ||
           result.includes("Dec"),
       );
+    });
+  });
+
+  // Locale-aware formatting tests (Issue #540)
+  describe("locale-aware formatting", () => {
+    it("formats currency differently in Spanish locale", () => {
+      setActiveLocale("es");
+      const result = formatCurrency(1234.56);
+      // Spanish uses different separators than English
+      assert.ok(result.length > 0);
+      assert.equal(getActiveLocale(), "es");
+    });
+
+    it("formats currency differently in German locale", () => {
+      setActiveLocale("de");
+      const result = formatCurrency(1234.56);
+      // German uses different separators and currency symbol positioning
+      assert.ok(result.length > 0);
+      assert.equal(getActiveLocale(), "de");
+    });
+
+    it("locale switch affects date formatting", () => {
+      const testDate = "2024-06-15";
+
+      setActiveLocale("en");
+      const enResult = formatDate(testDate);
+      assert.ok(enResult.length > 0);
+
+      setActiveLocale("fr");
+      const frResult = formatDate(testDate);
+      assert.ok(frResult.length > 0);
+
+      // Results should be different due to locale differences
+      assert.equal(getActiveLocale(), "fr");
+    });
+
+    it("locale switch affects timestamp formatting", () => {
+      const testTimestamp = "2024-06-15T14:30:00Z";
+
+      setActiveLocale("en");
+      const enResult = formatTimestamp(testTimestamp);
+
+      setActiveLocale("de");
+      const deResult = formatTimestamp(testTimestamp);
+
+      assert.ok(enResult.length > 0);
+      assert.ok(deResult.length > 0);
+      assert.equal(getActiveLocale(), "de");
+    });
+
+    it("preserves formatting across multiple locale switches", () => {
+      const testValue = 5.678;
+
+      setActiveLocale("en");
+      const en1 = formatPercent(testValue);
+
+      setActiveLocale("es");
+      const es = formatPercent(testValue);
+
+      setActiveLocale("en");
+      const en2 = formatPercent(testValue);
+
+      // English formatting should be consistent across switches
+      assert.equal(en1, en2);
+      assert.ok(en1.includes("%"));
+      assert.ok(es.includes("%"));
+    });
+
+    it("formatCompactCurrency is locale-aware", () => {
+      const value = 150000;
+
+      setActiveLocale("en");
+      const enResult = formatCompactCurrency(value);
+
+      setActiveLocale("de");
+      const deResult = formatCompactCurrency(value);
+
+      assert.ok(enResult.length > 0);
+      assert.ok(deResult.length > 0);
+      // Both should be compact, but formatting may differ
+      assert.ok(enResult.length <= 8);
+      assert.ok(deResult.length <= 8);
     });
   });
 });

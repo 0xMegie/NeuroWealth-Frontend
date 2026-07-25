@@ -22,6 +22,20 @@ test("GET /api/transaction-history returns 200 with default params", async () =>
   assert.equal(res.status, 200);
   assert.equal(body.success, true);
   assert.ok(body.data);
+
+  // Assert on actual response data structure
+  assert.ok(Array.isArray(body.data.items));
+  assert.ok(body.data.items.length > 0);
+  assert.equal(typeof body.data.total, "number");
+  assert.equal(typeof body.data.page, "number");
+  assert.equal(typeof body.data.pageSize, "number");
+  assert.equal(typeof body.data.totalPages, "number");
+
+  // Verify default pagination
+  assert.equal(body.data.page, 1);
+  assert.equal(body.data.pageSize, 20);
+  assert.ok(body.data.totalPages >= 1);
+  assert.ok(body.data.items.length <= body.data.pageSize);
 });
 
 test("GET /api/transaction-history returns 200 with valid kind filter", async () => {
@@ -34,6 +48,24 @@ test("GET /api/transaction-history returns 200 with valid kind filter", async ()
 
     assert.equal(res.status, 200, `Kind ${kind} should return 200`);
     assert.equal(body.success, true);
+
+    // Assert on actual data
+    assert.ok(Array.isArray(body.data.items));
+    assert.ok(body.data.items.length >= 0);
+
+    // Verify all items match the kind filter
+    if (kind !== "all") {
+      body.data.items.forEach((item: any) => {
+        assert.equal(item.kind, kind, `Item should be of kind ${kind}`);
+      });
+    }
+
+    // Verify totalPages calculation
+    const expectedTotalPages = Math.max(
+      1,
+      Math.ceil(body.data.total / body.data.pageSize),
+    );
+    assert.equal(body.data.totalPages, expectedTotalPages);
   }
 });
 
@@ -57,6 +89,20 @@ test("GET /api/transaction-history returns 200 with pagination", async () => {
 
   assert.equal(res.status, 200);
   assert.equal(body.success, true);
+
+  // Assert pagination data
+  assert.equal(body.data.page, 1);
+  assert.equal(body.data.pageSize, 10);
+  assert.ok(body.data.items.length <= 10);
+  assert.equal(
+    body.data.totalPages,
+    Math.max(1, Math.ceil(body.data.total / 10)),
+  );
+
+  // Verify items match page boundaries
+  if (body.data.total > 10) {
+    assert.equal(body.data.items.length, 10);
+  }
 });
 
 test("GET /api/transaction-history returns 400 for invalid kind", async () => {
@@ -107,4 +153,23 @@ test("GET /api/transaction-history returns 200 with date range", async () => {
 
   assert.equal(res.status, 200);
   assert.equal(body.success, true);
+
+  // Assert on returned data
+  assert.ok(Array.isArray(body.data.items));
+  assert.equal(typeof body.data.total, "number");
+  assert.equal(typeof body.data.totalPages, "number");
+
+  // Verify date boundary inclusivity
+  // All items should be within the date range (inclusive on both ends)
+  const dateFrom = new Date("2026-01-01");
+  const dateTo = new Date("2026-12-31");
+  dateTo.setDate(dateTo.getDate() + 1); // Date filter is exclusive of next day
+
+  body.data.items.forEach((item: any) => {
+    const itemDate = new Date(item.occurredAt);
+    assert.ok(
+      itemDate >= dateFrom && itemDate < dateTo,
+      `Item date ${itemDate.toISOString()} should be within range`,
+    );
+  });
 });
