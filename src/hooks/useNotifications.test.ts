@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act } from "@/test-utils/render-hook";
 import { useNotifications } from "./useNotifications";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
 

@@ -99,6 +99,7 @@ describe("Drawer focus management", () => {
     assert.match(source, /side = "right"/);
     // Verify side prop is used for positioning
     assert.match(source, /side === "right"/);
-    assert.match(source, /side === "left"/);
+    // Left positioning is handled via ternary (right-0 / left-0)
+    assert.match(source, /left-0/);
   });
 });

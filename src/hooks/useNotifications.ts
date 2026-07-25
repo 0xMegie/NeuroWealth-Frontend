@@ -10,7 +10,8 @@ export function useNotifications() {
     const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : MOCK_NOTIFICATIONS;
       } catch {
         // Malformed JSON - fallback to mock and clear corrupted storage
         localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(MOCK_NOTIFICATIONS));
