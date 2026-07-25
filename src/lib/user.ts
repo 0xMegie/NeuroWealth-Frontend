@@ -1,3 +1,14 @@
+/**
+ * User type unification and adapters.
+ *
+ * The canonical User type (from @/types) is the single source of truth.
+ * MockAuthUserRecord and ApiUserRecord are fetch boundaries that may have
+ * different shapes. Use adaptMockAuthUser() and adaptApiUser() to convert
+ * them to the canonical User type.
+ *
+ * This prevents User shape divergence at boundaries (mock vs API).
+ */
+
 import type { ApiResponse } from "@/lib/api-response";
 import type { User } from "@/types";
 
@@ -66,6 +77,7 @@ function resolveDisplayName(
   return pickFirstValue(...fallbackValues) ?? DEFAULT_USER_LABEL;
 }
 
+/** Convert mock auth user to canonical User type. Always use this when handling MockAuthUserRecord. */
 export function adaptMockAuthUser(record: MockAuthUserRecord): User {
   const displayName = resolveDisplayName([
     record.name,
@@ -85,6 +97,7 @@ export function adaptMockAuthUser(record: MockAuthUserRecord): User {
   };
 }
 
+/** Convert API user response to canonical User type. Always use this when handling ApiUserRecord. */
 export function adaptApiUser(record: ApiUserRecord): User {
   const walletAddress = pickFirstValue(record.walletAddress, record.address);
   const displayName = resolveDisplayName([

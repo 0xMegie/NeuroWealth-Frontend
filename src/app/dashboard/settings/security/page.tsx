@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Lock, Shield, AlertCircle, CheckCircle2, Save, X } from "lucide-react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { Button } from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 import { mockAuditService } from "@/lib/mock-audit";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 
 interface SecurityData {
   twoFactorEnabled: boolean;
@@ -14,7 +16,7 @@ interface SecurityData {
   loginAlerts: boolean;
 }
 
-const STORAGE_KEY = "nw_security";
+const STORAGE_KEY = STORAGE_KEYS.SECURITY;
 const DEFAULT: SecurityData = {
   twoFactorEnabled: false,
   lastPasswordChange: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -30,6 +32,8 @@ export default function SecurityPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
+  const passwordModalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(passwordModalRef, showPasswordModal);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -267,7 +271,7 @@ export default function SecurityPage() {
       {/* Password Change Modal */}
       {showPasswordModal && (
         <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div ref={passwordModalRef} className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Change Password</h3>
               <button
@@ -504,6 +508,8 @@ export default function SecurityPage() {
           justify-content: space-between;
           gap: 12px;
           padding: 14px 20px;
+          /* #423: add safe-area-inset-bottom so buttons clear the home indicator */
+          padding-bottom: max(14px, calc(14px + var(--sai-bottom, 0px)));
           background: rgba(2, 6, 23, 0.88);
           backdrop-filter: blur(16px);
           border: 1px solid rgba(148, 163, 184, 0.15);

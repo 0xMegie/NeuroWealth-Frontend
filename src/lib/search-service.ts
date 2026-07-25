@@ -11,14 +11,15 @@ import {
   searchMockIndex,
 } from "@/lib/mock-search-index";
 
+export const SEARCH_DEBOUNCE_MS = 300;
+
 export interface SearchIndexMetadata {
   totalItems: number;
   lastIndexedAt?: Date;
   version?: string;
 }
 
-// #339 — typed provider interface: search is required; cancel and indexMetadata
-// are optional so existing mock and future real implementations can opt in.
+
 export interface SearchDataProvider {
   search(query: string): Promise<GroupedSearchResults>;
   cancel?(): void;

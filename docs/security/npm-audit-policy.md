@@ -2,12 +2,11 @@
 
 ## Snapshot
 
-- Reviewed on: `2026-04-24`
-- Command: `corepack yarn audit --json`
-- Summary: `3 critical`, `10 high`, `11 moderate`, `6 low`
-- Current direct framework risk is concentrated in `next@14.2.3`
-- Current wallet-stack risk is concentrated under `@creit.tech/stellar-wallets-kit@1.9.5`
-- `yarn.lock` still pulls `@walletconnect/modal@2.6.2` and `@walletconnect/sign-client@2.11.2`, but this audit snapshot did not report separate `@walletconnect/*` advisories. The actionable wallet findings came from sibling transitive packages in the same SDK tree.
+- Reviewed on: `2026-06-24`
+- Command: `npm audit --json`
+- Summary: `2 critical`, `13 high`, `10 moderate`, `17 low` (42 total)
+- Direct-dependency risk is concentrated in `@creit.tech/stellar-wallets-kit@1.8.x` and its transitive wallet tree.
+- No separate `@walletconnect/*` advisories appeared in this snapshot; the wallet findings come from sibling transitive packages (`@solana/web3.js`, `@near-js/crypto`, `@trezor/*`) pulled in by the same SDK tree.
 
 ## Policy
 
@@ -16,24 +15,29 @@
 - Treat transitive wallet findings as one of: `must-fix now`, `accepted temporary risk`, or `monitor only`. Every accepted risk needs a reason and a review date.
 - Prefer this order of remediation:
   1. Patch or minor upgrade the direct dependency.
-  2. Add a targeted override or resolution only after build, typecheck, tests, and wallet smoke checks pass.
+  2. Add a targeted `overrides` entry only after build, typecheck, tests, and wallet smoke checks pass.
   3. If no safe override exists, open or link an upstream issue and schedule a review instead of forcing the tree.
 
 ## Current decisions
 
 | Package path | Severity | Decision | Reason | Next action |
 | --- | --- | --- | --- | --- |
-| `next@14.2.3` | `critical/high/moderate/low` | `must-fix` | This is a direct dependency and the audit reports multiple patched releases on the stable `14.2.x` line, including `14.2.35`. | Open a follow-up upgrade PR to `next@14.2.35` and rerun build plus auth route QA. |
-| `next > postcss@8.4.31` | `moderate` | `must-fix with Next upgrade` | The reported `postcss` issue is coming through `next`, so a framework upgrade is safer than overriding `postcss` alone. | Resolve together with the `next` upgrade PR. |
-| `@creit.tech/stellar-wallets-kit > @trezor/connect-web > @trezor/connect > @trezor/protobuf > protobufjs@7.4.0` and `... > @trezor/transport > @trezor/protobuf > protobufjs@7.4.0` | `critical` | `accepted temporary risk` | The advisory requires attacker-controlled protobuf definitions. This app does not define or decode custom protobuf schemas itself, but the dependency sits in a security-sensitive wallet tree and should not be ignored. | Keep wallet scope limited, ask upstream maintainers for a patched tree or compatible override, and review again within 7 days. |
-| `@creit.tech/stellar-wallets-kit > @hot-wallet/sdk > @solana/web3.js > jayson > uuid` and `... > rpc-websockets > uuid` | `moderate` | `accepted temporary risk` | The finding is a buffer-bounds issue in transitive UUID helpers, not a directly invoked application surface in the current Stellar flows. | Recheck on the next wallet SDK bump and prefer an upstream dependency refresh over a forced override. |
-| `@creit.tech/stellar-wallets-kit > ... > elliptic@6.6.1` | `low` | `monitor only` | The advisory currently lists no patched version recommendation. Forcing replacements here is higher risk than the reported low-severity issue. | Track upstream maintainer guidance and rerun audit on each wallet SDK update. |
+| `@creit.tech/stellar-wallets-kit@1.8.x` (direct) | `high` (rolled up) | `must-fix` | Direct dependency; audit reports a fix available at `1.5.0` (semver-major). Fix requires a breaking-change upgrade and wallet smoke-test pass. | Open follow-up PR to upgrade to the latest stable `1.x` line or evaluate `1.5.0`; run wallet connect, deposit, and withdrawal smoke tests after. |
+| `secp256k1` via `@near-js/crypto` → `@hot-wallet/sdk` → `@creit.tech/stellar-wallets-kit` | `critical` | `accepted temporary risk` | The advisory requires an attacker to supply crafted key material that the app itself never generates from untrusted input. The Stellar-SDK path is read-only for the current demo scope. | Track upstream `@creit.tech` releases for a patched transitive tree. Re-evaluate within 7 days or on next wallet SDK update. |
+| `@trezor/connect` chain via `@creit.tech/stellar-wallets-kit` | `critical` | `accepted temporary risk` | Trezor hardware integration is not wired up in the current Stellar flow. The critical path is not reachable in production. | Keep wallet scope limited. Ask upstream for a patched tree or restrict `@trezor/*` via overrides once a safe version is confirmed. |
+| `@solana/web3.js` via `@hot-wallet/sdk` → `@creit.tech/stellar-wallets-kit` | `high` | `accepted temporary risk` | The Solana chain is not in the active integration surface. The finding sits several layers from any invoked code path. | Recheck on next wallet SDK bump. Prefer upstream refresh over a forced override. |
+| `jayson` via `@solana/web3.js` | `high` | `accepted temporary risk` | Same transitive chain as `@solana/web3.js`. Not called by application code. | Resolved automatically if `@solana/web3.js` is patched upstream. |
+| `uuid < 11.1.1` via `jayson` and `rpc-websockets` | `moderate` | `accepted temporary risk` | Buffer-bounds issue in v3/v5/v6 only when an optional `buf` argument is provided. Application code does not call uuid directly; exposure is inside transitive SDK internals. | Fix available via `npm audit fix --force` (requires major wallet-kit bump). Schedule with the `@creit.tech` upgrade PR. |
+| `ua-parser-js 2.0.1–2.0.9` | `moderate` | `monitor only` | UAParser ReDoS via `withClientHints()`. This app does not parse UA strings server-side. Fix is available via `npm audit fix` (non-breaking). | Run `npm audit fix` on the next routine dependency maintenance PR to clear this without affecting the wallet tree. |
+| `@near-js/*` chain (accounts, keystores, providers, signers, transactions, wallet-account) | `low` | `monitor only` | All findings trace back to the same `secp256k1`/`@near-js/crypto` root. NEAR chain is not an active integration target. | Resolved automatically if `@creit.tech/stellar-wallets-kit` drops `@hot-wallet/sdk` in a future release. |
+| `elliptic` via wallet tree | `low` | `monitor only` | No patched version recommendation from upstream. Forcing replacements is higher risk than the reported low-severity issue. | Track upstream maintainer guidance and rerun audit on each wallet SDK update. |
 
 ## Review cadence
 
-- Re-run `yarn audit --json` on every dependency upgrade PR that touches `next`, wallet SDKs, or auth/middleware code.
-- Re-review accepted wallet risks within 7 days while `@creit.tech/stellar-wallets-kit` remains in use.
-- Do a full audit at least monthly until the direct `next` findings are cleared.
+- Re-run `npm audit --json` on every dependency upgrade PR that touches `next`, wallet SDKs, or auth/middleware code.
+- Re-review `critical` and `high` accepted wallet risks within **7 days** while `@creit.tech/stellar-wallets-kit` remains in use.
+- Run a full audit at least **monthly** until all critical and high findings are cleared.
+- Clear the `ua-parser-js` moderate finding with `npm audit fix` on the next routine maintenance PR.
 
 ## PR QA checklist for dependency triage changes
 

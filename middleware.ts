@@ -4,9 +4,10 @@ import {
   isProtectedPath,
   SESSION_COOKIE_NAME,
   SIGN_IN_PATH,
+  POST_SIGN_IN_PATH,
 } from "./src/lib/auth-constants";
 
-function isSessionCookieValid(rawCookie: string | undefined): boolean {
+export function isSessionCookieValid(rawCookie: string | undefined): boolean {
   if (!rawCookie) return false;
 
   try {
@@ -32,12 +33,15 @@ export function middleware(request: NextRequest) {
 
   if (!authenticated && isProtectedPath(url.pathname)) {
     url.pathname = SIGN_IN_PATH;
-    url.searchParams.set("from", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    url.searchParams.set(
+      "from",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
     return NextResponse.redirect(url);
   }
 
   if (authenticated && isAuthOnlyPath(url.pathname)) {
-    url.pathname = "/dashboard";
+    url.pathname = POST_SIGN_IN_PATH;
     url.searchParams.delete("from");
     return NextResponse.redirect(url);
   }
@@ -47,12 +51,17 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Protected routes — redirect unauthenticated users to /login
     "/dashboard/:path*",
     "/profile",
     "/profile/:path*",
     "/settings",
     "/settings/:path*",
+    "/onboarding",
+    "/onboarding/:path*",
     "/login",
+    "/login/:path*",
     "/signup",
+    "/signup/:path*",
   ],
 };

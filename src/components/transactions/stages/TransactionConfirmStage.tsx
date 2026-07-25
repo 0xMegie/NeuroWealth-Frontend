@@ -91,7 +91,7 @@ export function TransactionConfirmStage({
             onClick={onConfirm}
             disabled={isSubmitting}
             type="button"
-            data-qa="transaction-confirm-button"
+            data-qa="transaction-submit-button"
           >
             {isSubmitting ? "Submitting..." : confirmLabel}
           </button>

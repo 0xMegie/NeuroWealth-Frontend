@@ -1,5 +1,4 @@
 {
-  "*.{ts,tsx}": ["next lint --fix --file", "tsc --noEmit --skipLibCheck"],
-  "*.{js,mjs,cjs}": ["next lint --fix --file"],
-  "*.{json,md,yml,yaml}": ["prettier --write"]
+  "*.{ts,tsx}": ["eslint --fix --max-warnings=0"],
+  "*.{js,mjs,cjs}": ["eslint --fix --max-warnings=0"]
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useId } from "react";
+import { formatNumber } from "@/lib/formatters";
 
 export interface PaginationProps {
   totalItems: number;
@@ -80,6 +81,10 @@ export default function Pagination({
 
   return (
     <nav aria-label="Pagination" className={className} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      {/* Live region announces page changes to screen readers */}
+      <span role="status" aria-live="polite" aria-atomic="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        Page {current} of {totalPages}
+      </span>
       {/* Prev */}
       <button
         onClick={() => go(current - 1)}
@@ -175,7 +180,7 @@ export default function Pagination({
 
       {/* Count */}
       <span style={{ fontSize: 12, color: "#6b7280", marginLeft: "auto" }}>
-        {start}–{end} of {totalItems.toLocaleString()}
+        {start}–{end} of {formatNumber(totalItems)}
       </span>
     </nav>
   );

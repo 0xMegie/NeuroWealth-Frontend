@@ -8,11 +8,11 @@ This policy applies to the `Neurowealth/NeuroWealth-Frontend` repository and the
 - In scope: frontend application code, frontend build/runtime configuration, and repository workflows
 - Out of scope: backend services, smart contracts, third-party infrastructure, and organization-wide policies outside this repository
 
-## Reporting a vulnerability
+<!-- ## Reporting a vulnerability
 
 Please do not open public GitHub issues for security reports.
 
-Use one of these private channels:
+Use one of these private channels: -->
 
 1. Preferred: GitHub private vulnerability reporting (Security tab)  
    `https://github.com/Neurowealth/NeuroWealth-Frontend/security/advisories/new`

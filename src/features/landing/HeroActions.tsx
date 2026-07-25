@@ -35,10 +35,17 @@ export function HeroActions() {
       <div className="flex flex-wrap justify-center gap-3">
         {connected ? (
           <Link href="/dashboard">
-            <Button size="lg">{messages.heroActions.openDashboardArrow}</Button>
+            <Button size="lg" data-qa="landing-primary-cta-button">
+              {messages.heroActions.openDashboardArrow}
+            </Button>
           </Link>
         ) : (
-          <Button size="lg" onClick={connectWallet} disabled={loading}>
+          <Button
+            size="lg"
+            onClick={connectWallet}
+            disabled={loading}
+            data-qa="landing-primary-cta-button"
+          >
             {loading ? messages.heroActions.connecting : messages.heroActions.connectWallet}
           </Button>
         )}

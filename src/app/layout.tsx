@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ClientProviders } from "@/components/ClientProviders";
@@ -8,7 +9,16 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 import { THEME_STORAGE_KEY } from "@/lib/theme-persistence";
 
-/** Inline boot: must mirror ThemeProvider resolution (see theme-persistence.ts). */
+const inter = Inter({ subsets: ["latin"] });
+
+/**
+ * Theme boot script: runs before page paint to prevent theme flash.
+ * Uses strategy="beforeInteractive" to block rendering until script runs.
+ * See docs/third-party-scripts.md for guidance on adding more scripts.
+ * Any analytics/wallet SDKs should use strategy="afterInteractive" or "lazyOnload".
+ *
+ * Must mirror ThemeProvider resolution (see theme-persistence.ts).
+ */
 const themeHtmlBootScript = `(function(){try{var k=${JSON.stringify(
   THEME_STORAGE_KEY,
 )};var r=document.documentElement;var v=localStorage.getItem(k);var m=window.matchMedia("(prefers-color-scheme: dark)");var x="dark";if(v==="light"||v==="dark"){x=v;}else{x=m.matches?"dark":"light";}r.classList.remove("light","dark");r.classList.add(x);}catch(e){}})();`;
@@ -38,10 +48,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="antialiased font-sans bg-dark-900 text-slate-200">
-        <Script id="nw-theme-html-boot" strategy="beforeInteractive">
-          {themeHtmlBootScript}
-        </Script>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeHtmlBootScript }} />
+      </head>
+      <body className={`${inter.className} antialiased font-sans bg-dark-900 text-slate-200`}>
         <a
           href={`#${MAIN_CONTENT_LANDMARK_ID}`}
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-sky-500 focus:text-white focus:font-semibold focus:shadow-lg focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"

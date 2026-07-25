@@ -2,24 +2,29 @@
   "name": "neurowealth-frontend",
   "private": true,
   "version": "0.0.0",
+  "engines": {
+    "node": ">=20"
+  },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "TZ=UTC node --import tsx --test \"src/**/*.test.ts\"",
+    "test": "TZ=UTC node --import tsx --test $(find src -name '*.test.ts' -print)",
     "qa:visual-baseline": "node scripts/capture-visual-baselines.mjs",
     "lint": "next lint",
-    "validate:env": "tsx scripts/validate-env.ts",
-    "analyze": "ANALYZE=true next build"
+    "validate:env": "yarn validate:env:server && yarn validate:env:frontend",
+    "validate:env:server": "tsx scripts/validate-env.ts",
+    "validate:env:frontend": "tsx scripts/validate-frontend-env.ts",
+    "analyze": "ANALYZE=true next build",
+    "validate:config": "node -e \"['package.json','tsconfig.json'].forEach(f=>{try{const d=JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('✓',f,'is valid JSON');}catch(e){console.error('✗',f,'validation failed:',e.message);process.exit(1);}})\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.8.0",
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-sdk": "^14.4.3",
-    "@tailwindcss/oxide-linux-x64-gnu": "^4.2.2",
-    "@tailwindcss/postcss": "^4.2.2",
     "clsx": "^2.1.0",
     "lucide-react": "^0.447.0",
     "next": "14.2.3",
@@ -31,6 +36,10 @@
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "4.2.2"
+  },
+  "lint-staged": {
+    "package.json": "node -e \"try{JSON.parse(require('fs').readFileSync('package.json','utf8'));console.log('✓ package.json valid');}catch(e){console.error('✗ package.json invalid:',e.message);process.exit(1);}\"",
+    "tsconfig.json": "node -e \"try{JSON.parse(require('fs').readFileSync('tsconfig.json','utf8'));console.log('✓ tsconfig.json valid');}catch(e){console.error('✗ tsconfig.json invalid:',e.message);process.exit(1);}\""
   },
   "overrides": {
     "csstype": "3.1.3"
@@ -46,6 +55,8 @@
     "csstype": "3.1.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
+    "husky": "^9",
+    "lint-staged": "^15",
     "playwright": "^1.58.2",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",

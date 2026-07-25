@@ -1,16 +1,25 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/contexts";
 import { DASHBOARD_ROUTE_TITLE_ID } from "@/lib/app-landmarks";
 import { usePathname } from "next/navigation";
 import { getRouteLabel } from "@/lib/routeMetadata";
 import { getUserInitials } from "@/lib/user";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export default function TopHeader() {
   const pathname = usePathname();
   const { user } = useAuth();
   const title = getRouteLabel(pathname);
+  const { unreadCount } = useNotifications();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(notificationsRef, () => setIsNotificationsOpen(false));
 
   return (
     <header
@@ -38,17 +47,30 @@ export default function TopHeader() {
 
       {/* Right: actions */}
       <div className="flex items-center gap-2">
-        <button
-          className="btn-ghost relative w-9 h-9 flex items-center justify-center rounded-lg"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4" aria-hidden="true" />
-          {/* Notification badge */}
-          <span
-            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary"
-            aria-hidden="true"
-          />
-        </button>
+        <div className="relative" ref={notificationsRef}>
+          <button
+            className="btn-ghost relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg"
+            aria-label="Notifications"
+            aria-haspopup="dialog"
+            aria-expanded={isNotificationsOpen}
+            onClick={() => setIsNotificationsOpen((open) => !open)}
+          >
+            <Bell className="w-4 h-4" aria-hidden="true" />
+            {/* Notification badge */}
+            {unreadCount > 0 && (
+              <span
+                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary"
+                aria-hidden="true"
+              />
+            )}
+          </button>
+
+          {isNotificationsOpen && (
+            <div className="absolute right-0 mt-2 z-[100] animate-in fade-in zoom-in duration-200 origin-top-right">
+              <NotificationCenter />
+            </div>
+          )}
+        </div>
 
         {/* Avatar (mobile) */}
         <div

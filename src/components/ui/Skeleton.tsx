@@ -1,5 +1,6 @@
 /**
  * @module Skeleton
+ * // Fixes issue 441: Implement global loading, empty, and error state system
  *
  * Reusable skeleton loading primitives for NeuroWealth.
  *
@@ -28,6 +29,10 @@
  * <AuditTableSkeleton />
  * <ProfileFormSkeleton />
  * <OnboardingStepSkeleton />
+ * <SettingsSectionSkeleton rows={3} />
+ * <StatCardSkeleton />
+ * <ActivityRowSkeleton />
+ * <AllocationWidgetSkeleton />
  * ```
  */
 
@@ -618,6 +623,110 @@ export function SettingsSectionSkeleton({
           <Skeleton height={24} width={44} radius={999} />
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── Preset: StatCard ─────────────────────────────────────────────────────────
+
+export interface StatCardSkeletonProps {
+  className?: string;
+}
+
+/**
+ * Skeleton for a summary stat card (balance, APY, yield, strategy).
+ * Matches stat card layout: label + large value + helper text.
+ */
+export function StatCardSkeleton({ className = "" }: StatCardSkeletonProps) {
+  return (
+    <article
+      aria-hidden="true"
+      role="presentation"
+      className={`${styles.metricCard} ${className}`}
+    >
+      <Skeleton height={12} width="60%" />
+      <Skeleton height={28} width="80%" />
+      <Skeleton height={12} width="70%" />
+    </article>
+  );
+}
+
+// ─── Preset: ActivityRow ──────────────────────────────────────────────────────
+
+export interface ActivityRowSkeletonProps {
+  className?: string;
+}
+
+/**
+ * Skeleton for a single activity/transaction row in a list.
+ * Icon + title/description + amount.
+ */
+export function ActivityRowSkeleton({ className = "" }: ActivityRowSkeletonProps) {
+  return (
+    <div
+      aria-hidden="true"
+      role="presentation"
+      className={className}
+      style={{ display: "flex", alignItems: "center", gap: 12, paddingBlock: 12, paddingInline: 0 }}
+    >
+      <Skeleton width={32} height={32} radius={8} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+        <Skeleton width="60%" height={12} />
+        <Skeleton width="45%" height={10} />
+      </div>
+      <Skeleton width={48} height={12} />
+    </div>
+  );
+}
+
+// ─── Preset: AllocationWidget ─────────────────────────────────────────────────
+
+export interface AllocationWidgetSkeletonProps {
+  className?: string;
+}
+
+/**
+ * Skeleton for the asset allocation widget.
+ * Title + donut chart + allocation items list.
+ */
+export function AllocationWidgetSkeleton({ className = "" }: AllocationWidgetSkeletonProps) {
+  return (
+    <div
+      aria-hidden="true"
+      role="presentation"
+      className={className}
+    >
+      {/* Title */}
+      <Skeleton height={14} width="40%" className={styles.allocationTitle} />
+
+      {/* Donut chart placeholder + list */}
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", marginTop: 16 }}>
+        {/* Donut chart */}
+        <SkeletonCircle size={96} />
+
+        {/* Allocation list */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <SkeletonCircle size={10} />
+              <Skeleton width="70%" height={11} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bar chart rows */}
+      <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <Skeleton width="45%" height={11} />
+              <Skeleton width="20%" height={11} />
+            </div>
+            <Skeleton width="100%" height={6} radius={3} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

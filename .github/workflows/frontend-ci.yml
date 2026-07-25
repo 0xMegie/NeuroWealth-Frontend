@@ -56,8 +56,11 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Install native Tailwind CSS binding
-        run: npm install @tailwindcss/oxide-linux-x64-gnu --legacy-peer-deps
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Unit tests
+        run: yarn test
 
       - name: Lint
         run: yarn lint

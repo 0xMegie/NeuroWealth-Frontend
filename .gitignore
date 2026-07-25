@@ -8,6 +8,12 @@
 
 # testing
 /coverage
+**/__snapshots__
+**/*.snap
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -19,6 +25,7 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -40,3 +47,13 @@ next-env.d.ts
 
 # bundle analyzer
 .next/analyze
+
+# local build artifacts
+build.log
+install.log
+
+# editor
+.vscode/
+.idea/
+*.swp
+*.swo

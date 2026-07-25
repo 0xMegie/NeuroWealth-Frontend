@@ -3,9 +3,8 @@ import {
   buildPreviewSnapshot,
   buildStatusChips,
   getTransactionContext,
-  parsePreviewState,
-  parseTransactionKind,
 } from "@/lib/transactions";
+import { parseTransactionPreviewSearchParams } from "@/lib/preview-route-query";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -50,15 +49,14 @@ function getToneColor(tone: "success" | "warning" | "error") {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const theme = searchParams.get("theme") === "dark" ? "dark" : "light";
-  const kind = parseTransactionKind(searchParams.get("kind"));
-  const preview = parsePreviewState(searchParams.get("preview"));
+  const { theme, kind, preview } =
+    parseTransactionPreviewSearchParams(searchParams);
   const palette = getThemePalette(theme);
   const context = getTransactionContext(kind);
   const snapshot = buildPreviewSnapshot(kind, preview);
   const chips = buildStatusChips(kind, snapshot.form);
 
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     <div
       style={{
         width: "100%",
@@ -543,4 +541,12 @@ export async function GET(request: Request) {
       height: 1000,
     },
   );
+
+  // Add cache headers to avoid regenerating images on every request
+  imageResponse.headers.set(
+    "Cache-Control",
+    "public, s-maxage=86400, max-age=3600"
+  );
+
+  return imageResponse;
 }

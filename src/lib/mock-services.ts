@@ -100,7 +100,7 @@ const STORAGE_KEY = "nw_auth_session";
 
 export const mockAuthService: AuthService = {
   async signIn(email, password, opts = {}) {
-    logger.info("mockAuthService.signIn", { email });
+    logger.info("mockAuthService.signIn");
     await delay(opts.latencyMs ?? 800);
 
     if (shouldFail(opts.outcome)) {
@@ -130,7 +130,7 @@ export const mockAuthService: AuthService = {
   },
 
   async signUp(email, name, password, opts = {}) {
-    logger.info("mockAuthService.signUp", { email, name });
+    logger.info("mockAuthService.signUp");
     await delay(opts.latencyMs ?? 1000);
 
     if (shouldFail(opts.outcome)) {

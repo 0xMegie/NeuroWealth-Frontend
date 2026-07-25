@@ -6,6 +6,7 @@
  */
 
 import { formatCurrency } from "@/lib/formatters";
+import { joinDescribedBy } from "@/lib/form-validation";
 import {
   TransactionFormValues,
   TransactionKind,
@@ -86,6 +87,14 @@ export function TransactionFormStage({
             }
             placeholder="0.00"
             value={formValues.amount}
+            aria-invalid={Boolean(fieldErrors.amount)}
+            aria-describedby={joinDescribedBy(
+              "amount-supporting-copy",
+              fieldErrors.amount ? "amount-error" : undefined,
+              formValues.amount && !fieldErrors.amount
+                ? "amount-success"
+                : undefined,
+            )}
           />
           <button
             className={styles.inlineButton}
@@ -96,13 +105,22 @@ export function TransactionFormStage({
           </button>
         </div>
 
-        <p className={styles.supportingCopy}>{context.amountHint}</p>
+        <p id="amount-supporting-copy" className={styles.supportingCopy}>
+          {context.amountHint}
+        </p>
         {fieldErrors.amount ? (
-          <p className={`${styles.fieldMessage} ${styles.errorMessage}`}>
+          <p
+            id="amount-error"
+            className={`${styles.fieldMessage} ${styles.errorMessage}`}
+            role="alert"
+          >
             {fieldErrors.amount}
           </p>
         ) : formValues.amount ? (
-          <p className={`${styles.fieldMessage} ${styles.successMessage}`}>
+          <p
+            id="amount-success"
+            className={`${styles.fieldMessage} ${styles.successMessage}`}
+          >
             Amount looks valid for the next confirmation step.
           </p>
         ) : null}
@@ -161,6 +179,14 @@ export function TransactionFormStage({
               }
               placeholder="G..."
               value={formValues.walletAddress}
+              aria-invalid={Boolean(fieldErrors.walletAddress)}
+              aria-describedby={joinDescribedBy(
+                "wallet-hint",
+                fieldErrors.walletAddress ? "wallet-error" : undefined,
+                formValues.walletAddress && !fieldErrors.walletAddress
+                  ? "wallet-success"
+                  : undefined,
+              )}
             />
             <div className={styles.connectRow}>
               <button
@@ -174,19 +200,31 @@ export function TransactionFormStage({
                   ? "Disconnect vault"
                   : "Reconnect vault"}
               </button>
-              <span className={styles.fieldHint}>{context.walletHint}</span>
+              <span id="wallet-hint" className={styles.fieldHint}>
+                {context.walletHint}
+              </span>
             </div>
             {fieldErrors.walletAddress ? (
-              <p className={`${styles.fieldMessage} ${styles.errorMessage}`}>
+              <p
+                id="wallet-error"
+                className={`${styles.fieldMessage} ${styles.errorMessage}`}
+                role="alert"
+              >
                 {fieldErrors.walletAddress}
               </p>
             ) : (
-              <p className={`${styles.fieldMessage} ${styles.successMessage}`}>
+              <p
+                id="wallet-success"
+                className={`${styles.fieldMessage} ${styles.successMessage}`}
+              >
                 Destination address passes the Stellar public key format check.
               </p>
             )}
             {fieldErrors.walletConnected ? (
-              <p className={`${styles.fieldMessage} ${styles.errorMessage}`}>
+              <p
+                className={`${styles.fieldMessage} ${styles.errorMessage}`}
+                role="alert"
+              >
                 {fieldErrors.walletConnected}
               </p>
             ) : null}

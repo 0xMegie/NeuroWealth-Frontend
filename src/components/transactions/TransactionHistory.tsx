@@ -17,7 +17,8 @@ import {
   HistoryStatus,
   TransactionHistoryPage,
 } from "@/lib/transaction-history";
-import { formatTimestamp } from "@/lib/formatters";
+import { apiRequest } from "@/lib/api-client";
+import { formatCurrency, formatTimestamp } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -159,11 +160,7 @@ function kindLabel(kind: HistoryKind): string {
 
 function formatAmount(amount: number | null, kind: HistoryKind): string {
   if (amount === null) return "—";
-  const abs = Math.abs(amount).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  });
+  const abs = formatCurrency(Math.abs(amount));
   if (kind === "withdrawal" || amount < 0) return `-${abs}`;
   return `+${abs}`;
 }
@@ -657,14 +654,10 @@ export function TransactionHistory() {
       pageSize: String(PAGE_SIZE),
     });
 
-    fetch(`/api/transaction-history?${params.toString()}`, {
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Request failed (${res.status})`);
-        return res.json() as Promise<TransactionHistoryPage>;
-      })
+    apiRequest<TransactionHistoryPage>(
+      `/api/transaction-history?${params.toString()}`,
+      { signal: controller.signal, timeoutMs: 10000 },
+    )
       .then((payload) => {
         if (!controller.signal.aborted) {
           dispatchData({ type: "FETCH_SUCCESS", payload });

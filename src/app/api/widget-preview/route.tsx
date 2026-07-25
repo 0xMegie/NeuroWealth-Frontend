@@ -5,6 +5,7 @@ import {
   formatSignedPercent,
 } from "@/lib/formatters";
 import { buildScenarioPayload } from "@/lib/portfolio";
+import { parseWidgetPreviewSearchParams } from "@/lib/preview-route-query";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -56,14 +57,14 @@ function chartColor(index: number) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const theme = searchParams.get("theme") === "dark" ? "dark" : "light";
+  const { theme } = parseWidgetPreviewSearchParams(searchParams);
   const palette = getThemePalette(theme);
   const portfolio = buildScenarioPayload("live", {
     source: "demo",
     notice: null,
   });
 
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     <div
       style={{
         width: "100%",
@@ -532,4 +533,6 @@ export async function GET(request: Request) {
       height: 1080,
     },
   );
+
+  return imageResponse;
 }

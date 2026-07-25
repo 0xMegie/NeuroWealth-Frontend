@@ -1,13 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Globe, Clock, DollarSign, Save, X, AlertCircle, CheckCircle2, Sun, Moon, Monitor } from "lucide-react";
+import {
+  Globe,
+  Clock,
+  DollarSign,
+  Save,
+  X,
+  AlertCircle,
+  CheckCircle2,
+  Sun,
+  Moon,
+  Monitor,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 import { mockAuditService } from "@/lib/mock-audit";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
 import { useTheme, ThemeMode } from "@/contexts/ThemeProvider";
+import { useI18n } from "@/contexts/I18nContext";
+import { LOCALE_OPTIONS as LOCALES } from "@/lib/locale-options";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 
 interface PreferencesData {
   locale: string;
@@ -15,17 +29,6 @@ interface PreferencesData {
   currencyFormat: string;
   theme: ThemeMode;
 }
-
-const LOCALES = [
-  { value: "en-US", label: "English (United States)" },
-  { value: "en-GB", label: "English (United Kingdom)" },
-  { value: "fr-FR", label: "French (France)" },
-  { value: "de-DE", label: "German (Germany)" },
-  { value: "es-ES", label: "Spanish (Spain)" },
-  { value: "pt-BR", label: "Portuguese (Brazil)" },
-  { value: "ja-JP", label: "Japanese (Japan)" },
-  { value: "zh-CN", label: "Chinese (Simplified)" },
-];
 
 const TIMEZONES = [
   { value: "UTC", label: "UTC — Coordinated Universal Time" },
@@ -45,7 +48,7 @@ const CURRENCIES = [
   { value: "CNY", label: "CNY — Chinese Yuan (¥)" },
 ];
 
-const STORAGE_KEY = "nw_preferences";
+const STORAGE_KEY = STORAGE_KEYS.PREFERENCES;
 const DEFAULT: PreferencesData = {
   locale: "en-US",
   timezone: "UTC",
@@ -54,6 +57,8 @@ const DEFAULT: PreferencesData = {
 };
 
 export default function PreferencesPage() {
+  const { messages } = useI18n();
+  const t = messages.settings.preferences;
   const [saved, setSaved] = useState<PreferencesData>(DEFAULT);
   const [draft, setDraft] = useState<PreferencesData>(DEFAULT);
   const [editing, setEditing] = useState(false);
@@ -91,7 +96,10 @@ export default function PreferencesPage() {
       setSaved(draft);
       setStatus("success");
       setEditing(false);
-      mockAuditService.logEvent("settings_change", { section: "preferences", changes: draft });
+      mockAuditService.logEvent("settings_change", {
+        section: "preferences",
+        changes: draft,
+      });
       setTimeout(() => setStatus("idle"), 3000);
     } catch {
       setStatus("error");
@@ -110,22 +118,22 @@ export default function PreferencesPage() {
     <div className="preferences-page">
       <div className="settings-header">
         <div>
-          <h1 className="settings-title">Preferences</h1>
-          <p className="settings-subtitle">Manage language, timezone, and currency settings</p>
+          <h1 className="settings-title">{t.title}</h1>
+          <p className="settings-subtitle">{t.subtitle}</p>
         </div>
       </div>
 
       {status === "success" && (
         <div className="settings-banner settings-banner-success" role="status">
           <CheckCircle2 size={16} />
-          <span>Preferences saved successfully</span>
+          <span>{t.savedSuccess}</span>
         </div>
       )}
 
       {status === "error" && (
         <div className="settings-banner settings-banner-error" role="alert">
           <AlertCircle size={16} />
-          <span>Failed to save preferences. Please try again.</span>
+          <span>{t.saveError}</span>
         </div>
       )}
 
@@ -135,15 +143,15 @@ export default function PreferencesPage() {
             <Globe size={18} />
           </div>
           <div>
-            <h2 className="settings-card-title">Localisation</h2>
-            <p className="settings-card-desc">Language and regional display preferences</p>
+            <h2 className="settings-card-title">{t.localisation.title}</h2>
+            <p className="settings-card-desc">{t.localisation.desc}</p>
           </div>
         </div>
 
         <div className="settings-card-body">
           <div className="settings-field">
             <label htmlFor="locale" className="settings-label">
-              Locale
+              {t.localisation.localeLabel}
             </label>
             {editing ? (
               <select
@@ -160,7 +168,8 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {LOCALES.find((l) => l.value === saved.locale)?.label || saved.locale}
+                {LOCALES.find((l) => l.value === saved.locale)?.label ||
+                  saved.locale}
               </p>
             )}
           </div>
@@ -173,48 +182,49 @@ export default function PreferencesPage() {
             <Monitor size={18} />
           </div>
           <div>
-            <h2 className="settings-card-title">Appearance</h2>
-            <p className="settings-card-desc">Theme and visual display preferences</p>
+            <h2 className="settings-card-title">{t.appearance.title}</h2>
+            <p className="settings-card-desc">{t.appearance.desc}</p>
           </div>
         </div>
 
         <div className="settings-card-body">
           <div className="settings-field">
-            <label className="settings-label">
-              Theme
-            </label>
+            <label className="settings-label">{t.appearance.themeLabel}</label>
             {editing ? (
               <div className="theme-options">
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "light" })}
                   className={`theme-option ${draft.theme === "light" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "light"}
                 >
                   <Sun size={16} />
-                  <span>Light</span>
+                  <span>{t.appearance.light}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "dark" })}
                   className={`theme-option ${draft.theme === "dark" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "dark"}
                 >
                   <Moon size={16} />
-                  <span>Dark</span>
+                  <span>{t.appearance.dark}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "system" })}
                   className={`theme-option ${draft.theme === "system" ? "active" : ""}`}
+                  aria-pressed={draft.theme === "system"}
                 >
                   <Monitor size={16} />
-                  <span>System</span>
+                  <span>{t.appearance.system}</span>
                 </button>
               </div>
             ) : (
               <p className="settings-value">
-                {saved.theme === "light" && "Light"}
-                {saved.theme === "dark" && "Dark"}
-                {saved.theme === "system" && "System"}
+                {saved.theme === "light" && t.appearance.light}
+                {saved.theme === "dark" && t.appearance.dark}
+                {saved.theme === "system" && t.appearance.system}
               </p>
             )}
           </div>
@@ -227,21 +237,23 @@ export default function PreferencesPage() {
             <Clock size={18} />
           </div>
           <div>
-            <h2 className="settings-card-title">Time & Currency</h2>
-            <p className="settings-card-desc">Timezone and numeric format settings</p>
+            <h2 className="settings-card-title">{t.timeCurrency.title}</h2>
+            <p className="settings-card-desc">{t.timeCurrency.desc}</p>
           </div>
         </div>
 
         <div className="settings-card-body">
           <div className="settings-field">
             <label htmlFor="timezone" className="settings-label">
-              Timezone
+              {t.timeCurrency.timezoneLabel}
             </label>
             {editing ? (
               <select
                 id="timezone"
                 value={draft.timezone}
-                onChange={(e) => setDraft({ ...draft, timezone: e.target.value })}
+                onChange={(e) =>
+                  setDraft({ ...draft, timezone: e.target.value })
+                }
                 className="settings-select"
               >
                 {TIMEZONES.map((tz) => (
@@ -252,20 +264,23 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {TIMEZONES.find((tz) => tz.value === saved.timezone)?.label || saved.timezone}
+                {TIMEZONES.find((tz) => tz.value === saved.timezone)?.label ||
+                  saved.timezone}
               </p>
             )}
           </div>
 
           <div className="settings-field">
             <label htmlFor="currency" className="settings-label">
-              Currency Format
+              {t.timeCurrency.currencyLabel}
             </label>
             {editing ? (
               <select
                 id="currency"
                 value={draft.currencyFormat}
-                onChange={(e) => setDraft({ ...draft, currencyFormat: e.target.value })}
+                onChange={(e) =>
+                  setDraft({ ...draft, currencyFormat: e.target.value })
+                }
                 className="settings-select"
               >
                 {CURRENCIES.map((c) => (
@@ -276,8 +291,8 @@ export default function PreferencesPage() {
               </select>
             ) : (
               <p className="settings-value">
-                {CURRENCIES.find((c) => c.value === saved.currencyFormat)?.label ||
-                  saved.currencyFormat}
+                {CURRENCIES.find((c) => c.value === saved.currencyFormat)
+                  ?.label || saved.currencyFormat}
               </p>
             )}
           </div>
@@ -286,28 +301,46 @@ export default function PreferencesPage() {
 
       {!editing && (
         <Button onClick={() => setEditing(true)} variant="secondary" size="md">
-          Edit Preferences
+          {t.actions.edit}
         </Button>
       )}
 
       {editing && (
-        <div className="settings-action-bar" role="group" aria-label="Save or cancel changes">
-          {isDirty && <span className="settings-dirty-indicator">Unsaved changes</span>}
+        <div
+          className="settings-action-bar"
+          role="group"
+          aria-label="Save or cancel changes"
+        >
+          {isDirty && (
+            <span className="settings-dirty-indicator">
+              {t.actions.unsaved}
+            </span>
+          )}
           <div className="settings-actions">
-            <Button onClick={handleCancel} variant="ghost" size="md" disabled={saving}>
+            <Button
+              onClick={handleCancel}
+              variant="ghost"
+              size="md"
+              disabled={saving}
+            >
               <X size={16} />
-              Cancel
+              {t.actions.cancel}
             </Button>
-            <Button onClick={handleSave} size="md" disabled={saving} aria-busy={saving}>
+            <Button
+              onClick={handleSave}
+              size="md"
+              disabled={saving}
+              aria-busy={saving}
+            >
               {saving ? (
                 <>
                   <span className="settings-spinner" aria-hidden="true" />
-                  Saving…
+                  {t.actions.saving}
                 </>
               ) : (
                 <>
                   <Save size={16} />
-                  Save Changes
+                  {t.actions.save}
                 </>
               )}
             </Button>
@@ -482,6 +515,8 @@ export default function PreferencesPage() {
           justify-content: space-between;
           gap: 12px;
           padding: 14px 20px;
+          /* #423: add safe-area-inset-bottom so buttons clear the home indicator */
+          padding-bottom: max(14px, calc(14px + var(--sai-bottom, 0px)));
           background: rgba(2, 6, 23, 0.88);
           backdrop-filter: blur(16px);
           border: 1px solid rgba(148, 163, 184, 0.15);

@@ -1,3 +1,14 @@
+/**
+ * Route metadata: single source of truth for breadcrumbs and navigation labels.
+ *
+ * When adding a new route to the app (especially under /dashboard):
+ * 1. Create the folder in src/app/<path>/
+ * 2. Add a corresponding entry in appRouteDefinitions below
+ * 3. Include a label so breadcrumbs and navigation stay in sync
+ *
+ * This ensures new routes don't silently lose their labels.
+ */
+
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -7,6 +18,7 @@ import {
   Blocks,
   BookOpenText,
   Gauge,
+  HelpCircle,
   History,
   LayoutDashboard,
   LogIn,
@@ -91,6 +103,13 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     icon: AlertTriangle,
     devOnly: true,
   },
+  {
+    href: "/dashboard/help",
+    label: "Help",
+    icon: HelpCircle,
+    dashboardNav: {},
+    commandPalette: true,
+  },
   { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   {
@@ -100,7 +119,8 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     dashboardNav: {},
     commandPalette: true,
   },
-  { href: "/dashboard/sandbox", label: "Sandbox", icon: SlidersHorizontal },
+  { href: "/dashboard/sandbox", label: "Sandbox", icon: SlidersHorizontal, devOnly: true },
+  { href: "/dashboard/sandbox/ui-demo", label: "UI Demo", icon: Blocks, devOnly: true },
   {
     href: "/dashboard/settings",
     label: "Settings",
@@ -135,6 +155,7 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     icon: History,
     dashboardNav: {},
   },
+  { href: "/docs/charts", label: "Charts", icon: Activity },
   { href: "/docs/tokens", label: "Design Tokens", icon: Blocks },
   { href: "/login", label: "Login", icon: LogIn },
   { href: "/onboarding", label: "Onboarding", icon: BookOpenText },
@@ -150,6 +171,8 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     icon: Settings,
     commandPalette: true,
   },
+  { href: "/server-error", label: "Server Error", icon: AlertTriangle },
+  { href: "/signin", label: "Sign In", icon: LogIn },
   { href: "/signup", label: "Sign Up", icon: LogIn },
   { href: "/unauthorized", label: "Unauthorized", icon: Shield },
   { href: "/forbidden", label: "Forbidden", icon: Shield },
@@ -236,4 +259,18 @@ export function buildBreadcrumbsFromPath(
   });
 
   return items;
+}
+
+/** Verify all app routes are defined in routeMetadata. Call in tests or dev-time checks. */
+export function validateRouteMetadataCompleteness(): {
+  missingPaths: string[];
+  valid: boolean;
+} {
+  const expectedPaths = appRouteDefinitions.map((def) => def.href);
+  const missingPaths = expectedPaths.filter((path) => !routeMetadata[path]);
+
+  return {
+    missingPaths,
+    valid: missingPaths.length === 0,
+  };
 }

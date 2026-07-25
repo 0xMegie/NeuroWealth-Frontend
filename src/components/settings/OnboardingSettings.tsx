@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/notifications/ToastProvider';
+import { clearOnboardingState, loadOnboardingState as getOnboardingState } from '@/lib/onboarding-state';
+import { logger } from '@/lib/logger';
+import { formatDate } from '@/lib/formatters';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
-const ONBOARDING_STATE_STORAGE_KEY = STORAGE_KEYS.ONBOARDING_STATE;
-const ONBOARDING_STRATEGY_STORAGE_KEY = STORAGE_KEYS.ONBOARDING_USER_STRATEGY;
-const ONBOARDING_DEPOSIT_STORAGE_KEY = STORAGE_KEYS.ONBOARDING_FIRST_DEPOSIT;
 
 interface OnboardingState {
   completed: boolean;
@@ -17,22 +18,20 @@ interface OnboardingState {
 export default function OnboardingSettings() {
   const [onboardingState, setOnboardingState] = useState<OnboardingState | null>(null);
   const [isResetting, setIsResetting] = useState(false);
+  const { pushToast } = useToast();
 
-  useEffect(() => {
-    loadOnboardingState();
+  const fetchOnboardingState = useCallback(() => {
+    try {
+      const state = getOnboardingState();
+      setOnboardingState(state);
+    } catch (error) {
+      logger.error('Failed to load onboarding state:', error);
+    }
   }, []);
 
-  const loadOnboardingState = () => {
-    try {
-      const savedState = localStorage.getItem(ONBOARDING_STATE_STORAGE_KEY);
-      if (savedState) {
-        const state = JSON.parse(savedState);
-        setOnboardingState(state);
-      }
-    } catch (error) {
-      console.error('Failed to load onboarding state:', error);
-    }
-  };
+  useEffect(() => {
+    fetchOnboardingState();
+  }, [fetchOnboardingState]);
 
   const handleResetOnboarding = async () => {
     if (!confirm('Are you sure you want to reset the onboarding process? This will allow you to go through the setup again.')) {
@@ -43,9 +42,9 @@ export default function OnboardingSettings() {
     
     try {
       // Clear onboarding state
-      localStorage.removeItem(ONBOARDING_STATE_STORAGE_KEY);
-      localStorage.removeItem(ONBOARDING_STRATEGY_STORAGE_KEY);
-      localStorage.removeItem(ONBOARDING_DEPOSIT_STORAGE_KEY);
+      clearOnboardingState();
+      localStorage.removeItem(STORAGE_KEYS.ONBOARDING_USER_STRATEGY);
+      localStorage.removeItem(STORAGE_KEYS.ONBOARDING_FIRST_DEPOSIT);
       
       // Reset state
       setOnboardingState(null);
@@ -56,8 +55,12 @@ export default function OnboardingSettings() {
       // Redirect to onboarding
       globalThis.location.href = '/onboarding';
     } catch (error) {
-      console.error('Failed to reset onboarding:', error);
-      alert('Failed to reset onboarding. Please try again.');
+      logger.error('Failed to reset onboarding:', error);
+      pushToast({
+        title: 'Failed to reset onboarding',
+        description: 'Please try again.',
+        variant: 'error',
+      });
     } finally {
       setIsResetting(false);
     }
@@ -66,14 +69,6 @@ export default function OnboardingSettings() {
   const handleReviewOnboarding = () => {
     // Allow review without resetting
     globalThis.location.href = '/onboarding';
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   return (
@@ -112,7 +107,7 @@ export default function OnboardingSettings() {
                 <div className="flex justify-between">
                   <span className="text-slate-400">Completed:</span>
                   <span className="text-white">
-                    {formatDate(onboardingState.timestamp)}
+                    {formatDate(new Date(onboardingState.timestamp))}
                   </span>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { OnboardingStepSkeleton } from '@/components/ui/Skeleton';
+import { loadOnboardingState, saveOnboardingState } from '@/lib/onboarding-state';
 
 export const dynamic = "force-dynamic";
 
@@ -13,16 +14,9 @@ export default function OnboardingPage() {
   useEffect(() => {
     // Check if user has already completed onboarding
     const timer = setTimeout(() => {
-      const savedState = localStorage.getItem('onboarding-state');
-      if (savedState) {
-        try {
-          const { completed } = JSON.parse(savedState);
-          if (completed) {
-            setShouldShowOnboarding(false);
-          }
-        } catch (error) {
-          console.error('Failed to parse onboarding state:', error);
-        }
+      const savedState = loadOnboardingState();
+      if (savedState?.completed) {
+        setShouldShowOnboarding(false);
       }
       setPageLoading(false);
     }, 500);
@@ -44,10 +38,10 @@ export default function OnboardingPage() {
 
   const handleSkipOnboarding = () => {
     // Mark as completed and redirect
-    localStorage.setItem('onboarding-state', JSON.stringify({
+    saveOnboardingState({
       completed: true,
       timestamp: Date.now()
-    }));
+    });
     handleOnboardingComplete();
   };
 
@@ -79,3 +73,4 @@ export default function OnboardingPage() {
     />
   );
 }
+// Fixes issue 440

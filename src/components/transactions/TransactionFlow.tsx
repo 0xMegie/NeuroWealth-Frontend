@@ -22,7 +22,6 @@ import {
   TransactionReceipt,
   validateTransactionValues,
   getTransactionRecoveryUI,
-  mapErrorCodeToErrorMode,
   type RecoveryAction,
   type TransactionRecoveryUI,
 } from "@/lib/transactions";
@@ -99,6 +98,7 @@ export function TransactionFlow() {
   const searchParams = useSearchParams();
   const { getCurrentScenario, isSandboxMode } = useSandbox();
   const timeoutRef = useRef<number | null>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const [theme, setTheme] = useState<ThemeMode>(() => getTheme(searchParams));
   const [kind, setKind] = useState<TransactionKind>(() =>
@@ -121,6 +121,7 @@ export function TransactionFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recovery, setRecovery] = useState<TransactionRecoveryUI | null>(null);
   const [lastErrorReference, setLastErrorReference] = useState<string | null>(null);
+  const [lastFailedAction, setLastFailedAction] = useState<"review" | "confirm" | null>(null);
 
   const context = getTransactionContext(kind);
   const statusChips = buildStatusChips(kind, formValues);
@@ -145,6 +146,7 @@ export function TransactionFlow() {
       setIsSubmitting(false);
       setRecovery(null);
       setLastErrorReference(null);
+      setLastFailedAction(null);
       return;
     }
 
@@ -158,6 +160,7 @@ export function TransactionFlow() {
     setIsSubmitting(false);
     setRecovery(null);
     setLastErrorReference(null);
+    setLastFailedAction(null);
   }, [kind, preview]);
 
   // Handle sandbox scenarios
@@ -200,10 +203,27 @@ export function TransactionFlow() {
         window.clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
+      if (requestControllerRef.current) {
+        requestControllerRef.current.abort();
+        requestControllerRef.current = null;
+      }
       // Clean up all state on unmount to prevent memory leaks
       // This ensures pending states and timers are cleared when component is destroyed
     };
   }, []);
+
+  function beginApiRequest() {
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    return controller;
+  }
+
+  function endApiRequest(controller: AbortController) {
+    if (requestControllerRef.current === controller) {
+      requestControllerRef.current = null;
+    }
+  }
 
   function syncRoute(
     nextTheme: ThemeMode,
@@ -262,9 +282,7 @@ export function TransactionFlow() {
     updateField("amount", context.availableAmount.toFixed(2));
   }
 
-  async function handleReview(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function submitReview() {
     if (preview !== "interactive") {
       return;
     }
@@ -279,6 +297,9 @@ export function TransactionFlow() {
     setIsSubmitting(true);
     setRequestMessage(null);
     setRecovery(null);
+    setLastFailedAction(null);
+
+    const controller = beginApiRequest();
 
     try {
       const payload = await apiRequest<{ quote: TransactionQuote }>(
@@ -291,6 +312,7 @@ export function TransactionFlow() {
             values: formValues,
           },
           timeoutMs: 12000,
+          signal: controller.signal,
         },
       );
 
@@ -298,7 +320,14 @@ export function TransactionFlow() {
       setQuote(payload.quote);
       setStage("confirm");
       setRecovery(null);
+      setLastFailedAction(null);
     } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setLastFailedAction("review");
+
       if (error instanceof ApiRequestError) {
         // Map API error code to recovery UI with actionable copy
         const recoveryUI = getTransactionRecoveryUI(error.code, quote?.reference);
@@ -314,8 +343,16 @@ export function TransactionFlow() {
       setRecovery(recoveryUI);
       setStage("error");
     } finally {
-      setIsSubmitting(false);
+      endApiRequest(controller);
+      if (!controller.signal.aborted) {
+        setIsSubmitting(false);
+      }
     }
+  }
+
+  async function handleReview(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await submitReview();
   }
 
   async function handleConfirm() {
@@ -326,6 +363,9 @@ export function TransactionFlow() {
     setIsSubmitting(true);
     setRequestMessage(null);
     setRecovery(null);
+    setLastFailedAction(null);
+
+    const controller = beginApiRequest();
 
     try {
       const payload = await apiRequest<{ pending: PendingTransaction }>(
@@ -338,6 +378,7 @@ export function TransactionFlow() {
             values: formValues,
           },
           timeoutMs: 12000,
+          signal: controller.signal,
         },
       );
 
@@ -345,6 +386,7 @@ export function TransactionFlow() {
       setQuote(payload.pending.quote);
       setStage("pending");
       setLastErrorReference(payload.pending.reference);
+      setLastFailedAction(null);
 
       timeoutRef.current = window.setTimeout(() => {
         const nextReceipt = buildTransactionReceipt(
@@ -359,6 +401,12 @@ export function TransactionFlow() {
         setIsSubmitting(false);
       }, payload.pending.completionDelayMs);
     } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setLastFailedAction("confirm");
+
       if (error instanceof ApiRequestError) {
         // Map API error code to recovery UI with actionable copy and transaction reference
         const recoveryUI = getTransactionRecoveryUI(
@@ -377,7 +425,10 @@ export function TransactionFlow() {
         setStage("error");
       }
     } finally {
-      setIsSubmitting(false);
+      endApiRequest(controller);
+      if (!controller.signal.aborted) {
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -392,10 +443,14 @@ export function TransactionFlow() {
   function handleRecoveryAction(action: RecoveryAction) {
     switch (action) {
       case "retry": {
-        // Clear error state and retry the last operation
-        setStage("form");
+        // Clear error state and retry the failed operation with the saved values.
         setRecovery(null);
-        setIsSubmitting(false);
+        setRequestMessage("Retrying request...");
+        if (lastFailedAction === "confirm" && quote) {
+          void handleConfirm();
+        } else {
+          void submitReview();
+        }
         break;
       }
       case "edit": {
@@ -403,6 +458,7 @@ export function TransactionFlow() {
         setStage("form");
         setRecovery(null);
         setIsSubmitting(false);
+        setLastFailedAction(null);
         break;
       }
       case "support": {
@@ -855,7 +911,7 @@ export function TransactionFlow() {
                         className={`${styles.button} ${styles.buttonPrimary}`}
                         onClick={handleConfirm}
                         type="button"
-                        data-qa="transaction-confirm-button"
+                        data-qa="transaction-submit-button"
                       >
                         {context.confirmActionLabel}
                       </button>

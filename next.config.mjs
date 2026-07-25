@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
+// Fixes issue 443: Implement frontend performance optimization pass
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    // Lint errors must be resolved before a production build succeeds.
+    ignoreDuringBuilds: false,
   },
   reactStrictMode: true,
   staticPageGenerationTimeout: 0,
@@ -18,7 +20,7 @@ const nextConfig = {
   },
   // Enable experimental optimisation for package imports
   experimental: {
-    optimizePackageImports: ["lucide-react"],
+    optimizePackageImports: ["lucide-react", "recharts"],
   },
 };
 

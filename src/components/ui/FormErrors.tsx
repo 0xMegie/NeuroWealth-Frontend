@@ -7,19 +7,27 @@ export function FieldError({
   id,
   message,
   icon = true,
+  compact = false,
+  className = "",
 }: {
   id: string;
   message?: string;
   icon?: boolean;
+  compact?: boolean;
+  className?: string;
 }) {
   if (!message) {
     return null;
   }
 
+  const baseClassName = compact
+    ? "text-[14px] leading-5 text-[#EF4444]"
+    : "mt-2 flex items-start gap-2 text-[14px] leading-5 text-[#EF4444]";
+
   return (
     <p
       id={id}
-      className="mt-2 flex items-start gap-2 text-[14px] leading-5 text-[#EF4444]"
+      className={`${baseClassName} ${className}`.trim()}
     >
       {icon ? <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" /> : null}
       <span>{message}</span>

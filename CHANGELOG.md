@@ -7,6 +7,18 @@ Versions are tagged in GitHub Releases and linked from this file.
 
 ---
 
+## [Unreleased] — 2026-06-24
+
+### Added
+- Folder structure documentation in `README.md` covering all top-level `src/` directories (closes #428)
+
+### Documented
+- Release notes process confirmed as manual Keep-a-Changelog; no Changesets automation required at this stage (closes #427)
+- Authenticated dashboard shell verified: protected route, responsive layout (sidebar + top header / mobile bottom nav), skeleton loading states, and error boundary all in place (closes #429)
+- Error pages verified: 401, 403, 404, and 500 pages implemented with recovery actions; dev-only mock triggers available at `/dashboard/dev-errors` (closes #449)
+
+---
+
 ## [Unreleased] — 2026-04-26
 
 ### Added

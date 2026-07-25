@@ -4,6 +4,7 @@ import React from "react";
 import FilterChips from "./FilterChips";
 import Pagination from "./Pagination";
 import { useTransactionList, buildFilterOptions, MOCK_TRANSACTIONS } from "../../hooks/useTransactionList";
+import { formatNumber } from "@/lib/formatters";
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   completed: { bg: "rgba(16,185,129,0.12)", color: "#10b981" },
@@ -35,7 +36,10 @@ export default function TransactionList() {
 
       {/* Table */}
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }} aria-label="Transaction history">
+          <caption style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+            Transaction history, {totalItems} results
+          </caption>
           <thead>
             <tr style={{ borderBottom: "0.5px solid #21262d" }}>
               {["Date", "Description", "Type", "Amount", "Status"].map((h) => (
@@ -59,7 +63,7 @@ export default function TransactionList() {
                   </span>
                 </td>
                 <td style={{ padding: "10px 12px", color: "#e5e7eb", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                  {tx.amount.toLocaleString()} {tx.currency}
+                  {formatNumber(tx.amount)} {tx.currency}
                 </td>
                 <td style={{ padding: "10px 12px" }}>
                   <span style={{

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { random } from '@/lib/seeded-rng';
 
 interface WalletConnectStepProps {
   onNext: () => void;
@@ -46,7 +47,7 @@ export default function WalletConnectStep({ onNext, onSkip, onBack }: WalletConn
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Simulate random success/failure (90% success rate)
-      if (Math.random() > 0.1) {
+      if (random() > 0.1) {
         // Connection successful
         onNext();
       } else {

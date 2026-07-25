@@ -21,6 +21,8 @@ import {
   loadStoredPreference,
   saveStoredPreference,
 } from "@/lib/strategies";
+import { apiRequest, ApiRequestError } from "@/lib/api-client";
+import { formatApyRange } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -155,7 +157,8 @@ function StrategyCardView({
       <div className="mb-3">
         <h2 className="text-lg font-bold text-slate-100">{strategy.title}</h2>
         <p className="mt-0.5 text-2xl font-extrabold text-slate-50 tabular-nums">
-          {strategy.apyRange}
+          {/* Issue 468: locale-aware APY range with 2–4 dp precision. */}
+          {formatApyRange(strategy.apyMin, strategy.apyMax)}
           <span className="ml-1 text-sm font-medium text-slate-500">APY</span>
         </p>
       </div>
@@ -280,7 +283,9 @@ function ConfirmModal({
         <div className="mb-5 rounded-xl border border-white/8 bg-white/3 p-4 space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-slate-500">APY range</span>
-            <span className="font-semibold text-slate-200 tabular-nums">{toStrategy.apyRange}</span>
+            <span className="font-semibold text-slate-200 tabular-nums">
+              {formatApyRange(toStrategy.apyMin, toStrategy.apyMax)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">Risk level</span>
@@ -466,16 +471,11 @@ export function StrategySelector() {
       return;
     }
 
-    fetch("/api/strategy", { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load");
-        return res.json() as Promise<StrategyPreference>;
-      })
+    apiRequest<StrategyPreference>("/api/strategy", { timeoutMs: 8000 })
       .then((data) => {
         dispatch({ type: "LOAD_SUCCESS", strategy: data.strategy });
       })
       .catch(() => {
-        // Default to no preference selected
         dispatch({ type: "LOAD_SUCCESS", strategy: null });
       });
   }, []);
@@ -496,23 +496,19 @@ export function StrategySelector() {
     dispatch({ type: "SAVE_START" });
 
     try {
-      const res = await fetch("/api/strategy", {
+      await apiRequest<StrategyPreference>("/api/strategy", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ strategy }),
-        cache: "no-store",
+        body: { strategy },
+        timeoutMs: 8000,
       });
-
-      if (!res.ok) {
-        const err = (await res.json()) as { message?: string };
-        throw new Error(err.message ?? `Request failed (${res.status})`);
-      }
 
       saveStoredPreference(strategy);
       dispatch({ type: "SAVE_SUCCESS", strategy });
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to save strategy. Please try again.";
+        err instanceof ApiRequestError
+          ? err.message
+          : "Failed to save strategy. Please try again.";
       dispatch({ type: "SAVE_ERROR", message });
     }
   }
