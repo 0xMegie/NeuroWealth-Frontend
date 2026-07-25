@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       errorResponse(
         ERROR_CODE.SERVICE_UNAVAILABLE,
-        "Portfolio service temporarily unavailable. Showing preview data.",
+        "Portfolio service temporarily unavailable.",
         { details: message },
       ),
       {
