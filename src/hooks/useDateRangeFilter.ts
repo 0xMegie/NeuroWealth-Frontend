@@ -41,11 +41,13 @@ export function useDateRangeFilter(data: FilteredData[]) {
 }
 
 /**
- * useDateFilter
+ * useLocalDateFilter
  *
- * Mock hook for filtering by single date selection.
+ * Mock hook for filtering by single date selection with local state.
+ * Note: This is a local-state variant; use useDateFilter from useDateFilter.ts
+ * for range-based filtering without internal state management.
  */
-export function useDateFilter(data: FilteredData[]) {
+export function useLocalDateFilter(data: FilteredData[]) {
   const [date, setDate] = useState<Date | null>(null);
 
   const filtered = useMemo(() => {

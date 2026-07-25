@@ -8,7 +8,15 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     if (typeof window === "undefined") return MOCK_NOTIFICATIONS;
     const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // Malformed JSON - fallback to mock and clear corrupted storage
+        localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(MOCK_NOTIFICATIONS));
+        return MOCK_NOTIFICATIONS;
+      }
+    }
     localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(MOCK_NOTIFICATIONS));
     return MOCK_NOTIFICATIONS;
   });
