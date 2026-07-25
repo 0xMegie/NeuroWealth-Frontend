@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { random } from '@/lib/seeded-rng';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 interface FirstDepositStepProps {
   onNext: () => void;
@@ -78,7 +79,7 @@ export default function FirstDepositStep({ onNext, onSkip, onBack }: FirstDeposi
           timestamp: Date.now(),
           isFirstDeposit: true
         };
-        localStorage.setItem('first-deposit', JSON.stringify(depositRecord));
+        localStorage.setItem(STORAGE_KEYS.ONBOARDING_FIRST_DEPOSIT, JSON.stringify(depositRecord));
         
         onNext();
       } else {

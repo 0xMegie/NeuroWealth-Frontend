@@ -21,6 +21,7 @@ import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
 import { useTheme, ThemeMode } from "@/contexts/ThemeProvider";
 import { useI18n } from "@/contexts/I18nContext";
 import { LOCALE_OPTIONS as LOCALES } from "@/lib/locale-options";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 
 interface PreferencesData {
   locale: string;
@@ -47,7 +48,7 @@ const CURRENCIES = [
   { value: "CNY", label: "CNY — Chinese Yuan (¥)" },
 ];
 
-const STORAGE_KEY = "nw_preferences";
+const STORAGE_KEY = STORAGE_KEYS.PREFERENCES;
 const DEFAULT: PreferencesData = {
   locale: "en-US",
   timezone: "UTC",

@@ -16,7 +16,7 @@ import {
   zodErrorToDetails,
 } from "@/lib/validation/api";
 import { NextRequest, NextResponse } from "next/server";
-import { isSandboxScenario, resolveSandboxScenario } from "@/lib/api-sandbox";
+import { isSandboxScenario, parseSandboxScenario } from "@/lib/sandbox-scenario";
 import { createServerFetcher } from "@/lib/api-client";
 
 export async function POST(request: NextRequest) {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   const values = payload.values;
   const transactionPath =
     process.env.NEUROWEALTH_TRANSACTIONS_PATH ?? "/transactions";
-  const scenario = resolveSandboxScenario(
+  const scenario = parseSandboxScenario(
     request.nextUrl.searchParams.get("scenario"),
   );
   const fetchBackend = createServerFetcher();
