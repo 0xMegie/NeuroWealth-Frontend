@@ -52,3 +52,56 @@ test("GET /api/portfolio sandbox scenarios return demo data", async () => {
     assert.equal(body.success, true, `Scenario ${scenario} should be successful`);
   }
 });
+
+test("GET /api/portfolio normalizes real backend responses when NEUROWEALTH_API_BASE_URL is set", async () => {
+  const originalEnv = process.env.NEUROWEALTH_API_BASE_URL;
+  process.env.NEUROWEALTH_API_BASE_URL = "http://mock-api.local";
+  
+  const originalFetch = global.fetch;
+  
+  try {
+    global.fetch = async (input, init) => {
+      return new Response(
+        JSON.stringify({
+          portfolio: {
+            balance: 5000,
+            yield: 100,
+            apy: 2,
+            strategy: "growth",
+            strategyLabel: "Growth Strategy",
+            strategyDescription: "Test",
+          },
+          assets: [
+            { asset: "BTC", value: 3000, weight: 60, changePercent: 5, chartTone: "primary" },
+            { asset: "ETH", value: 2000, weight: 40, changePercent: -2, chartTone: "accent" }
+          ],
+          history: [
+            { type: "deposit", name: "Deposit", description: "First deposit", createdAt: "2023-01-01T00:00:00.000Z", amount: 5000, status: "completed" }
+          ]
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    };
+
+    const req = makeRequest("live");
+    const res = await GET(req);
+    const body = await res.json();
+
+    assert.equal(res.status, 200);
+    assert.equal(body.success, true);
+    assert.equal(body.data.source, "api");
+    assert.equal(body.data.summary.totalBalance, 5000);
+    assert.equal(body.data.summary.totalYield, 100);
+    assert.equal(body.data.summary.apy, 2);
+    assert.equal(body.data.summary.strategy, "growth");
+    assert.equal(body.data.allocation.length, 2);
+    assert.equal(body.data.allocation[0].symbol, "BTC");
+    assert.equal(body.data.allocation[0].amount, 3000);
+    assert.equal(body.data.allocation[0].share, 60);
+    assert.equal(body.data.activity.length, 1);
+    assert.equal(body.data.activity[0].kind, "deposit");
+  } finally {
+    process.env.NEUROWEALTH_API_BASE_URL = originalEnv;
+    global.fetch = originalFetch;
+  }
+});
