@@ -114,3 +114,15 @@ export function createDebouncedAsyncCheck(delay: number = 300) {
     return lastPromise;
   };
 }
+
+export function hasUppercase(value: string): boolean {
+  return /[A-Z]/.test(value);
+}
+
+export function hasNumber(value: string): boolean {
+  return /[0-9]/.test(value);
+}
+
+export function hasSpecialChar(value: string): boolean {
+  return /[!@#$%^&*]/.test(value);
+}
