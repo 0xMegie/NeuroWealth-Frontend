@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
         "Invalid strategy value. Must be conservative, balanced, or growth.",
         zodErrorToDetails(parsed.error),
       ),
-      { status: HTTP_STATUS.UNPROCESSABLE_ENTITY },
+      { status: HTTP_STATUS.BAD_REQUEST },
     );
   }
 
