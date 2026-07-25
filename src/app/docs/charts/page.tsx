@@ -1,11 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
-import { LineChartWrapper } from "@/components/charts/LineChartWrapper";
-import { AreaChartWrapper } from "@/components/charts/AreaChartWrapper";
-import { BarChartWrapper } from "@/components/charts/BarChartWrapper";
-import { DonutChartWrapper } from "@/components/charts/DonutChartWrapper";
+
+const LineChartWrapper = dynamic(
+  () => import("@/components/charts/LineChartWrapper").then(m => ({ default: m.LineChartWrapper })),
+  { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
+);
+
+const AreaChartWrapper = dynamic(
+  () => import("@/components/charts/AreaChartWrapper").then(m => ({ default: m.AreaChartWrapper })),
+  { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
+);
+
+const BarChartWrapper = dynamic(
+  () => import("@/components/charts/BarChartWrapper").then(m => ({ default: m.BarChartWrapper })),
+  { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
+);
+
+const DonutChartWrapper = dynamic(
+  () => import("@/components/charts/DonutChartWrapper").then(m => ({ default: m.DonutChartWrapper })),
+  { loading: () => <div className="h-64 bg-slate-900 animate-pulse rounded-xl" /> },
+);
 import {
   portfolioValueData,
   monthlyYieldData,
