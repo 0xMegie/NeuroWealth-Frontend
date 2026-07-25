@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
+import { DataTable, type DataTableColumn } from "./DataTable";
 import {
   applyColumnFilters,
   ariaSortValue,
@@ -138,4 +141,29 @@ test("getPaginatedSlice handles empty data", () => {
 test("getPaginatedSlice handles out-of-range page gracefully", () => {
   const items = [1, 2, 3, 4, 5];
   assert.deepEqual(getPaginatedSlice(items, 10, 3), []);
+});
+
+test("interactive rows expose keyboard semantics", () => {
+  type TestRow = { id: string; name: string };
+  const columns: DataTableColumn<TestRow>[] = [
+    {
+      key: "name",
+      header: "Name",
+      accessor: (row) => row.name,
+    },
+  ];
+
+  const markup = renderToStaticMarkup(
+    React.createElement(DataTable<TestRow>, {
+      data: [{ id: "1", name: "Alpha" }],
+      columns,
+      rowKey: (row) => row.id,
+      onRowClick: () => undefined,
+      pageSize: 10,
+      searchable: false,
+    }),
+  );
+
+  assert.match(markup, /role="button"/);
+  assert.match(markup, /tabindex="0"/);
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { AuditEvent, mockAuditService } from "@/lib/mock-audit";
 import { Download, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -151,31 +151,54 @@ export function AuditTrail() {
                 </td>
               </tr>
             ) : (
-              pagedEvents.map((event) => (
-                <tr key={event.id} className="audit-row">
-                  <td>
-                    <span className={`audit-badge ${eventTypeColors[event.eventType]}`}>
-                      {eventTypeLabels[event.eventType]}
-                    </span>
-                  </td>
-                  <td className="audit-timestamp">
-                    {formatTimestamp(event.timestamp.toISOString())}
-                  </td>
-                  <td>{event.actor}</td>
-                  <td className="audit-ip">{event.ipAddress || "N/A"}</td>
-                  <td>
-                    <button
-                      onClick={() =>
-                        setExpandedId(expandedId === event.id ? null : event.id)
-                      }
-                      className="audit-expand-btn"
-                      aria-label={`${expandedId === event.id ? "Collapse" : "Expand"} details`}
-                    >
-                      {expandedId === event.id ? "Hide" : "Show"}
-                    </button>
-                  </td>
-                </tr>
-              ))
+              pagedEvents.map((event) => {
+                const isExpanded = expandedId === event.id;
+                const detailId = `audit-details-${event.id}`;
+
+                return (
+                  <Fragment key={event.id}>
+                    <tr key={event.id} className="audit-row">
+                      <td>
+                        <span className={`audit-badge ${eventTypeColors[event.eventType]}`}>
+                          {eventTypeLabels[event.eventType]}
+                        </span>
+                      </td>
+                      <td className="audit-timestamp">
+                        {formatTimestamp(event.timestamp.toISOString())}
+                      </td>
+                      <td>{event.actor}</td>
+                      <td className="audit-ip">{event.ipAddress || "N/A"}</td>
+                      <td>
+                        <button
+                          onClick={() =>
+                            setExpandedId((current) => (current === event.id ? null : event.id))
+                          }
+                          className="audit-expand-btn"
+                          aria-expanded={isExpanded}
+                          aria-controls={detailId}
+                          aria-label={`${isExpanded ? "Collapse" : "Expand"} details`}
+                        >
+                          {isExpanded ? "Hide" : "Show"}
+                        </button>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${event.id}-details`}>
+                        <td colSpan={5}>
+                          <div id={detailId} className="audit-detail-panel" role="region" aria-label="Expanded event details">
+                            <div className="audit-metadata">
+                              <p className="audit-metadata-label">Metadata</p>
+                              <pre className="audit-metadata-content">
+                                {JSON.stringify(event.metadata, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -194,9 +217,10 @@ export function AuditTrail() {
                 </span>
                 <button
                   onClick={() =>
-                    setExpandedId(expandedId === event.id ? null : event.id)
+                    setExpandedId((current) => (current === event.id ? null : event.id))
                   }
                   className="audit-card-toggle"
+                  aria-expanded={expandedId === event.id}
                   aria-label={`${expandedId === event.id ? "Collapse" : "Expand"} details`}
                 >
                   <ChevronDown
@@ -327,6 +351,13 @@ export function AuditTrail() {
           background: rgba(15, 23, 42, 0.6);
           border: 1px solid rgba(148, 163, 184, 0.2);
           border-radius: 8px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .audit-filter-group:focus-within,
+        .audit-sort-group:focus-within {
+          border-color: rgba(56, 189, 248, 0.6);
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
 
         .audit-select {
@@ -336,6 +367,11 @@ export function AuditTrail() {
           font-size: 14px;
           cursor: pointer;
           outline: none;
+          padding-right: 4px;
+        }
+
+        .audit-select:focus-visible {
+          color: #f8fafc;
         }
 
         .audit-select option {
@@ -412,7 +448,7 @@ export function AuditTrail() {
         .audit-ip {
           font-family: "Monaco", "Courier New", monospace;
           font-size: 12px;
-          color: #64748b;
+          color: #e2e8f0;
         }
 
         .audit-badge {
@@ -439,10 +475,17 @@ export function AuditTrail() {
           color: #0ea5e9;
         }
 
+        .audit-expand-btn:focus-visible,
+        .audit-card-toggle:focus-visible {
+          outline: 2px solid rgba(56, 189, 248, 0.8);
+          outline-offset: 2px;
+          border-radius: 4px;
+        }
+
         .audit-empty {
           text-align: center;
           padding: 32px 16px;
-          color: #64748b;
+          color: #e2e8f0;
         }
 
         /* Mobile Cards */
@@ -476,6 +519,7 @@ export function AuditTrail() {
           display: flex;
           align-items: center;
           transition: color 0.2s;
+          border-radius: 4px;
         }
 
         .audit-card-toggle:hover {
@@ -541,10 +585,14 @@ export function AuditTrail() {
           overflow-y: auto;
         }
 
+        .audit-detail-panel {
+          padding: 8px 0 4px;
+        }
+
         .audit-empty-mobile {
           text-align: center;
           padding: 32px 16px;
-          color: #64748b;
+          color: #e2e8f0;
           font-size: 14px;
         }
 
