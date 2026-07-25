@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/notifications/ToastProvider';
 import { clearOnboardingState, loadOnboardingState as getOnboardingState } from '@/lib/onboarding-state';
+import { logger } from '@/lib/logger';
+import { formatDate } from '@/lib/formatters';
 
 interface OnboardingState {
   completed: boolean;
@@ -22,7 +24,7 @@ export default function OnboardingSettings() {
       const state = getOnboardingState();
       setOnboardingState(state);
     } catch (error) {
-      console.error('Failed to load onboarding state:', error);
+      logger.error('Failed to load onboarding state:', error);
     }
   }, []);
 
@@ -52,7 +54,7 @@ export default function OnboardingSettings() {
       // Redirect to onboarding
       globalThis.location.href = '/onboarding';
     } catch (error) {
-      console.error('Failed to reset onboarding:', error);
+      logger.error('Failed to reset onboarding:', error);
       pushToast({
         title: 'Failed to reset onboarding',
         description: 'Please try again.',
@@ -66,14 +68,6 @@ export default function OnboardingSettings() {
   const handleReviewOnboarding = () => {
     // Allow review without resetting
     globalThis.location.href = '/onboarding';
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   return (
@@ -112,7 +106,7 @@ export default function OnboardingSettings() {
                 <div className="flex justify-between">
                   <span className="text-slate-400">Completed:</span>
                   <span className="text-white">
-                    {formatDate(onboardingState.timestamp)}
+                    {formatDate(new Date(onboardingState.timestamp))}
                   </span>
                 </div>
               )}

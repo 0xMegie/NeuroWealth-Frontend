@@ -271,12 +271,13 @@ function LoginContent() {
             </div>
           </div>
 
-          {/* Social placeholders */}
+          {/* Social providers — disabled until providers are implemented */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => alert("Google sign-in coming soon.")}
-              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 min-h-[44px] text-sm text-text-secondary hover:bg-surface/80 transition-colors"
+              disabled
+              title="Google sign-in coming soon"
+              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 min-h-[44px] text-sm text-text-muted cursor-not-allowed opacity-50"
               aria-label="Sign in with Google (coming soon)"
             >
               <Chrome className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -284,8 +285,9 @@ function LoginContent() {
             </button>
             <button
               type="button"
-              onClick={() => alert("GitHub sign-in coming soon.")}
-              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 min-h-[44px] text-sm text-text-secondary hover:bg-surface/80 transition-colors"
+              disabled
+              title="GitHub sign-in coming soon"
+              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 min-h-[44px] text-sm text-text-muted cursor-not-allowed opacity-50"
               aria-label="Sign in with GitHub (coming soon)"
             >
               <Github className="w-4 h-4 shrink-0" aria-hidden="true" />

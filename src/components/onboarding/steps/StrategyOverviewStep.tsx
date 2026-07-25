@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { logger } from '@/lib/logger';
 
 interface StrategyOverviewStepProps {
   onNext: () => void;
@@ -61,7 +62,7 @@ export default function StrategyOverviewStep({ onNext, onSkip, onBack }: Strateg
       
       onNext();
     } catch (error) {
-      console.error('Failed to save strategy:', error);
+      logger.error('Failed to save strategy:', error);
     } finally {
       setIsSaving(false);
     }

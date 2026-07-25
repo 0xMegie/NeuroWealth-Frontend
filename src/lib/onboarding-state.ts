@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { logger } from '@/lib/logger';
 
 export interface OnboardingState {
   completed: boolean;
@@ -51,7 +52,7 @@ export function saveOnboardingState(state: OnboardingState): void {
     // Always write to canonical key; keep legacy key untouched to avoid surprising deletes
     storage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
-    console.error('Failed to save onboarding state:', error);
+    logger.error('Failed to save onboarding state:', error);
   }
 }
 
