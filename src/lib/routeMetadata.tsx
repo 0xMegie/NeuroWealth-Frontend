@@ -240,6 +240,10 @@ export function getRouteLabel(pathname: string, fallback = "Dashboard"): string 
 export function buildBreadcrumbsFromPath(
   pathname: string,
 ): import("@/types/breadcrumb.types").BreadcrumbItem[] {
+  const devOnlyHrefs = new Set(
+    appRouteDefinitions.filter((d) => d.devOnly).map((d) => d.href),
+  );
+
   const segments = pathname.split("/").filter(Boolean);
   const items: import("@/types/breadcrumb.types").BreadcrumbItem[] = [
     { label: "Home", href: "/", icon: routeMetadata["/"]?.icon },
@@ -248,6 +252,11 @@ export function buildBreadcrumbsFromPath(
   let cumulative = "";
   segments.forEach((seg, idx) => {
     cumulative += `/${seg}`;
+
+    if (devOnlyHrefs.has(cumulative)) {
+      return;
+    }
+
     const meta = routeMetadata[cumulative];
     items.push({
       label: meta?.label ?? seg.charAt(0).toUpperCase() + seg.slice(1),

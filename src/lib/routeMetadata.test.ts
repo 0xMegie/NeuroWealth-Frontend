@@ -200,3 +200,11 @@ test("breadcrumbs for docs/tokens path are correct", () => {
     ["Home", "Docs", "Design Tokens"],
   );
 });
+
+test("breadcrumbs skip devOnly routes", () => {
+  const breadcrumbs = buildBreadcrumbsFromPath("/dashboard/dev-errors/boundary-error");
+  const labels = breadcrumbs.map((b) => b.label);
+  assert.ok(!labels.includes("Dev Errors"), "dev-errors should not appear in breadcrumbs");
+  assert.ok(!labels.includes("Boundary Error"), "boundary-error should not appear in breadcrumbs");
+  assert.deepEqual(labels, ["Home", "Dashboard"]);
+});

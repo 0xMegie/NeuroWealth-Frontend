@@ -1,13 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-
-const DEV_ERRORS_ENABLED = process.env.NODE_ENV !== "production";
 
 export default function DashboardDevErrorsPage() {
-  if (!DEV_ERRORS_ENABLED) {
-    notFound();
-  }
-
   return (
     <main className="space-y-8">
       <header>
