@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import { AuditEvent, getAuditService } from "@/lib/audit-service";
 import { Download, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -34,12 +34,14 @@ export function AuditTrail() {
     return <AuditTableSkeleton rows={6} />;
   }
 
-  const filteredEvents = events
-    .filter((e) => filter === "all" || e.eventType === filter)
-    .sort((a, b) => {
-      const diff = b.timestamp.getTime() - a.timestamp.getTime();
-      return sortOrder === "desc" ? diff : -diff;
-    });
+  const filteredEvents = useMemo(() => {
+    return events
+      .filter((e) => filter === "all" || e.eventType === filter)
+      .sort((a, b) => {
+        const diff = b.timestamp.getTime() - a.timestamp.getTime();
+        return sortOrder === "desc" ? diff : -diff;
+      });
+  }, [events, filter, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
