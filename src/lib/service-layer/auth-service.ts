@@ -1,5 +1,5 @@
 import { BaseAdapter } from "./base-adapter";
-import { ServiceResponse } from "./types";
+import { ServiceResponse, type ServiceConfig } from "./types";
 import { random } from "../seeded-rng";
 
 export interface LoginCredentials {
@@ -32,8 +32,8 @@ export class AuthService extends BaseAdapter {
   private mockUsers: Map<string, AuthUser> = new Map();
   private mockSessions: Map<string, AuthSession> = new Map();
 
-  constructor() {
-    super();
+  constructor(config: Partial<ServiceConfig> = {}) {
+    super(config);
     this.initializeMockData();
   }
 

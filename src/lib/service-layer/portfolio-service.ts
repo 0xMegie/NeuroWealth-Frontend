@@ -1,5 +1,10 @@
 import { BaseAdapter } from "./base-adapter";
-import { ServiceResponse, PaginatedResponse, PaginationParams } from "./types";
+import {
+  ServiceResponse,
+  PaginatedResponse,
+  PaginationParams,
+  type ServiceConfig,
+} from "./types";
 import { random } from "../seeded-rng";
 
 export interface Portfolio {
@@ -32,8 +37,8 @@ export class PortfolioService extends BaseAdapter {
   private mockPortfolios: Map<string, Portfolio> = new Map();
   private mockHistory: Map<string, PortfolioHistory[]> = new Map();
 
-  constructor() {
-    super();
+  constructor(config: Partial<ServiceConfig> = {}) {
+    super(config);
     this.initializeMockData();
   }
 
