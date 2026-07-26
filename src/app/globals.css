@@ -30,6 +30,16 @@
   --color-warning: #F59E0B;
   --color-info: #0EA5E9;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.2);
+
+  /* Overlay stacking scale (#565) — shared z-index tiers for anything that
+   * floats above normal page content. Values are spaced out (10 apart) to
+   * leave room to insert a tier later without renumbering everything.
+   * Ascending order is intentional: later tiers must cover earlier ones. */
+  --z-index-overlay: 1000;   /* persistent fixed chrome: nav bar, cookie banner */
+  --z-index-dropdown: 1010;  /* contextual popovers: search results, notification menu */
+  --z-index-modal: 1020;     /* modal/drawer dialogs and their backdrops */
+  --z-index-toast: 1030;     /* toast notifications — must surface above open modals */
+  --z-index-dev-tool: 1040;  /* diagnostics panel — always on top for debugging */
 }
 
 :root {
