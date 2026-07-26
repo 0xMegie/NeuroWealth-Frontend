@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import DatePicker from "@/components/datetime/DatePicker";
 import TimePicker, { TimeValue } from "@/components/datetime/TimePicker";
 import DateRangePicker from "@/components/datetime/DateRangePicker";
+import { formatDate } from "@/lib/formatters";
 import {
   useDateFilter,
   useDateRangeFilter,
@@ -135,7 +136,7 @@ function PickersTab() {
           <div className="text-sm">
             <p className="text-gray-400">Selected:</p>
             <p className="font-mono">
-              {date ? date.toLocaleDateString("en-US") : "—"}
+              {date ? formatDate(date) : "—"}
             </p>
           </div>
         </div>
@@ -189,7 +190,7 @@ function PickersTab() {
             <p className="text-gray-400">Selected:</p>
             <p className="font-mono">
               {range.start && range.end
-                ? `${range.start.toLocaleDateString("en-US")} &rarr; ${range.end.toLocaleDateString("en-US")}`
+                ? `${formatDate(range.start)} &rarr; ${formatDate(range.end)}`
                 : "—"}
             </p>
           </div>
