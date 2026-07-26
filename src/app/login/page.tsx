@@ -16,7 +16,12 @@ function LoginContent() {
   const { signIn, user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") ?? "/dashboard";
+  
+  const rawFrom = searchParams.get("from") ?? "/dashboard";
+  const isValidRedirect = (url: string) => {
+    return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("\\");
+  };
+  const from = isValidRedirect(rawFrom) ? rawFrom : "/dashboard";
 
   const [state, setState] = useState<LoginState>("idle");
   const [email, setEmail] = useState("");
