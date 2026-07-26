@@ -1,4 +1,8 @@
-import { type ComponentType, type ReactNode } from "react";
+import {
+  createElement,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 
 type ProviderComponent =
   | ComponentType<{ children: ReactNode }>
@@ -17,16 +21,19 @@ type ProviderComponent =
  *
  * return <AllProviders>{children}</AllProviders>;
  * ```
+ *
+ * Call once at module scope (or memoize) — invoking inside a component body
+ * creates a new component type every render and remounts the provider tree.
  */
 export function composeProviders(providers: ProviderComponent[]) {
   return function ComposedProviders({ children }: { children: ReactNode }) {
     return providers.reduceRight<ReactNode>((acc, entry) => {
       if (Array.isArray(entry)) {
         const [Provider, props] = entry;
-        return <Provider {...props}>{acc}</Provider>;
+        return createElement(Provider, props, acc);
       }
       const Provider = entry;
-      return <Provider>{acc}</Provider>;
+      return createElement(Provider, null, acc);
     }, children);
   };
 }

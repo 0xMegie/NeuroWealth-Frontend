@@ -2,11 +2,15 @@
  * useTransactionAPI.ts
  *
  * Custom hook for transaction API operations.
- * Handles quote requests, submissions, and error mapping.
+ * Handles quote requests, submissions, error mapping, and in-flight request
+ * cancellation. Results are returned as discriminated unions so callers can act
+ * on success, mapped field errors, or an aborted request without inspecting
+ * hook state (which updates asynchronously).
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
+    TransactionFieldErrors,
     TransactionFormValues,
     TransactionKind,
     TransactionQuote,
@@ -23,23 +27,47 @@ export interface TransactionAPIState {
     lastErrorReference: string | null;
 }
 
+export type QuoteResult =
+    | { status: "success"; quote: TransactionQuote }
+    | { status: "error"; fieldErrors: TransactionFieldErrors }
+    | { status: "aborted" };
+
+export type SubmitResult =
+    | { status: "success"; pending: PendingTransaction }
+    | { status: "error"; fieldErrors: TransactionFieldErrors }
+    | { status: "aborted" };
+
+const INITIAL_STATE: TransactionAPIState = {
+    isSubmitting: false,
+    recovery: null,
+    lastErrorReference: null,
+};
+
 export function useTransactionAPI() {
-    const [state, setState] = useState<TransactionAPIState>({
-        isSubmitting: false,
-        recovery: null,
-        lastErrorReference: null,
-    });
+    const [state, setState] = useState<TransactionAPIState>(INITIAL_STATE);
+    const requestControllerRef = useRef<AbortController | null>(null);
+
+    const beginApiRequest = useCallback(() => {
+        requestControllerRef.current?.abort();
+        const controller = new AbortController();
+        requestControllerRef.current = controller;
+        return controller;
+    }, []);
+
+    const endApiRequest = useCallback((controller: AbortController) => {
+        if (requestControllerRef.current === controller) {
+            requestControllerRef.current = null;
+        }
+    }, []);
 
     const requestQuote = useCallback(
         async (
             kind: TransactionKind,
             formValues: TransactionFormValues,
-        ): Promise<{ quote: TransactionQuote } | null> => {
-            setState((prev) => ({
-                ...prev,
-                isSubmitting: true,
-                recovery: null,
-            }));
+            quoteReference?: string,
+        ): Promise<QuoteResult> => {
+            const controller = beginApiRequest();
+            setState((prev) => ({ ...prev, isSubmitting: true, recovery: null }));
 
             try {
                 const payload = await apiRequest<{ quote: TransactionQuote }>(
@@ -52,21 +80,26 @@ export function useTransactionAPI() {
                             values: formValues,
                         },
                         timeoutMs: 12000,
+                        signal: controller.signal,
                     },
                 );
 
-                setState((prev) => ({
-                    ...prev,
-                    isSubmitting: false,
-                }));
+                setState((prev) => ({ ...prev, isSubmitting: false }));
 
-                return payload;
+                return { status: "success", quote: payload.quote };
             } catch (error) {
-                const recoveryUI =
-                    error instanceof ApiRequestError
-                        ? getTransactionRecoveryUI(error.code)
-                        : getTransactionRecoveryUI("unknown_error");
+                if (controller.signal.aborted) {
+                    setState((prev) => ({ ...prev, isSubmitting: false }));
+                    return { status: "aborted" };
+                }
 
+                const recovery =
+                    error instanceof ApiRequestError
+                        ? getTransactionRecoveryUI(error.code, quoteReference)
+                        : getTransactionRecoveryUI("unknown_error", quoteReference);
+
+                // Surface server-side field errors to the caller instead of
+                // discarding them, so the form can highlight the offending inputs.
                 const fieldErrors =
                     error instanceof ApiRequestError
                         ? detailsToFieldErrors(error.details)
@@ -75,14 +108,16 @@ export function useTransactionAPI() {
                 setState((prev) => ({
                     ...prev,
                     isSubmitting: false,
-                    recovery: recoveryUI,
-                    lastErrorReference: null,
+                    recovery,
+                    lastErrorReference: quoteReference ?? null,
                 }));
 
-                return null;
+                return { status: "error", fieldErrors };
+            } finally {
+                endApiRequest(controller);
             }
         },
-        [],
+        [beginApiRequest, endApiRequest],
     );
 
     const submitTransaction = useCallback(
@@ -90,12 +125,9 @@ export function useTransactionAPI() {
             kind: TransactionKind,
             formValues: TransactionFormValues,
             quoteReference?: string,
-        ): Promise<{ pending: PendingTransaction } | null> => {
-            setState((prev) => ({
-                ...prev,
-                isSubmitting: true,
-                recovery: null,
-            }));
+        ): Promise<SubmitResult> => {
+            const controller = beginApiRequest();
+            setState((prev) => ({ ...prev, isSubmitting: true, recovery: null }));
 
             try {
                 const payload = await apiRequest<{ pending: PendingTransaction }>(
@@ -108,6 +140,7 @@ export function useTransactionAPI() {
                             values: formValues,
                         },
                         timeoutMs: 12000,
+                        signal: controller.signal,
                     },
                 );
 
@@ -117,13 +150,20 @@ export function useTransactionAPI() {
                     lastErrorReference: payload.pending.reference,
                 }));
 
-                return payload;
+                return { status: "success", pending: payload.pending };
             } catch (error) {
-                const recoveryUI =
+                if (controller.signal.aborted) {
+                    setState((prev) => ({ ...prev, isSubmitting: false }));
+                    return { status: "aborted" };
+                }
+
+                const recovery =
                     error instanceof ApiRequestError
                         ? getTransactionRecoveryUI(error.code, quoteReference)
                         : getTransactionRecoveryUI("unknown_error", quoteReference);
 
+                // Surface server-side field errors to the caller instead of
+                // discarding them, so the form can highlight the offending inputs.
                 const fieldErrors =
                     error instanceof ApiRequestError
                         ? detailsToFieldErrors(error.details)
@@ -132,21 +172,33 @@ export function useTransactionAPI() {
                 setState((prev) => ({
                     ...prev,
                     isSubmitting: false,
-                    recovery: recoveryUI,
-                    lastErrorReference: quoteReference || null,
+                    recovery,
+                    lastErrorReference: quoteReference ?? null,
                 }));
 
-                return null;
+                return { status: "error", fieldErrors };
+            } finally {
+                endApiRequest(controller);
             }
         },
-        [],
+        [beginApiRequest, endApiRequest],
     );
 
     const clearRecovery = useCallback(() => {
-        setState((prev) => ({
-            ...prev,
-            recovery: null,
-        }));
+        setState((prev) => ({ ...prev, recovery: null }));
+    }, []);
+
+    const setSubmitting = useCallback((value: boolean) => {
+        setState((prev) => ({ ...prev, isSubmitting: value }));
+    }, []);
+
+    const cancelRequest = useCallback(() => {
+        requestControllerRef.current?.abort();
+        requestControllerRef.current = null;
+    }, []);
+
+    const reset = useCallback(() => {
+        setState(INITIAL_STATE);
     }, []);
 
     return {
@@ -154,5 +206,8 @@ export function useTransactionAPI() {
         requestQuote,
         submitTransaction,
         clearRecovery,
+        setSubmitting,
+        cancelRequest,
+        reset,
     };
 }
