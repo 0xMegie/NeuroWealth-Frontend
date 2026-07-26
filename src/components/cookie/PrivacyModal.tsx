@@ -23,7 +23,7 @@ export function PrivacyModal() {
   const toggle = (key: keyof CookiePreferences) => { if (key === "necessary") return; setLocalPrefs((p) => ({ ...p, [key]: !p[key] })); };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label="Privacy preferences">
+    <div className="fixed inset-0 z-modal flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label="Privacy preferences">
       <div onClick={closeModal} style={{ position: "absolute", inset: 0, background: "rgba(2, 6, 18, 0.8)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
       <div className="relative w-full sm:max-w-lg flex flex-col" style={{ background: "rgba(4, 10, 22, 0.98)", border: "1px solid rgba(34,211,238,0.15)", borderRadius: "16px", boxShadow: "0 0 0 1px rgba(34,211,238,0.05), 0 24px 64px rgba(0,0,0,0.8)", maxHeight: "90vh", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: `1px solid ${BORDER_SUBTLE}`, flexShrink: 0 }}>

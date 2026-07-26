@@ -44,7 +44,7 @@ export function NotificationToggle() {
 
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 z-[100] animate-in fade-in zoom-in duration-200 origin-top-right"
+          className="absolute right-0 mt-2 z-dropdown animate-in fade-in zoom-in duration-200 origin-top-right"
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               setIsOpen(false);

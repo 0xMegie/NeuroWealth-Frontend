@@ -306,7 +306,7 @@ export function GlobalSearch({
         <div
           id={listboxId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+8px)] z-[70] max-h-[min(70vh,28rem)] overflow-auto rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-md"
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-dropdown max-h-[min(70vh,28rem)] overflow-auto rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-md"
         >
           {isLoading && (
             <div className="flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-300">

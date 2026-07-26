@@ -37,7 +37,7 @@ export function Navbar() {
   }, [isMobileSearchOpen]);
 
   return (
-    <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-dark-900/80 backdrop-blur-md">
+    <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-overlay border-b border-white/5 bg-dark-900/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-4 sm:px-6 md:gap-4 md:px-8 md:py-5">
         <Link href="/" aria-label="NeuroWealth home" className="flex items-center gap-2 text-lg font-bold text-white">
           <span aria-hidden="true" className="text-brand-400">&#x2B21;</span> NeuroWealth
@@ -119,7 +119,7 @@ export function Navbar() {
       {isMobileSearchOpen && (
         <div
           ref={mobileSearchRef}
-          className="fixed inset-0 z-[80] bg-slate-950/90 backdrop-blur-md md:hidden"
+          className="fixed inset-0 z-modal bg-slate-950/90 backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Global search"
@@ -140,7 +140,7 @@ export function Navbar() {
             <GlobalSearch
               autoFocus
               onRequestClose={() => setIsMobileSearchOpen(false)}
-              className="z-[81]"
+              className="z-dropdown"
             />
 
             <p className="mt-3 text-xs text-slate-400">

@@ -49,7 +49,7 @@ export function Drawer({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex"
+      className="fixed inset-0 z-modal flex"
       aria-modal="true"
       role="dialog"
       aria-labelledby="drawer-title"
