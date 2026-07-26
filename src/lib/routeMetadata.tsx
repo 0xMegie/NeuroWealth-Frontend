@@ -175,6 +175,13 @@ const appRouteDefinitions: AppRouteDefinition[] = [
   { href: "/signup", label: "Sign Up", icon: LogIn },
   { href: "/unauthorized", label: "Unauthorized", icon: Shield },
   { href: "/forbidden", label: "Forbidden", icon: Shield },
+  { href: "/demo/avatar", label: "Avatar Demo", icon: UserRound, devOnly: true },
+  { href: "/demo/datetime", label: "Date/Time Demo", icon: Activity, devOnly: true },
+  { href: "/demo/notifications", label: "Notifications Demo", icon: Bell, devOnly: true },
+  { href: "/demo/pagination-filters", label: "Pagination & Filters Demo", icon: SlidersHorizontal, devOnly: true },
+  { href: "/demo/release-checklist", label: "Release Checklist Demo", icon: Newspaper, devOnly: true },
+  { href: "/demo/table", label: "Table Demo", icon: Blocks, devOnly: true },
+  { href: "/demo/wallet", label: "Wallet Demo", icon: Wallet, devOnly: true },
 ];
 
 export const siteNavigationLinks: SiteNavigationLink[] = [

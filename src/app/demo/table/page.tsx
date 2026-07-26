@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
+import { formatDate } from "@/lib/formatters";
 
 interface Holding {
   id: string;
@@ -91,12 +92,7 @@ const columns: DataTableColumn<Holding>[] = [
     accessor: (r) => r.date,
     sortable: true,
     defaultHidden: false,
-    render: (r) =>
-      new Date(r.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+    render: (r) => formatDate(r.date),
   },
 ];
 

@@ -13,10 +13,8 @@ import {
   getTransactionContext,
 } from "@/lib/transactions";
 import styles from "../transaction-flow.module.css";
-import {
-  getInputStateClassName,
-  sanitizeAmount,
-} from "../utils/transaction-utils";
+import { sanitizeAmount } from "../utils/transaction-utils";
+import { getInputStateClassName } from "../utils/transaction-style-utils";
 import type { TransactionFieldErrors } from "@/lib/transactions";
 
 interface TransactionFormStageProps {

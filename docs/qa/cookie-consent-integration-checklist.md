@@ -9,7 +9,7 @@ This document verifies the end-to-end functionality of the cookie consent flow, 
 
 ## 1. User Accepts Cookies
 - [ ] Observe that the Cookie Banner is visible at the bottom of the screen.
-- [ ] Click **"Accept All"** on the Cookie Banner.
+- [ ] Click **"Accept all"** on the Cookie Banner.
 - [ ] Verify the banner disappears.
 - [ ] Check Local Storage:
   - Key \`nw_cookie_consent\` should exist.
@@ -20,7 +20,7 @@ This document verifies the end-to-end functionality of the cookie consent flow, 
 
 ## 2. User Rejects Cookies
 - [ ] Clear the \`nw_cookie_consent\` key from Local Storage and refresh the page.
-- [ ] Click **"Reject All"** on the Cookie Banner.
+- [ ] Click **"Reject"** on the Cookie Banner.
 - [ ] Verify the banner disappears.
 - [ ] Check Local Storage:
   - Key \`nw_cookie_consent\` should exist.
@@ -41,7 +41,7 @@ This document verifies the end-to-end functionality of the cookie consent flow, 
 ## 4. Custom Preferences
 - [ ] From the Cookie Banner or Settings, click **"Manage preferences"**.
 - [ ] In the Privacy Modal, toggle **Analytics** to "On", leave others "Off".
-- [ ] Click **"Save Preferences"**.
+- [ ] Click **"Save preferences"**.
 - [ ] Check Local Storage:
   - Key \`nw_cookie_consent\` should exist.
   - The value should be a JSON object with \`status: "custom"\`.

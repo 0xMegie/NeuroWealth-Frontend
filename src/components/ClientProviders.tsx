@@ -31,19 +31,22 @@ function resolveStellarConfig() {
   };
 }
 
+// Hoisted to module scope so provider component identity stays stable across
+// ClientProviders re-renders. Calling composeProviders() inside the component
+// body created a new component type every render and remounted the whole tree.
+const stellarConfig = resolveStellarConfig();
+
+const Providers = composeProviders([
+  SandboxProvider,
+  ThemeProvider,
+  I18nProvider,
+  AuthProvider,
+  [WalletProvider, { network: stellarConfig.network, horizonUrl: stellarConfig.horizonUrl }],
+  ToastProvider,
+  CookieConsentProvider,
+]);
+
 export function ClientProviders({ children }: { children: ReactNode }) {
-  const { network, horizonUrl } = resolveStellarConfig();
-
-  const Providers = composeProviders([
-    SandboxProvider,
-    ThemeProvider,
-    I18nProvider,
-    AuthProvider,
-    [WalletProvider, { network, horizonUrl }],
-    ToastProvider,
-    CookieConsentProvider,
-  ]);
-
   return (
     <Providers>
       <ErrorTrackingMount />

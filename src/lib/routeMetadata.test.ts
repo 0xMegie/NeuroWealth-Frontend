@@ -111,6 +111,35 @@ test("routeMetadata covers docs routes", () => {
   assert.deepEqual(missing, [], `Docs routes missing metadata: ${missing.join(", ")}`);
 });
 
+test("routeMetadata covers every /demo/* route (#583)", () => {
+  const appRoot = path.join(process.cwd(), "src/app");
+  const demoRoutes = collectAppPageRoutes(path.join(appRoot, "demo"), appRoot);
+
+  assert.ok(demoRoutes.length > 0, "expected at least one /demo/* page route");
+
+  const missing = demoRoutes.filter((route) => !routeMetadata[route]);
+  assert.deepEqual(missing, [], `Demo routes missing metadata: ${missing.join(", ")}`);
+});
+
+test("/demo/* routes are marked devOnly and excluded from breadcrumbs, like dashboard/dev-errors (#583)", () => {
+  // /demo/* pages are gated in production by src/app/demo/layout.tsx, the same
+  // pattern used by /dashboard/sandbox, /dashboard/async-states, and
+  // /dashboard/dev-errors. devOnly routes are stripped from breadcrumbs (see
+  // "breadcrumbs skip devOnly routes" above) — exercising that same public
+  // behavior here confirms /demo/* carries the same devOnly gate.
+  const breadcrumbs = buildBreadcrumbsFromPath("/demo/wallet");
+  const labels = breadcrumbs.map((b) => b.label);
+  assert.ok(!labels.includes("Wallet Demo"), "/demo/wallet should not appear in breadcrumbs");
+});
+
+test("src/app/demo/layout.tsx exists and gates on NODE_ENV like sandbox/async-states/dev-errors (#583)", () => {
+  const layoutPath = path.join(process.cwd(), "src/app/demo/layout.tsx");
+  assert.ok(fs.existsSync(layoutPath), "expected src/app/demo/layout.tsx to exist");
+
+  const source = fs.readFileSync(layoutPath, "utf8");
+  assert.match(source, /NODE_ENV/, "expected demo layout to gate on NODE_ENV");
+});
+
 test("routeMetadata entries reference App Router files that exist on disk", () => {
   const appRoot = path.join(process.cwd(), "src/app");
   const knownRoutes = Object.keys(routeMetadata).filter(

@@ -30,6 +30,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Writes an unsigned, non-httpOnly session cookie so `middleware.ts` (Edge
+ * runtime) can read it without a round trip. This is a mock-auth-only
+ * shortcut — it does not prove the session is genuine, since any client-side
+ * JS can fabricate the same shape. See the AUTH_SECRET note in docs/env.md
+ * for the real signing flow this should use ahead of backend auth integration.
+ */
 function setSessionCookie(session: AuthSession) {
   if (typeof window === "undefined") return;
   const cookieValue = encodeURIComponent(

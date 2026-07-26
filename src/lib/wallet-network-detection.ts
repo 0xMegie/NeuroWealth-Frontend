@@ -1,5 +1,7 @@
-import { getNetwork as getFreighterNetwork } from "@stellar/freighter-api";
-import { FREIGHTER_ID } from "@creit.tech/stellar-wallets-kit";
+import {
+  FREIGHTER_ID,
+  getFreighterNetworkPassphrase,
+} from "@/lib/stellar-wallet-kit";
 import {
   formatConfiguredNetworkLabel,
   getConfiguredNetworkPassphrase,
@@ -11,18 +13,6 @@ export interface WalletNetworkStatus {
   appNetworkLabel: string;
   walletNetworkLabel?: string;
   walletPassphrase?: string;
-}
-
-async function detectFreighterPassphrase(): Promise<string | undefined> {
-  if (typeof window === "undefined") return undefined;
-
-  try {
-    const { networkPassphrase, error } = await getFreighterNetwork();
-    if (error || !networkPassphrase) return undefined;
-    return networkPassphrase;
-  } catch {
-    return undefined;
-  }
 }
 
 function labelFromPassphrase(passphrase: string): string {
@@ -48,7 +38,7 @@ export async function detectWalletNetworkMismatch(
     };
   }
 
-  const walletPassphrase = await detectFreighterPassphrase();
+  const walletPassphrase = await getFreighterNetworkPassphrase();
   if (!walletPassphrase) {
     return {
       hasMismatch: false,

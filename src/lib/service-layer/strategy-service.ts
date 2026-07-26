@@ -1,5 +1,10 @@
 import { BaseAdapter } from "./base-adapter";
-import { ServiceResponse, PaginatedResponse, PaginationParams } from "./types";
+import {
+  ServiceResponse,
+  PaginatedResponse,
+  PaginationParams,
+  type ServiceConfig,
+} from "./types";
 import { random } from "../seeded-rng";
 
 export interface Strategy {
@@ -39,8 +44,8 @@ export class StrategyService extends BaseAdapter {
   private mockAllocations: Map<string, StrategyAllocation[]> = new Map();
   private mockPerformance: Map<string, StrategyPerformance[]> = new Map();
 
-  constructor() {
-    super();
+  constructor(config: Partial<ServiceConfig> = {}) {
+    super(config);
     this.initializeMockData();
   }
 
