@@ -41,7 +41,7 @@ function shouldSimulateFailure(config: ServiceConfig): boolean {
 function createServiceError(
   code: ServiceErrorCode,
   message: string,
-  details?: any
+  details?: unknown
 ): ServiceError {
   return {
     code,
@@ -116,26 +116,31 @@ export abstract class BaseAdapter {
     };
   }
 
-  protected handleError(error: any, context: string): never {
+  protected handleError(error: unknown, context: string): never {
     if (error instanceof ServiceException) {
       throw error;
     }
 
+    const message = error instanceof Error ? error.message : String(error);
     const code: ServiceErrorCode = this.mapErrorToCode(error);
     throw new ServiceException(
-      createServiceError(code, `Error in ${context}: ${error.message}`, {
-        originalError: error.message,
+      createServiceError(code, `Error in ${context}: ${message}`, {
+        originalError: message,
       })
     );
   }
 
-  private mapErrorToCode(error: any): ServiceErrorCode {
-    if (error.code === "NETWORK_ERROR") return "NETWORK_ERROR";
-    if (error.code === "TIMEOUT") return "TIMEOUT";
-    if (error.code === "UNAUTHORIZED") return "UNAUTHORIZED";
-    if (error.code === "FORBIDDEN") return "FORBIDDEN";
-    if (error.code === "NOT_FOUND") return "NOT_FOUND";
-    if (error.code === "VALIDATION_ERROR") return "VALIDATION_ERROR";
+  private mapErrorToCode(error: unknown): ServiceErrorCode {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+    if (code === "NETWORK_ERROR") return "NETWORK_ERROR";
+    if (code === "TIMEOUT") return "TIMEOUT";
+    if (code === "UNAUTHORIZED") return "UNAUTHORIZED";
+    if (code === "FORBIDDEN") return "FORBIDDEN";
+    if (code === "NOT_FOUND") return "NOT_FOUND";
+    if (code === "VALIDATION_ERROR") return "VALIDATION_ERROR";
     return "SERVER_ERROR";
   }
 

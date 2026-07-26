@@ -154,11 +154,11 @@ test("i18n: settings nested structure consistency", () => {
     const commonKeys = ["title", "subtitle", "savedSuccess", "saveError"];
     for (const key of commonKeys) {
         assert.ok(
-            (enSettings.preferences as any)[key],
+            enSettings.preferences[key as keyof typeof enSettings.preferences],
             `en.preferences must have '${key}'`
         );
         assert.ok(
-            (frSettings.preferences as any)[key],
+            frSettings.preferences[key as keyof typeof frSettings.preferences],
             `fr.preferences must have '${key}'`
         );
     }

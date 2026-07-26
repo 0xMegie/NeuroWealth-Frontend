@@ -7,6 +7,40 @@ Versions are tagged in GitHub Releases and linked from this file.
 
 ---
 
+## [Unreleased] — 2026-07-26
+
+### Added
+- Provider service layer, storage adapters, and onboarding hook refactor (#335, #337, #338, #339; #597)
+- Global search and validation system with race-safety / no-results coverage (#520, #515, #365, #366)
+- Shared form-field accessibility wiring and chart `aria-label` / `prefers-reduced-motion` support (#498, #594)
+- Auth middleware, consolidated Tailwind token sources, and env-example hardening (#511, #510)
+- Bundle analyzer support and major dashboard surface work (#497, #496)
+- Comprehensive i18n test coverage and dashboard string migration (#584, #587)
+
+### Changed
+- Consolidated `/signin` into `/login` as the canonical auth route (#381, #508)
+- Performance pass: memoized Auth/Sandbox provider values, lazy-loaded GlobalSearch, shared formatters (#588, #589, #586)
+- Unified seed strategy across mock services and chart data (#661)
+- Aligned signup validation with shared helpers; standardized API validation errors to 400 (#658, #571)
+- Unified route metadata and isolated dev-error routes from breadcrumbs (#659, #662)
+
+### Fixed
+- Accessibility hardening: modal/drawer focus traps, keyboard-operable controls, navbar touch targets, Switch focus-visible ring (#595, #660, #585, #663)
+- Deposit/withdraw `aria-invalid` / `aria-describedby`, notification keyboard semantics, portfolio breakpoint alignment (#594, #523, #564)
+- Fetch recovery UX, logger/PII hardening, and API timeout documentation (#389, #390, #357–#360)
+- Storage key / sandbox scenario sharing and frontend persistence cleanup (#341–#344, #513)
+- CI typecheck/test/lint gate stability (including Next 14 `.eslintrc.json` for `next lint`) (#592, #593)
+
+### Security
+- Continued dependency and audit hygiene tracked under `docs/security/` (see npm audit policy reviews)
+
+### Process
+- Release notes remain manual Keep-a-Changelog entries under `[Unreleased]`.
+- Automation (release-please / Changesets) is still deferred: volume of merged work since 2026-06-24 makes periodic manual sweeps necessary until a release tooling decision is made.
+- Each PR that ships user-visible changes should add an entry here; maintainers fold `[Unreleased]` into a versioned section on release.
+
+---
+
 ## [Unreleased] — 2026-06-24
 
 ### Added

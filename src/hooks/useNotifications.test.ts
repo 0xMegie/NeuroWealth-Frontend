@@ -46,7 +46,9 @@ describe("useNotifications", () => {
 
     const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
     const parsed = JSON.parse(stored || "[]");
-    const markedNotification = parsed.find((n: any) => n.id === firstNotificationId);
+    const markedNotification = parsed.find(
+      (n: { id: string; isRead: boolean }) => n.id === firstNotificationId,
+    );
 
     assert.equal(markedNotification?.isRead, true);
   });
@@ -137,7 +139,9 @@ describe("useNotifications", () => {
     const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
     assert.ok(stored);
     const parsed = JSON.parse(stored);
-    const notif = parsed.find((n: any) => n.id === firstNotificationId);
+    const notif = parsed.find(
+      (n: { id: string; isRead: boolean }) => n.id === firstNotificationId,
+    );
     assert.equal(notif.isRead, true);
   });
 });

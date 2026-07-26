@@ -8,7 +8,7 @@ export type ServiceErrorCode =
   | "SERVER_ERROR"
   | "UNKNOWN_ERROR";
 
-export interface ServiceError<T = any> {
+export interface ServiceError<T = unknown> {
   code: ServiceErrorCode;
   message: string;
   details?: T;
@@ -18,7 +18,7 @@ export interface ServiceError<T = any> {
 
 export class ServiceException extends Error {
   public readonly code: ServiceErrorCode;
-  public readonly details?: any;
+  public readonly details?: unknown;
   public readonly timestamp: string;
   public readonly requestId?: string;
 
