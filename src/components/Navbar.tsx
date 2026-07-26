@@ -101,7 +101,7 @@ export function Navbar() {
               <button
                 onClick={signOut}
                 aria-label={`Sign out of ${user.displayName}'s account`}
-                className="text-[10px] text-slate-500 hover:text-red-400 transition-colors uppercase font-bold"
+                className="min-h-9 rounded-md px-2 py-1 text-xs text-slate-500 hover:text-red-400 hover:bg-white/5 transition-colors uppercase font-bold"
               >
                 {messages.navbar.signOut}
               </button>
