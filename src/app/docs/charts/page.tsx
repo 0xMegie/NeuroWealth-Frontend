@@ -241,11 +241,11 @@ export default function ChartStyleGuidePage() {
           </div>
           <CodeBlock
             code={`import { LineChartWrapper } from "@/components/charts";
-import { portfolioValueData } from "@/lib/mock-chart-data";
+import { generatePortfolioValueData } from "@/lib/mock-chart-data";
 import { chartTheme } from "@/lib/chart-theme";
 
 <LineChartWrapper
-  data={portfolioValueData}
+  data={generatePortfolioValueData()}
   dataKey="value"
   xAxisKey="name"
   height={260}
@@ -282,11 +282,11 @@ import { chartTheme } from "@/lib/chart-theme";
           </div>
           <CodeBlock
             code={`import { AreaChartWrapper } from "@/components/charts";
-import { portfolioValueData } from "@/lib/mock-chart-data";
+import { generatePortfolioValueData } from "@/lib/mock-chart-data";
 import { chartTheme } from "@/lib/chart-theme";
 
 <AreaChartWrapper
-  data={portfolioValueData}
+  data={generatePortfolioValueData()}
   dataKey="value"
   xAxisKey="name"
   height={260}
@@ -334,11 +334,11 @@ import { chartTheme } from "@/lib/chart-theme";
           </div>
           <CodeBlock
             code={`import { BarChartWrapper } from "@/components/charts";
-import { monthlyYieldData } from "@/lib/mock-chart-data";
+import { generateMonthlyYieldData } from "@/lib/mock-chart-data";
 import { chartTheme } from "@/lib/chart-theme";
 
 <BarChartWrapper
-  data={monthlyYieldData}
+  data={generateMonthlyYieldData()}
   dataKey="value"
   xAxisKey="name"
   height={220}
@@ -369,10 +369,10 @@ import { chartTheme } from "@/lib/chart-theme";
           </div>
           <CodeBlock
             code={`import { DonutChartWrapper } from "@/components/charts";
-import { assetAllocationData } from "@/lib/mock-chart-data";
+import { generateAssetAllocationData } from "@/lib/mock-chart-data";
 
 <DonutChartWrapper
-  data={assetAllocationData}
+  data={generateAssetAllocationData()}
   height={260}
   showLegend
 />`}
