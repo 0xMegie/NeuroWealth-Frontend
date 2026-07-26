@@ -24,7 +24,7 @@ const ChevronRight = () => (
   </svg>
 );
 
-function getPageNumbers(current: number, total: number): (number | "ellipsis")[] {
+export function getPageNumbers(current: number, total: number): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
   if (current >= total - 3) return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
@@ -69,7 +69,7 @@ export default function Pagination({
     onPageChange?.(p);
   };
 
-  const handleJump = (e: React.FormEvent) => {
+  const handleJump = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const n = parseInt(jumpVal, 10);
     if (!isNaN(n)) { go(n); setJumpVal(""); }
@@ -165,6 +165,7 @@ export default function Pagination({
             max={totalPages}
             value={jumpVal}
             onChange={(e) => setJumpVal(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleJump(e); }}
             aria-label="Jump to page"
             style={{
               width: 52, height: 36, borderRadius: 8, border: "0.5px solid #374151",
