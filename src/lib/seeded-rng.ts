@@ -33,6 +33,15 @@
  *   import { reseed } from "@/lib/seeded-rng";
  *   reseed("my-test-seed");   // deterministic from this point
  *   reseed(null);             // back to Math.random()
+ *
+ * Default seed (for contributors)
+ * ────────────────────────────────
+ *   import { DEFAULT_SEED } from "@/lib/seeded-rng";
+ *   console.log(DEFAULT_SEED); // "demo-seed-2026"
+ *
+ *   All mock modules (mock-services, mock-chart-data, mock-audit, …)
+ *   draw from this single PRNG instance. Call reseed(DEFAULT_SEED) to
+ *   restore deterministic output after a reseed(null) call.
  */
 
 /** Internal PRNG state — null means "use Math.random()". */
@@ -60,6 +69,12 @@ function hashSeed(seed: string): number {
   }
   return Math.abs(h);
 }
+
+// ─── Default seed ─────────────────────────────────────────────────────────────
+// Used by all mock modules so demos and screenshots are reproducible.
+// Override with NEXT_PUBLIC_DEMO_SEED in .env.local when needed.
+
+export const DEFAULT_SEED = "demo-seed-2026";
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -96,4 +111,4 @@ export function randomItem<T>(array: T[]): T {
 // NEXT_PUBLIC_DEMO_SEED is inlined at build time by Next.js for client
 // bundles and available as process.env.NEXT_PUBLIC_DEMO_SEED on the server.
 
-reseed(process.env.NEXT_PUBLIC_DEMO_SEED || null);
+reseed(process.env.NEXT_PUBLIC_DEMO_SEED || DEFAULT_SEED);

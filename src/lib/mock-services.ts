@@ -3,6 +3,12 @@
  *
  * Typed mock service layer for auth, portfolio, strategy, and transaction flows.
  *
+ * Seed strategy:
+ *   All randomness flows through seeded-rng.ts. Use NEXT_PUBLIC_DEMO_SEED
+ *   (or import DEFAULT_SEED) to get deterministic output across sessions.
+ *   Call reseed(DEFAULT_SEED) before running service methods to reproduce
+ *   a specific demo or screenshot baseline.
+ *
  * Adapter contract:
  *   Each service exposes an interface (e.g. `AuthService`) that mirrors the
  *   shape a real backend adapter must satisfy. Swap `mockAuthService` for a
