@@ -18,7 +18,6 @@ test("isProtectedPath returns false for public paths", () => {
 
 test("isAuthOnlyPath matches auth-only routes", () => {
   assert.equal(isAuthOnlyPath("/login"), true);
-  assert.equal(isAuthOnlyPath("/signin"), true);
   assert.equal(isAuthOnlyPath("/signup"), true);
 });
 

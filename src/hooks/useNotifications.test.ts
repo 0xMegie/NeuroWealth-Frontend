@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act } from "@/test-utils/render-hook";
 import { useNotifications } from "./useNotifications";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
 
@@ -59,7 +59,7 @@ describe("useNotifications", () => {
     });
 
     assert.equal(result.current.unreadCount, 0);
-    result.current.notifications.forEach((n) => {
+    result.current.notifications.forEach((n: { isRead: boolean }) => {
       assert.equal(n.isRead, true);
     });
   });

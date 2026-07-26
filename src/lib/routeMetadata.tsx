@@ -172,7 +172,6 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     commandPalette: true,
   },
   { href: "/server-error", label: "Server Error", icon: AlertTriangle },
-  { href: "/signin", label: "Sign In", icon: LogIn },
   { href: "/signup", label: "Sign Up", icon: LogIn },
   { href: "/unauthorized", label: "Unauthorized", icon: Shield },
   { href: "/forbidden", label: "Forbidden", icon: Shield },

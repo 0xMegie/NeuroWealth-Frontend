@@ -59,7 +59,7 @@ export const mockAuditService: AuditService = {
             eventType,
             actor: "current_user",
             timestamp: new Date(),
-            metadata: scrubPII(metadata),
+            metadata: scrubPII(metadata) as Record<string, unknown>,
             ipAddress: "192.168.1.1",
             userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "Unknown",
         };
