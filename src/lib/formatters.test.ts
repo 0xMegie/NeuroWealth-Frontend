@@ -333,9 +333,8 @@ describe("formatters", () => {
 
       assert.ok(enResult.length > 0);
       assert.ok(frResult.length > 0);
-      // Both should be compact, but formatting may differ
-      assert.ok(enResult.length <= 10);
-      assert.ok(frResult.length <= 10);
+      // Both should produce distinct output for different locales
+      assert.notEqual(enResult, frResult);
     });
   });
 });
