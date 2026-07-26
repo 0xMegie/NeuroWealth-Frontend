@@ -243,6 +243,7 @@ export function PortfolioDashboard() {
           helper: portfolio.summary.strategyDescription,
           tone: "default",
         },
+      ]
     : [];
 
   const allocationData = useMemo(() => {

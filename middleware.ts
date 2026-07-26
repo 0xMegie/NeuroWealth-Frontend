@@ -7,6 +7,16 @@ import {
   POST_SIGN_IN_PATH,
 } from "./src/lib/auth-constants";
 
+/**
+ * Checks cookie shape and expiry only — no signature verification.
+ *
+ * This is intentionally deferred while auth is mock-only (see the "Production-
+ * Ready httpOnly Cookie Flow" notes on SESSION_COOKIE_NAME in auth-constants.ts
+ * and the AUTH_SECRET note in docs/env.md). Because the cookie is set by
+ * client-side JS with no signature, it does not prove the session is genuine —
+ * treat this guard as a UX redirect, not a security boundary, until real JWT
+ * signing/verification is wired in ahead of backend auth integration.
+ */
 export function isSessionCookieValid(rawCookie: string | undefined): boolean {
   if (!rawCookie) return false;
 

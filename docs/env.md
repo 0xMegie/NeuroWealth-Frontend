@@ -50,11 +50,19 @@ platform's secret store (Vercel environment variables, Railway secrets, etc.).
 | `NEUROWEALTH_PORTFOLIO_PATH` | No | `/portfolio/overview` | Backend path for portfolio data |
 | `NEUROWEALTH_TRANSACTIONS_PATH` | No | `/transactions` | Backend path for transaction submission |
 | `NEUROWEALTH_STRATEGY_PATH` | No | `/strategy/preference` | Backend path for strategy preference reads and writes |
-| `AUTH_SECRET` | Production | — | Secret used by auth utilities for session signing |
 
 `NEUROWEALTH_API_BASE_URL` is the primary gate. When it is not set, every route handler
 falls back to demo data automatically — no other configuration change is needed for local
 development or PR previews.
+
+**`AUTH_SECRET` is not currently used anywhere in this codebase.** The session cookie
+(`nw_session`) is intentionally unsigned while auth is mock-only: `middleware.ts` only
+checks that the cookie decodes to JSON with a `token` string and a future `expiresAt` — it
+does not verify a signature, so it is not a substitute for real authentication. Wiring
+`AUTH_SECRET` into real JWT signing/verification is part of the "Production-Ready httpOnly
+Cookie Flow" already documented in `src/lib/auth-constants.ts`, and should land before any
+real backend auth integration. Until then, treat every route guard here as a UX redirect,
+not a security boundary.
 
 ---
 
@@ -72,7 +80,9 @@ Browser request
 The `src/lib/api-client.ts` module handles this split:
 
 - `apiRequest()` — used in browser-side client components; calls Next.js `/api/*` routes,
-  authenticated via the httpOnly session cookie (`nw_session`).
+  authenticated via the `nw_session` cookie. Note: this cookie is **not** currently
+  `httpOnly` and carries no signature (see the `AUTH_SECRET` note above) — it is set by
+  client-side JS in `AuthContext.tsx` for the mock auth flow.
 - `createServerApiClient()` — used inside Next.js route handlers; calls the real backend
   and automatically injects the `Authorization` header.
 

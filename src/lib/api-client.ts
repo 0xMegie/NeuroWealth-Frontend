@@ -10,8 +10,10 @@
  * ── Auth contract ─────────────────────────────────────────────────────────────
  *
  * Browser → Next.js /api/* routes
- *   Authenticated via the httpOnly session cookie (nw_session) set at sign-in.
- *   No explicit Authorization header is required from the browser.
+ *   Authenticated via the session cookie (nw_session) set at sign-in. Note this
+ *   cookie is not httpOnly and is unsigned while auth is mock-only — see the
+ *   AUTH_SECRET note in docs/env.md. No explicit Authorization header is
+ *   required from the browser.
  *
  * Next.js server → Real backend (NEUROWEALTH_API_BASE_URL)
  *   All proxied requests must include:

@@ -84,6 +84,17 @@ export abstract class BaseAdapter {
         const result = await operation();
         return result;
       } catch (error) {
+        // Deliberate domain errors (invalid credentials, not found, bad
+        // input, ...) are deterministic — retrying won't change the
+        // outcome, and wrapping them below as a generic TIMEOUT would
+        // destroy the specific code/message callers rely on. handleError()
+        // already applies this same rule for errors caught after the fact;
+        // apply it here too so it also covers throws from inside the
+        // operation itself.
+        if (error instanceof ServiceException) {
+          throw error;
+        }
+
         lastError = error as Error;
 
         if (attempt === maxAttempts) {
