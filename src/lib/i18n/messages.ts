@@ -300,6 +300,109 @@ export interface AppMessages {
         failDesc: string;
       };
     };
+    security: {
+      title: string;
+      subtitle: string;
+      banner: {
+        success: string;
+        error: string;
+      };
+      password: {
+        title: string;
+        desc: string;
+        lastChangedLabel: string;
+        daysAgoSuffix: string;
+        warning: string;
+        changeAction: string;
+      };
+      twoFactor: {
+        title: string;
+        desc: string;
+        enableLabel: string;
+        enabledHint: string;
+        disabledHint: string;
+      };
+      loginAlerts: {
+        title: string;
+        desc: string;
+        enableLabel: string;
+        enabledHint: string;
+        disabledHint: string;
+      };
+      actions: {
+        edit: string;
+        unsaved: string;
+        cancel: string;
+        save: string;
+        saving: string;
+      };
+      modal: {
+        title: string;
+        closeLabel: string;
+        newPasswordLabel: string;
+        newPasswordPlaceholder: string;
+        cancel: string;
+        updating: string;
+        update: string;
+      };
+    };
+    strategies: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      backToPortfolio: string;
+      currentBadge: string;
+      activeStrategyButton: string;
+      comparison: {
+        title: string;
+        featureHeader: string;
+        activeBadge: string;
+        apyRangeLabel: string;
+        riskLevelLabel: string;
+      };
+      success: {
+        updated: string;
+      };
+      confirmModal: {
+        title: string;
+        switchingFrom: string;
+        settingTo: string;
+        note: string;
+        cancel: string;
+        confirm: string;
+        saving: string;
+        closeLabel: string;
+      };
+      cards: {
+        conservative: { title: string; riskLabel: string; description: string; primaryAction: string };
+        balanced: { title: string; riskLabel: string; description: string; primaryAction: string };
+        growth: { title: string; riskLabel: string; description: string; primaryAction: string };
+      };
+    };
+    onboarding: {
+      title: string;
+      subtitle: string;
+      statusLabel: string;
+      statusCompleted: string;
+      statusInProgress: string;
+      lastStepLabel: string;
+      lastStepValue: string;
+      completedLabel: string;
+      actionsTitle: string;
+      reviewAction: string;
+      resetAction: string;
+      resetting: string;
+      confirmReset: string;
+      toastFailTitle: string;
+      toastFailDesc: string;
+      helpReviewLabel: string;
+      helpReviewDesc: string;
+      helpResetLabel: string;
+      helpResetDesc: string;
+    };
+    themeSelector: {
+      ariaLabel: string;
+    };
   };
 }
 
@@ -709,6 +812,124 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
           failDesc: "This mocked failure path intentionally blocks saving while security alerts are disabled.",
         },
       },
+      security: {
+        title: "Security",
+        subtitle: "Manage your password, two-factor authentication, and login alerts.",
+        banner: {
+          success: "Security settings updated successfully",
+          error: "Failed to update security settings. Please try again.",
+        },
+        password: {
+          title: "Password",
+          desc: "Keep your account secure with a strong, regularly updated password.",
+          lastChangedLabel: "Last changed",
+          daysAgoSuffix: "days ago",
+          warning: "Your password is over 90 days old. Consider updating it.",
+          changeAction: "Change password",
+        },
+        twoFactor: {
+          title: "Two-Factor Authentication",
+          desc: "Add an extra layer of security to your account.",
+          enableLabel: "Enable two-factor authentication",
+          enabledHint: "Two-factor authentication is protecting your account.",
+          disabledHint: "Enable two-factor authentication for stronger protection.",
+        },
+        loginAlerts: {
+          title: "Login Alerts",
+          desc: "Get notified whenever a new device signs in to your account.",
+          enableLabel: "Enable login alerts",
+          enabledHint: "You'll be notified of new sign-ins.",
+          disabledHint: "You won't be notified of new sign-ins.",
+        },
+        actions: {
+          edit: "Edit Security Settings",
+          unsaved: "Unsaved changes",
+          cancel: "Cancel",
+          save: "Save Changes",
+          saving: "Saving…",
+        },
+        modal: {
+          title: "Change password",
+          closeLabel: "Close",
+          newPasswordLabel: "New password",
+          newPasswordPlaceholder: "Enter new password",
+          cancel: "Cancel",
+          updating: "Updating…",
+          update: "Update password",
+        },
+      },
+      strategies: {
+        eyebrow: "Settings",
+        title: "Choose your strategy",
+        description: "Select the risk/APY profile that matches your goals. Your active positions will rebalance on the next scheduled cycle.",
+        backToPortfolio: "Back to portfolio",
+        currentBadge: "Current",
+        activeStrategyButton: "Active strategy",
+        comparison: {
+          title: "Strategy comparison",
+          featureHeader: "Feature",
+          activeBadge: "active",
+          apyRangeLabel: "APY range",
+          riskLevelLabel: "Risk level",
+        },
+        success: {
+          updated: "Strategy updated to {{strategy}}. Rebalancing will apply on the next scheduled cycle.",
+        },
+        confirmModal: {
+          title: "Confirm strategy change",
+          switchingFrom: "Switching from {{from}} to {{to}}.",
+          settingTo: "Setting your strategy to {{to}}.",
+          note: "Active positions will be rebalanced on the next scheduled cycle. This change does not trigger an immediate on-chain transaction.",
+          cancel: "Cancel",
+          confirm: "Confirm change",
+          saving: "Saving…",
+          closeLabel: "Cancel",
+        },
+        cards: {
+          conservative: {
+            title: "Conservative",
+            riskLabel: "Low risk",
+            description: "Stablecoin lending and idle reserve coverage. Capital-preserving with predictable yield and minimal drawdown exposure.",
+            primaryAction: "Select Conservative",
+          },
+          balanced: {
+            title: "Balanced",
+            riskLabel: "Medium risk",
+            description: "Yield split across Blend lending, DEX liquidity, and a stable reserve. Best for steady growth with controlled volatility.",
+            primaryAction: "Select Balanced",
+          },
+          growth: {
+            title: "Growth",
+            riskLabel: "High risk",
+            description: "Leans into incentive programs, active rebalancing, and higher-volatility positions. Maximum upside with elevated risk.",
+            primaryAction: "Select Growth",
+          },
+        },
+      },
+      onboarding: {
+        title: "Onboarding Settings",
+        subtitle: "Manage your onboarding progress and review setup steps.",
+        statusLabel: "Status",
+        statusCompleted: "Completed",
+        statusInProgress: "In Progress",
+        lastStepLabel: "Last Step:",
+        lastStepValue: "Step {{step}}",
+        completedLabel: "Completed:",
+        actionsTitle: "Actions",
+        reviewAction: "Review Onboarding",
+        resetAction: "Reset Onboarding",
+        resetting: "Resetting...",
+        confirmReset: "Are you sure you want to reset the onboarding process? This will allow you to go through the setup again.",
+        toastFailTitle: "Failed to reset onboarding",
+        toastFailDesc: "Please try again.",
+        helpReviewLabel: "Review Onboarding:",
+        helpReviewDesc: "Go through the setup steps again without changing your current settings.",
+        helpResetLabel: "Reset Onboarding:",
+        helpResetDesc: "Clear all onboarding progress and start fresh from the beginning.",
+      },
+      themeSelector: {
+        ariaLabel: "Theme selection",
+      },
     },
   },
   fr: {
@@ -1112,6 +1333,124 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
           failTitle: "Impossible d'enregistrer votre sélection actuelle",
           failDesc: "Ce chemin d'échec simulé bloque intentionnellement la sauvegarde lorsque les alertes de sécurité sont désactivées.",
         },
+      },
+      security: {
+        title: "Sécurité",
+        subtitle: "Gérez le mot de passe, l'authentification à deux facteurs et les alertes de connexion de votre compte.",
+        banner: {
+          success: "Paramètres de sécurité mis à jour avec succès",
+          error: "Échec de la mise à jour des paramètres de sécurité. Veuillez réessayer.",
+        },
+        password: {
+          title: "Mot de passe",
+          desc: "Protégez votre compte avec un mot de passe fort et régulièrement mis à jour.",
+          lastChangedLabel: "Dernière modification",
+          daysAgoSuffix: "jours",
+          warning: "Votre mot de passe date de plus de 90 jours. Pensez à le mettre à jour.",
+          changeAction: "Changer le mot de passe",
+        },
+        twoFactor: {
+          title: "Authentification à deux facteurs",
+          desc: "Ajoutez une couche de sécurité supplémentaire à votre compte.",
+          enableLabel: "Activer l'authentification à deux facteurs",
+          enabledHint: "L'authentification à deux facteurs protège votre compte.",
+          disabledHint: "Activez l'authentification à deux facteurs pour une meilleure protection.",
+        },
+        loginAlerts: {
+          title: "Alertes de connexion",
+          desc: "Soyez averti chaque fois qu'un nouvel appareil se connecte à votre compte.",
+          enableLabel: "Activer les alertes de connexion",
+          enabledHint: "Vous serez averti des nouvelles connexions.",
+          disabledHint: "Vous ne serez pas averti des nouvelles connexions.",
+        },
+        actions: {
+          edit: "Modifier les paramètres de sécurité",
+          unsaved: "Modifications non enregistrées",
+          cancel: "Annuler",
+          save: "Enregistrer les modifications",
+          saving: "Enregistrement…",
+        },
+        modal: {
+          title: "Changer le mot de passe",
+          closeLabel: "Fermer",
+          newPasswordLabel: "Nouveau mot de passe",
+          newPasswordPlaceholder: "Entrez le nouveau mot de passe",
+          cancel: "Annuler",
+          updating: "Mise à jour…",
+          update: "Mettre à jour le mot de passe",
+        },
+      },
+      strategies: {
+        eyebrow: "Paramètres",
+        title: "Choisissez votre stratégie",
+        description: "Sélectionnez le profil de risque/rendement qui correspond à vos objectifs. Vos positions actives seront rééquilibrées lors du prochain cycle programmé.",
+        backToPortfolio: "Retour au portefeuille",
+        currentBadge: "Actuelle",
+        activeStrategyButton: "Stratégie active",
+        comparison: {
+          title: "Comparaison des stratégies",
+          featureHeader: "Caractéristique",
+          activeBadge: "active",
+          apyRangeLabel: "Plage de rendement",
+          riskLevelLabel: "Niveau de risque",
+        },
+        success: {
+          updated: "Stratégie mise à jour vers {{strategy}}. Le rééquilibrage s'appliquera au prochain cycle programmé.",
+        },
+        confirmModal: {
+          title: "Confirmer le changement de stratégie",
+          switchingFrom: "Passage de {{from}} à {{to}}.",
+          settingTo: "Définition de votre stratégie sur {{to}}.",
+          note: "Les positions actives seront rééquilibrées lors du prochain cycle programmé. Ce changement ne déclenche pas de transaction on-chain immédiate.",
+          cancel: "Annuler",
+          confirm: "Confirmer le changement",
+          saving: "Enregistrement…",
+          closeLabel: "Annuler",
+        },
+        cards: {
+          conservative: {
+            title: "Conservateur",
+            riskLabel: "Risque faible",
+            description: "Prêt en stablecoins et couverture de réserve inactive. Préservation du capital avec rendement prévisible et exposition minimale aux baisses.",
+            primaryAction: "Choisir Conservateur",
+          },
+          balanced: {
+            title: "Équilibré",
+            riskLabel: "Risque moyen",
+            description: "Rendement réparti entre le prêt Blend, la liquidité DEX et une réserve stable. Idéal pour une croissance régulière avec une volatilité maîtrisée.",
+            primaryAction: "Choisir Équilibré",
+          },
+          growth: {
+            title: "Croissance",
+            riskLabel: "Risque élevé",
+            description: "Mise sur les programmes d'incitation, le rééquilibrage actif et des positions à volatilité plus élevée. Potentiel maximal avec risque accru.",
+            primaryAction: "Choisir Croissance",
+          },
+        },
+      },
+      onboarding: {
+        title: "Paramètres d'intégration",
+        subtitle: "Gérez votre progression d'intégration et révisez les étapes de configuration.",
+        statusLabel: "Statut",
+        statusCompleted: "Terminé",
+        statusInProgress: "En cours",
+        lastStepLabel: "Dernière étape :",
+        lastStepValue: "Étape {{step}}",
+        completedLabel: "Terminé :",
+        actionsTitle: "Actions",
+        reviewAction: "Revoir l'intégration",
+        resetAction: "Réinitialiser l'intégration",
+        resetting: "Réinitialisation...",
+        confirmReset: "Voulez-vous vraiment réinitialiser le processus d'intégration ? Vous pourrez suivre à nouveau la configuration.",
+        toastFailTitle: "Échec de la réinitialisation de l'intégration",
+        toastFailDesc: "Veuillez réessayer.",
+        helpReviewLabel: "Revoir l'intégration :",
+        helpReviewDesc: "Parcourez à nouveau les étapes de configuration sans modifier vos paramètres actuels.",
+        helpResetLabel: "Réinitialiser l'intégration :",
+        helpResetDesc: "Effacez toute la progression d'intégration et recommencez depuis le début.",
+      },
+      themeSelector: {
+        ariaLabel: "Sélection du thème",
       },
     },
   },

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AlertCircle, Bell, Mail, Save, ShieldAlert, X } from "lucide-react";
 import { useToast } from "@/components/notifications/ToastProvider";
 import { useI18n } from "@/contexts/I18nContext";
@@ -9,7 +8,7 @@ import { STORAGE_KEYS } from "@/lib/storage-keys";
 export const dynamic = "force-dynamic";
 import { Button, Card, InlineBanner } from "@/components/ui";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
-import { mockAuditService } from "@/lib/mock-audit";
+import { useSettingsForm } from "@/hooks/useSettingsForm";
 
 interface NotificationPreferences {
   emailNotifications: boolean;
@@ -70,82 +69,52 @@ export default function NotificationsSettingsPage() {
   const { pushToast } = useToast();
   const { messages } = useI18n();
   const t = messages.settings.notifications;
-  const [saved, setSaved] = useState(DEFAULT_PREFERENCES);
-  const [draft, setDraft] = useState(DEFAULT_PREFERENCES);
-  const [editing, setEditing] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as NotificationPreferences;
-          setSaved(parsed);
-          setDraft(parsed);
-        }
-      } catch {
-        // Keep defaults if storage is invalid.
-      } finally {
-        setPageLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (pageLoading) {
-    return <SettingsSectionSkeleton rows={5} />;
-  }
-
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved);
-  const enabledCount = Object.values(draft).filter(Boolean).length;
-
-  const togglePreference = (key: keyof NotificationPreferences) => {
-    setDraft((current) => ({ ...current, [key]: !current[key] }));
-  };
-
-  const handleCancel = () => {
-    setDraft(saved);
-    setEditing(false);
-    setStatus("idle");
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    setStatus("idle");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      if (!draft.securityAlerts) {
+  const {
+    draft,
+    setDraft,
+    editing,
+    setEditing,
+    saving,
+    status,
+    pageLoading,
+    isDirty,
+    handleSave,
+    handleCancel,
+  } = useSettingsForm<NotificationPreferences>(STORAGE_KEY, DEFAULT_PREFERENCES, {
+    auditSection: "notifications",
+    loadDelayMs: 500,
+    saveDelayMs: 800,
+    validate: (current) => {
+      if (!current.securityAlerts) {
         throw new Error("Security alerts must stay enabled in this mock.");
       }
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
-      setSaved(draft);
-      setEditing(false);
-      setStatus("success");
-      mockAuditService.logEvent("settings_change", { section: "notifications", changes: draft });
+    },
+    onSaveSuccess: () => {
       pushToast({
         variant: "success",
         title: t.toast.savedTitle,
         description: t.toast.savedDesc,
         duration: 4000,
       });
-    } catch {
-      setStatus("error");
+    },
+    onSaveError: () => {
       pushToast({
         variant: "error",
         title: t.toast.failTitle,
         description: t.toast.failDesc,
         duration: 6000,
       });
-    } finally {
-      setSaving(false);
-    }
+    },
+  });
+
+  if (pageLoading) {
+    return <SettingsSectionSkeleton rows={5} />;
+  }
+
+  const enabledCount = Object.values(draft).filter(Boolean).length;
+
+  const togglePreference = (key: keyof NotificationPreferences) => {
+    setDraft((current) => ({ ...current, [key]: !current[key] }));
   };
 
   return (

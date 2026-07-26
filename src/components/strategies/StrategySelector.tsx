@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useMemo, useReducer, useRef } from "react";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -17,13 +17,21 @@ import {
   StrategyCard,
   StrategyKind,
   StrategyPreference,
-  getStrategy,
   loadStoredPreference,
   saveStoredPreference,
 } from "@/lib/strategies";
 import { apiRequest, ApiRequestError } from "@/lib/api-client";
 import { formatApyRange } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/contexts/I18nContext";
+import type { AppMessages } from "@/lib/i18n/messages";
+
+type StrategiesMessages = AppMessages["settings"]["strategies"];
+
+function localizeStrategy(strategy: StrategyCard, t: StrategiesMessages): StrategyCard {
+  const copy = t.cards[strategy.kind];
+  return { ...strategy, ...copy };
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -121,6 +129,7 @@ interface StrategyCardProps {
   isSelected: boolean;
   onSelect: (kind: StrategyKind) => void;
   saving: boolean;
+  t: StrategiesMessages;
 }
 
 function StrategyCardView({
@@ -128,6 +137,7 @@ function StrategyCardView({
   isSelected,
   onSelect,
   saving,
+  t,
 }: StrategyCardProps) {
   // Spec: selected state → border-2 primary + background tint
   const cardClass = isSelected
@@ -142,7 +152,7 @@ function StrategyCardView({
       {isSelected && (
         <span className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-sky-500/20 px-2 py-0.5 text-xs font-semibold text-sky-400">
           <CheckCircle2 size={11} aria-hidden />
-          Current
+          {t.currentBadge}
         </span>
       )}
 
@@ -187,7 +197,7 @@ function StrategyCardView({
             : "bg-sky-500 text-white hover:bg-sky-400 shadow-lg shadow-sky-500/20 disabled:opacity-50"
         }`}
       >
-        {isSelected ? "Active strategy" : strategy.primaryAction}
+        {isSelected ? t.activeStrategyButton : strategy.primaryAction}
       </button>
     </article>
   );
@@ -196,25 +206,25 @@ function StrategyCardView({
 // ─── Confirmation modal ───────────────────────────────────────────────────────
 
 interface ConfirmModalProps {
-  from: StrategyKind | null;
-  to: StrategyKind;
+  fromStrategy: StrategyCard | null;
+  toStrategy: StrategyCard;
   saveStatus: SaveStatus;
   errorMessage: string | null;
+  t: StrategiesMessages;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 function ConfirmModal({
-  from,
-  to,
+  fromStrategy,
+  toStrategy,
   saveStatus,
   errorMessage,
+  t,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
-  const toStrategy = getStrategy(to);
-  const fromStrategy = from ? getStrategy(from) : null;
   const saving = saveStatus === "saving";
 
   // Trap focus and handle Escape
@@ -248,7 +258,7 @@ function ConfirmModal({
           type="button"
           onClick={onCancel}
           disabled={saving}
-          aria-label="Cancel"
+          aria-label={t.confirmModal.closeLabel}
           className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500"
         >
           <X size={16} aria-hidden />
@@ -260,21 +270,24 @@ function ConfirmModal({
         </div>
 
         <h2 id="confirm-modal-title" className="mb-1 text-base font-bold text-slate-100">
-          Confirm strategy change
+          {t.confirmModal.title}
         </h2>
 
         {/* From → To */}
         <p className="mb-4 text-sm text-slate-400">
           {fromStrategy ? (
             <>
-              Switching from{" "}
-              <span className="font-semibold text-slate-200">{fromStrategy.title}</span> to{" "}
-              <span className="font-semibold text-slate-200">{toStrategy.title}</span>.
+              {t.confirmModal.switchingFrom.split("{{from}}")[0]}
+              <span className="font-semibold text-slate-200">{fromStrategy.title}</span>
+              {t.confirmModal.switchingFrom.split("{{from}}")[1].split("{{to}}")[0]}
+              <span className="font-semibold text-slate-200">{toStrategy.title}</span>
+              {t.confirmModal.switchingFrom.split("{{to}}")[1]}
             </>
           ) : (
             <>
-              Setting your strategy to{" "}
-              <span className="font-semibold text-slate-200">{toStrategy.title}</span>.
+              {t.confirmModal.settingTo.split("{{to}}")[0]}
+              <span className="font-semibold text-slate-200">{toStrategy.title}</span>
+              {t.confirmModal.settingTo.split("{{to}}")[1]}
             </>
           )}
         </p>
@@ -282,13 +295,13 @@ function ConfirmModal({
         {/* Risk/APY summary */}
         <div className="mb-5 rounded-xl border border-white/8 bg-white/3 p-4 space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-slate-500">APY range</span>
+            <span className="text-slate-500">{t.comparison.apyRangeLabel}</span>
             <span className="font-semibold text-slate-200 tabular-nums">
               {formatApyRange(toStrategy.apyMin, toStrategy.apyMax)}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-500">Risk level</span>
+            <span className="text-slate-500">{t.comparison.riskLevelLabel}</span>
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${riskBadgeClass(toStrategy.riskTier)}`}
             >
@@ -297,10 +310,7 @@ function ConfirmModal({
           </div>
         </div>
 
-        <p className="mb-5 text-xs text-slate-500">
-          Active positions will be rebalanced on the next scheduled cycle. This
-          change does not trigger an immediate on-chain transaction.
-        </p>
+        <p className="mb-5 text-xs text-slate-500">{t.confirmModal.note}</p>
 
         {/* Error */}
         {errorMessage && (
@@ -320,7 +330,7 @@ function ConfirmModal({
             disabled={saving}
             className="flex-1 rounded-lg border border-white/15 py-2.5 text-sm font-medium text-slate-400 hover:text-white hover:border-white/30 transition-colors disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500"
           >
-            Cancel
+            {t.confirmModal.cancel}
           </button>
           <button
             ref={confirmRef}
@@ -332,10 +342,10 @@ function ConfirmModal({
             {saving ? (
               <>
                 <Loader2 size={14} className="animate-spin" aria-hidden />
-                Saving…
+                {t.confirmModal.saving}
               </>
             ) : (
-              "Confirm change"
+              t.confirmModal.confirm
             )}
           </button>
         </div>
@@ -346,14 +356,22 @@ function ConfirmModal({
 
 // ─── Comparison table ─────────────────────────────────────────────────────────
 
-function ComparisonTable({ current }: { current: StrategyKind | null }) {
+function ComparisonTable({
+  current,
+  strategies,
+  t,
+}: {
+  current: StrategyKind | null;
+  strategies: StrategyCard[];
+  t: StrategiesMessages;
+}) {
   const highlight = (kind: StrategyKind) =>
     kind === current ? "bg-sky-500/8 font-semibold text-slate-100" : "text-slate-400";
 
   return (
-    <section aria-label="Strategy comparison">
+    <section aria-label={t.comparison.title}>
       <h2 className="mb-3 text-base font-semibold text-slate-200">
-        Strategy comparison
+        {t.comparison.title}
       </h2>
 
       {/* Spec: mobile horizontally scrollable; sticky header on desktop */}
@@ -365,9 +383,9 @@ function ComparisonTable({ current }: { current: StrategyKind | null }) {
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-[140px]"
               >
-                Feature
+                {t.comparison.featureHeader}
               </th>
-              {STRATEGIES.map((s) => (
+              {strategies.map((s) => (
                 <th
                   key={s.kind}
                   scope="col"
@@ -380,7 +398,7 @@ function ComparisonTable({ current }: { current: StrategyKind | null }) {
                   {s.title}
                   {s.kind === current && (
                     <span className="ml-1.5 inline-flex items-center rounded-full bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-sky-400 normal-case tracking-normal">
-                      active
+                      {t.comparison.activeBadge}
                     </span>
                   )}
                 </th>
@@ -413,7 +431,8 @@ function ComparisonTable({ current }: { current: StrategyKind | null }) {
 
 // ─── Success toast ────────────────────────────────────────────────────────────
 
-function SuccessBanner({ strategy }: { strategy: StrategyKind }) {
+function SuccessBanner({ strategy, t }: { strategy: StrategyCard; t: StrategiesMessages }) {
+  const [before, after] = t.success.updated.split("{{strategy}}");
   return (
     <div
       role="status"
@@ -422,9 +441,9 @@ function SuccessBanner({ strategy }: { strategy: StrategyKind }) {
     >
       <CheckCircle2 size={16} className="shrink-0" aria-hidden />
       <span>
-        Strategy updated to{" "}
-        <span className="font-semibold">{getStrategy(strategy).title}</span>. Rebalancing
-        will apply on the next scheduled cycle.
+        {before}
+        <span className="font-semibold">{strategy.title}</span>
+        {after}
       </span>
     </div>
   );
@@ -462,6 +481,14 @@ function SkeletonCards() {
 
 export function StrategySelector() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const { messages } = useI18n();
+  const t = messages.settings.strategies;
+  const localizedStrategies = useMemo(
+    () => STRATEGIES.map((strategy) => localizeStrategy(strategy, t)),
+    [t],
+  );
+  const getLocalizedStrategy = (kind: StrategyKind) =>
+    localizedStrategies.find((s) => s.kind === kind)!;
 
   // Load preference on mount — client localStorage first, then API
   useEffect(() => {
@@ -521,35 +548,33 @@ export function StrategySelector() {
         {/* Page header */}
         <div className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-sky-400 mb-1">
-            Settings
+            {t.eyebrow}
           </p>
-          <h1 className="text-2xl font-bold text-slate-100">Choose your strategy</h1>
-          <p className="mt-1.5 text-sm text-slate-500">
-            Select the risk/APY profile that matches your goals. Your active positions
-            will rebalance on the next scheduled cycle.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-100">{t.title}</h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t.description}</p>
         </div>
 
         {/* Success banner */}
         {saveStatus === "success" && current && (
           <div className="mb-6">
-            <SuccessBanner strategy={current} />
+            <SuccessBanner strategy={getLocalizedStrategy(current)} t={t} />
           </div>
         )}
 
         {/* Strategy cards — Spec: 3 cards with equal visual weight */}
-        <section aria-label="Strategy options" className="mb-10">
+        <section aria-label={t.title} className="mb-10">
           {loadingInitial ? (
             <SkeletonCards />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {STRATEGIES.map((strategy) => (
+              {localizedStrategies.map((strategy) => (
                 <StrategyCardView
                   key={strategy.kind}
                   strategy={strategy}
                   isSelected={strategy.kind === current}
                   onSelect={handleSelect}
                   saving={saveStatus === "saving"}
+                  t={t}
                 />
               ))}
             </div>
@@ -558,14 +583,14 @@ export function StrategySelector() {
 
         {/* Comparison table */}
         <div className="mb-10">
-          <ComparisonTable current={current} />
+          <ComparisonTable current={current} strategies={localizedStrategies} t={t} />
         </div>
 
         {/* Dashboard link */}
         <div className="flex justify-center">
           <Link href="/dashboard">
             <Button variant="ghost" size="sm" className="text-slate-500">
-              ← Back to portfolio
+              ← {t.backToPortfolio}
             </Button>
           </Link>
         </div>
@@ -574,10 +599,11 @@ export function StrategySelector() {
       {/* Confirmation modal */}
       {pending && (
         <ConfirmModal
-          from={current}
-          to={pending}
+          fromStrategy={current ? getLocalizedStrategy(current) : null}
+          toStrategy={getLocalizedStrategy(pending)}
           saveStatus={saveStatus}
           errorMessage={errorMessage}
+          t={t}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
         />
