@@ -2,12 +2,17 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import dynamic from "next/dynamic";
 import { ClientProviders } from "@/components/ClientProviders";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
 import { CommandPalette } from "@/components/CommandPalette";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 import { THEME_STORAGE_KEY } from "@/lib/theme-persistence";
+
+const DiagnosticsPanel = dynamic(
+  () => import("@/components/diagnostics/DiagnosticsPanel").then((mod) => mod.DiagnosticsPanel),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
