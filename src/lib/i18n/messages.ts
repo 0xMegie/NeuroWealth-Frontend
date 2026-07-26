@@ -334,7 +334,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
       help: "Help",
       account: "Account",
       signOut: "Sign Out",
-      signIn: "Sign In",
+      signIn: "Sign in",
     },
     hero: {
       badge: "Powered by Stellar · Built with AI",

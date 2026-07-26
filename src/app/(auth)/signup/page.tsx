@@ -432,7 +432,7 @@ export default function SignUpPage() {
             href="/login"
             className="font-semibold text-sky-300 hover:text-sky-200"
           >
-            Sign In
+            Sign in
           </Link>
         </footer>
       </Card>
