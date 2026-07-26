@@ -1,5 +1,10 @@
 import { BaseAdapter } from "./base-adapter";
-import { ServiceResponse, PaginatedResponse, PaginationParams } from "./types";
+import {
+  ServiceResponse,
+  PaginatedResponse,
+  PaginationParams,
+  type ServiceConfig,
+} from "./types";
 import { random } from "../seeded-rng";
 
 export interface Transaction {
@@ -38,8 +43,8 @@ export interface TransactionFilter {
 export class TransactionService extends BaseAdapter {
   private mockTransactions: Map<string, Transaction[]> = new Map();
 
-  constructor() {
-    super();
+  constructor(config: Partial<ServiceConfig> = {}) {
+    super(config);
     this.initializeMockData();
   }
 
@@ -154,13 +159,15 @@ export class TransactionService extends BaseAdapter {
           transactions = transactions.filter((t) => t.asset === params.filter!.asset);
         }
         if (params.filter.startDate) {
+          const startDate = new Date(params.filter.startDate);
           transactions = transactions.filter(
-            (t) => new Date(t.createdAt) >= new Date(params.filter!.startDate!)
+            (t) => new Date(t.createdAt) >= startDate
           );
         }
         if (params.filter.endDate) {
+          const endDate = new Date(params.filter.endDate);
           transactions = transactions.filter(
-            (t) => new Date(t.createdAt) <= new Date(params.filter!.endDate!)
+            (t) => new Date(t.createdAt) <= endDate
           );
         }
       }
@@ -214,15 +221,28 @@ export class TransactionService extends BaseAdapter {
     return this.executeWithRetry(async () => {
       const transactions = this.mockTransactions.get(userId) || [];
 
-      const stats = {
-        totalVolume: transactions
-          .filter((t) => t.status === "completed")
-          .reduce((sum, t) => sum + t.amount, 0),
-        totalTransactions: transactions.length,
-        completedTransactions: transactions.filter((t) => t.status === "completed").length,
-        pendingTransactions: transactions.filter((t) => t.status === "pending").length,
-        failedTransactions: transactions.filter((t) => t.status === "failed").length,
-      };
+      // Single pass over the list — previously four .filter()/.reduce() scans
+      // (including a duplicated status === "completed" pass).
+      const stats = transactions.reduce(
+        (acc, t) => {
+          if (t.status === "completed") {
+            acc.totalVolume += t.amount;
+            acc.completedTransactions += 1;
+          } else if (t.status === "pending") {
+            acc.pendingTransactions += 1;
+          } else if (t.status === "failed") {
+            acc.failedTransactions += 1;
+          }
+          return acc;
+        },
+        {
+          totalVolume: 0,
+          totalTransactions: transactions.length,
+          completedTransactions: 0,
+          pendingTransactions: 0,
+          failedTransactions: 0,
+        },
+      );
 
       return this.createResponse(stats);
     }, "TransactionService.getTransactionStats");

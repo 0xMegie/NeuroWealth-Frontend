@@ -4,101 +4,42 @@ import { startTransition, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./transaction-flow.module.css";
-import { formatCurrency, formatTimestamp } from "@/lib/formatters";
+import { formatCurrency } from "@/lib/formatters";
 import {
   buildPreviewSnapshot,
   buildStatusChips,
   buildTransactionReceipt,
-  getDefaultTransactionValues,
   getTransactionContext,
   parsePreviewState,
   parseTransactionKind,
   PendingTransaction,
-  TransactionFieldErrors,
-  TransactionFormValues,
   TransactionKind,
   TransactionPreviewState,
   TransactionQuote,
   TransactionReceipt,
-  validateTransactionValues,
-  getTransactionRecoveryUI,
   type RecoveryAction,
-  type TransactionRecoveryUI,
 } from "@/lib/transactions";
-import { ApiRequestError, apiRequest } from "@/lib/api-client";
 import { useSandbox } from "@/contexts/SandboxContext";
 import { TransactionErrorRecovery } from "./TransactionErrorRecovery";
+import { TransactionFormStage } from "./stages/TransactionFormStage";
+import { TransactionConfirmStage } from "./stages/TransactionConfirmStage";
+import { TransactionPendingStage } from "./stages/TransactionPendingStage";
+import { TransactionReceiptStage } from "./stages/TransactionReceiptStage";
+import { useTransactionForm } from "./hooks/useTransactionForm";
+import { useTransactionAPI } from "./hooks/useTransactionAPI";
+import {
+  currentStepIndex,
+  getTheme,
+} from "./utils/transaction-utils";
+import { getToneClassName } from "./utils/transaction-style-utils";
 
 type ThemeMode = "light" | "dark";
-
-function getTheme(searchParams: Pick<URLSearchParams, "get">): ThemeMode {
-  return searchParams.get("theme") === "dark" ? "dark" : "light";
-}
-
-function getToneClassName(tone: "error" | "success" | "warning"): string {
-  if (tone === "error") {
-    return styles.statusError;
-  }
-
-  if (tone === "warning") {
-    return styles.statusWarning;
-  }
-
-  return styles.statusSuccess;
-}
-
-function getInputStateClassName(
-  value: string,
-  error?: string,
-  isValidated?: boolean,
-): string {
-  if (error) {
-    return styles.inputError;
-  }
-
-  if (isValidated && value) {
-    return styles.inputSuccess;
-  }
-
-  return "";
-}
-
-function sanitizeAmount(value: string): string {
-  return value.replace(/[^\d.]/g, "");
-}
-
-function detailsToFieldErrors(
-  details?: Record<string, string | string[]>,
-): TransactionFieldErrors {
-  if (!details) {
-    return {};
-  }
-
-  const readValue = (key: string): string | undefined => {
-    const value = details[key];
-
-    if (Array.isArray(value)) {
-      return value[0];
-    }
-
-    return typeof value === "string" ? value : undefined;
-  };
-
-  return {
-    amount: readValue("amount") ?? readValue("values.amount"),
-    walletAddress: readValue("walletAddress") ?? readValue("values.walletAddress"),
-    walletConnected:
-      readValue("walletConnected") ?? readValue("values.walletConnected"),
-    form: readValue("form") ?? readValue("body"),
-  };
-}
 
 export function TransactionFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getCurrentScenario, isSandboxMode } = useSandbox();
   const timeoutRef = useRef<number | null>(null);
-  const requestControllerRef = useRef<AbortController | null>(null);
 
   const [theme, setTheme] = useState<ThemeMode>(() => getTheme(searchParams));
   const [kind, setKind] = useState<TransactionKind>(() =>
@@ -110,18 +51,35 @@ export function TransactionFlow() {
   const [stage, setStage] = useState<
     "form" | "confirm" | "pending" | "success" | "failure" | "error"
   >("form");
-  const [formValues, setFormValues] = useState<TransactionFormValues>(() =>
-    getDefaultTransactionValues(kind),
-  );
-  const [fieldErrors, setFieldErrors] = useState<TransactionFieldErrors>({});
   const [quote, setQuote] = useState<TransactionQuote | null>(null);
   const [pending, setPending] = useState<PendingTransaction | null>(null);
   const [receipt, setReceipt] = useState<TransactionReceipt | null>(null);
   const [requestMessage, setRequestMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [recovery, setRecovery] = useState<TransactionRecoveryUI | null>(null);
-  const [lastErrorReference, setLastErrorReference] = useState<string | null>(null);
-  const [lastFailedAction, setLastFailedAction] = useState<"review" | "confirm" | null>(null);
+  const [lastFailedAction, setLastFailedAction] = useState<
+    "review" | "confirm" | null
+  >(null);
+
+  const {
+    formValues,
+    fieldErrors,
+    updateField,
+    validate,
+    reset: resetForm,
+    setErrors,
+    setValues,
+  } = useTransactionForm(kind);
+
+  const {
+    isSubmitting,
+    recovery,
+    lastErrorReference,
+    requestQuote,
+    submitTransaction,
+    clearRecovery,
+    setSubmitting,
+    cancelRequest,
+    reset: resetApi,
+  } = useTransactionAPI();
 
   const context = getTransactionContext(kind);
   const statusChips = buildStatusChips(kind, formValues);
@@ -133,69 +91,77 @@ export function TransactionFlow() {
       timeoutRef.current = null;
     }
 
-    const snapshot = buildPreviewSnapshot(kind, preview);
+    cancelRequest();
 
     if (preview === "interactive") {
       setStage("form");
-      setFormValues(getDefaultTransactionValues(kind));
-      setFieldErrors({});
+      resetForm();
       setQuote(null);
       setPending(null);
       setReceipt(null);
       setRequestMessage(null);
-      setIsSubmitting(false);
-      setRecovery(null);
-      setLastErrorReference(null);
+      resetApi();
       setLastFailedAction(null);
       return;
     }
 
+    const snapshot = buildPreviewSnapshot(kind, preview);
+
     setStage(snapshot.stage);
-    setFormValues(snapshot.form);
-    setFieldErrors(snapshot.fieldErrors);
+    setValues(snapshot.form);
+    setErrors(snapshot.fieldErrors);
     setQuote(snapshot.quote);
     setPending(snapshot.pending);
     setReceipt(snapshot.receipt);
     setRequestMessage(null);
-    setIsSubmitting(false);
-    setRecovery(null);
-    setLastErrorReference(null);
+    resetApi();
     setLastFailedAction(null);
-  }, [kind, preview]);
+  }, [
+    kind,
+    preview,
+    cancelRequest,
+    resetForm,
+    resetApi,
+    setValues,
+    setErrors,
+  ]);
 
   // Handle sandbox scenarios
   useEffect(() => {
     if (isSandboxMode && scenario !== "success") {
       if (scenario === "loading") {
-        setIsSubmitting(true);
+        setSubmitting(true);
         setRequestMessage("Loading transaction data...");
         const timer = setTimeout(() => {
-          setIsSubmitting(false);
+          setSubmitting(false);
           setRequestMessage(null);
         }, 3000);
         return () => clearTimeout(timer);
       } else if (scenario === "timeout") {
-        setIsSubmitting(true);
+        setSubmitting(true);
         setRequestMessage("Request timed out. Please try again.");
         const timer = setTimeout(() => {
-          setIsSubmitting(false);
-          setRequestMessage("Connection timeout. Please check your network and retry.");
+          setSubmitting(false);
+          setRequestMessage(
+            "Connection timeout. Please check your network and retry.",
+          );
         }, 5000);
         return () => clearTimeout(timer);
       } else if (scenario === "partial-failure") {
-        setRequestMessage("Partial service degradation. Some features may be unavailable.");
+        setRequestMessage(
+          "Partial service degradation. Some features may be unavailable.",
+        );
         setStage("form");
       } else if (scenario === "empty") {
         setStage("form");
-        setFormValues(getDefaultTransactionValues(kind));
-        setFieldErrors({});
+        resetForm();
         setQuote(null);
         setPending(null);
         setReceipt(null);
         setRequestMessage("No transaction data available.");
       }
     }
-  }, [scenario, isSandboxMode, kind]);
+  }, [scenario, isSandboxMode, kind, setSubmitting, resetForm]);
 
   useEffect(() => {
     return () => {
@@ -203,27 +169,11 @@ export function TransactionFlow() {
         window.clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      if (requestControllerRef.current) {
-        requestControllerRef.current.abort();
-        requestControllerRef.current = null;
-      }
-      // Clean up all state on unmount to prevent memory leaks
-      // This ensures pending states and timers are cleared when component is destroyed
+      // Abort any in-flight request on unmount to prevent state updates on an
+      // unmounted component and to avoid leaking the pending completion timer.
+      cancelRequest();
     };
-  }, []);
-
-  function beginApiRequest() {
-    requestControllerRef.current?.abort();
-    const controller = new AbortController();
-    requestControllerRef.current = controller;
-    return controller;
-  }
-
-  function endApiRequest(controller: AbortController) {
-    if (requestControllerRef.current === controller) {
-      requestControllerRef.current = null;
-    }
-  }
+  }, [cancelRequest]);
 
   function syncRoute(
     nextTheme: ThemeMode,
@@ -262,22 +212,6 @@ export function TransactionFlow() {
     syncRoute(theme, kind, nextPreview);
   }
 
-  function updateField<K extends keyof TransactionFormValues>(
-    field: K,
-    value: TransactionFormValues[K],
-  ) {
-    setFormValues((current) => ({
-      ...current,
-      [field]: value,
-    }));
-
-    setFieldErrors((current) => ({
-      ...current,
-      [field]: undefined,
-      form: undefined,
-    }));
-  }
-
   function handleMaxAmount() {
     updateField("amount", context.availableAmount.toFixed(2));
   }
@@ -287,67 +221,31 @@ export function TransactionFlow() {
       return;
     }
 
-    const localErrors = validateTransactionValues(kind, formValues);
-
-    if (Object.keys(localErrors).length > 0) {
-      setFieldErrors(localErrors);
+    if (!validate()) {
       return;
     }
 
-    setIsSubmitting(true);
     setRequestMessage(null);
-    setRecovery(null);
+    clearRecovery();
     setLastFailedAction(null);
 
-    const controller = beginApiRequest();
+    const result = await requestQuote(kind, formValues, quote?.reference);
 
-    try {
-      const payload = await apiRequest<{ quote: TransactionQuote }>(
-        "/api/transactions",
-        {
-          method: "POST",
-          body: {
-            intent: "quote",
-            kind,
-            values: formValues,
-          },
-          timeoutMs: 12000,
-          signal: controller.signal,
-        },
-      );
-
-      setFieldErrors({});
-      setQuote(payload.quote);
-      setStage("confirm");
-      setRecovery(null);
-      setLastFailedAction(null);
-    } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-
-      setLastFailedAction("review");
-
-      if (error instanceof ApiRequestError) {
-        // Map API error code to recovery UI with actionable copy
-        const recoveryUI = getTransactionRecoveryUI(error.code, quote?.reference);
-        setRecovery(recoveryUI);
-        setLastErrorReference(quote?.reference || null);
-        setFieldErrors(detailsToFieldErrors(error.details));
-        setStage("error");
-        return;
-      }
-
-      // Handle unexpected errors by mapping to unknown error mode
-      const recoveryUI = getTransactionRecoveryUI("unknown_error");
-      setRecovery(recoveryUI);
-      setStage("error");
-    } finally {
-      endApiRequest(controller);
-      if (!controller.signal.aborted) {
-        setIsSubmitting(false);
-      }
+    if (result.status === "aborted") {
+      return;
     }
+
+    if (result.status === "success") {
+      setErrors({});
+      setQuote(result.quote);
+      setStage("confirm");
+      setLastFailedAction(null);
+      return;
+    }
+
+    setLastFailedAction("review");
+    setErrors(result.fieldErrors);
+    setStage("error");
   }
 
   async function handleReview(event: React.FormEvent<HTMLFormElement>) {
@@ -360,76 +258,38 @@ export function TransactionFlow() {
       return;
     }
 
-    setIsSubmitting(true);
     setRequestMessage(null);
-    setRecovery(null);
+    clearRecovery();
     setLastFailedAction(null);
 
-    const controller = beginApiRequest();
+    const result = await submitTransaction(kind, formValues, quote?.reference);
 
-    try {
-      const payload = await apiRequest<{ pending: PendingTransaction }>(
-        "/api/transactions",
-        {
-          method: "POST",
-          body: {
-            intent: "submit",
-            kind,
-            values: formValues,
-          },
-          timeoutMs: 12000,
-          signal: controller.signal,
-        },
-      );
+    if (result.status === "aborted") {
+      return;
+    }
 
-      setPending(payload.pending);
-      setQuote(payload.pending.quote);
+    if (result.status === "success") {
+      setPending(result.pending);
+      setQuote(result.pending.quote);
       setStage("pending");
-      setLastErrorReference(payload.pending.reference);
       setLastFailedAction(null);
 
       timeoutRef.current = window.setTimeout(() => {
         const nextReceipt = buildTransactionReceipt(
-          payload.pending,
-          payload.pending.nextStatus === "failure"
-            ? "failure"
-            : "success",
+          result.pending,
+          result.pending.nextStatus === "failure" ? "failure" : "success",
         );
 
         setReceipt(nextReceipt);
         setStage(nextReceipt.status);
-        setIsSubmitting(false);
-      }, payload.pending.completionDelayMs);
-    } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-
-      setLastFailedAction("confirm");
-
-      if (error instanceof ApiRequestError) {
-        // Map API error code to recovery UI with actionable copy and transaction reference
-        const recoveryUI = getTransactionRecoveryUI(
-          error.code,
-          quote?.reference,
-        );
-        setRecovery(recoveryUI);
-        setLastErrorReference(quote?.reference || null);
-        setFieldErrors(detailsToFieldErrors(error.details));
-        setStage("error");
-      } else {
-        // Handle unexpected errors by mapping to unknown error mode
-        const recoveryUI = getTransactionRecoveryUI("unknown_error", quote?.reference);
-        setRecovery(recoveryUI);
-        setLastErrorReference(quote?.reference || null);
-        setStage("error");
-      }
-    } finally {
-      endApiRequest(controller);
-      if (!controller.signal.aborted) {
-        setIsSubmitting(false);
-      }
+        setSubmitting(false);
+      }, result.pending.completionDelayMs);
+      return;
     }
+
+    setLastFailedAction("confirm");
+    setErrors(result.fieldErrors);
+    setStage("error");
   }
 
   function resetFlow() {
@@ -444,7 +304,7 @@ export function TransactionFlow() {
     switch (action) {
       case "retry": {
         // Clear error state and retry the failed operation with the saved values.
-        setRecovery(null);
+        clearRecovery();
         setRequestMessage("Retrying request...");
         if (lastFailedAction === "confirm" && quote) {
           void handleConfirm();
@@ -456,8 +316,8 @@ export function TransactionFlow() {
       case "edit": {
         // Return to form so user can review and edit amount or wallet details
         setStage("form");
-        setRecovery(null);
-        setIsSubmitting(false);
+        clearRecovery();
+        setSubmitting(false);
         setLastFailedAction(null);
         break;
       }
@@ -475,38 +335,6 @@ export function TransactionFlow() {
       }
     }
   }
-
-  function currentStepIndex(): number {
-    if (stage === "form" || stage === "error") {
-      return 0;
-    }
-
-    if (stage === "confirm") {
-      return 1;
-    }
-
-    return 2;
-  }
-
-  const amountInputClassName = [
-    styles.input,
-    getInputStateClassName(
-      formValues.amount,
-      fieldErrors.amount,
-      Boolean(formValues.amount) && !fieldErrors.amount,
-    ),
-  ].join(" ");
-
-  const walletInputClassName = [
-    styles.input,
-    getInputStateClassName(
-      formValues.walletAddress,
-      fieldErrors.walletAddress,
-      kind === "withdrawal" &&
-        Boolean(formValues.walletAddress) &&
-        !fieldErrors.walletAddress,
-    ),
-  ].join(" ");
 
   return (
     <div className={styles.page}>
@@ -626,7 +454,7 @@ export function TransactionFlow() {
                   <div
                     className={[
                       styles.step,
-                      currentStepIndex() === index ? styles.stepActive : "",
+                      currentStepIndex(stage) === index ? styles.stepActive : "",
                     ].join(" ")}
                     key={step.label}
                   >
@@ -637,341 +465,30 @@ export function TransactionFlow() {
               </div>
 
               {stage === "form" ? (
-                <form className={styles.form} onSubmit={handleReview}>
-                  <div className={styles.fieldGroup}>
-                    <div className={styles.labelRow}>
-                      <label className={styles.fieldLabel} htmlFor="amount">
-                        {context.amountLabel}
-                      </label>
-                      <span className={styles.fieldHint}>
-                        Available {formatCurrency(context.availableAmount)}
-                      </span>
-                    </div>
-
-                    <div className={styles.amountRow}>
-                      <input
-                        className={amountInputClassName}
-                        id="amount"
-                        inputMode="decimal"
-                        onChange={(event) =>
-                          updateField(
-                            "amount",
-                            sanitizeAmount(event.target.value),
-                          )
-                        }
-                        placeholder="0.00"
-                        value={formValues.amount}
-                      />
-                      <button
-                        className={styles.inlineButton}
-                        onClick={handleMaxAmount}
-                        type="button"
-                      >
-                        Max
-                      </button>
-                    </div>
-
-                    <p className={styles.supportingCopy}>
-                      {context.amountHint}
-                    </p>
-                    {fieldErrors.amount ? (
-                      <p
-                        className={`${styles.fieldMessage} ${styles.errorMessage}`}
-                      >
-                        {fieldErrors.amount}
-                      </p>
-                    ) : formValues.amount ? (
-                      <p
-                        className={`${styles.fieldMessage} ${styles.successMessage}`}
-                      >
-                        Amount looks valid for the next confirmation step.
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className={styles.fieldGroup}>
-                    <div className={styles.labelRow}>
-                      <label className={styles.fieldLabel} htmlFor="wallet">
-                        {context.walletLabel}
-                      </label>
-                      <span className={styles.fieldHint}>
-                        {context.reviewLabel}
-                      </span>
-                    </div>
-
-                    {kind === "deposit" ? (
-                      <>
-                        <div className={styles.walletDisplay}>
-                          <div>
-                            <div className={styles.fieldLabel}>
-                              {context.connectedWalletLabel}
-                            </div>
-                            <div className={styles.walletAddress}>
-                              {context.connectedWalletAddress}
-                            </div>
-                          </div>
-                          <button
-                            className={styles.walletToggle}
-                            onClick={() =>
-                              updateField(
-                                "walletConnected",
-                                !formValues.walletConnected,
-                              )
-                            }
-                            type="button"
-                          >
-                            {formValues.walletConnected
-                              ? "Disconnect"
-                              : "Reconnect"}
-                          </button>
-                        </div>
-                        <p className={styles.supportingCopy}>
-                          {context.walletHint}
-                        </p>
-                        {fieldErrors.walletConnected ? (
-                          <p
-                            className={`${styles.fieldMessage} ${styles.errorMessage}`}
-                          >
-                            {fieldErrors.walletConnected}
-                          </p>
-                        ) : (
-                          <p
-                            className={`${styles.fieldMessage} ${styles.successMessage}`}
-                          >
-                            Deposit uses the connected funding wallet shown
-                            above.
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <input
-                          className={walletInputClassName}
-                          id="wallet"
-                          onChange={(event) =>
-                            updateField(
-                              "walletAddress",
-                              event.target.value.toUpperCase().trim(),
-                            )
-                          }
-                          placeholder="G..."
-                          value={formValues.walletAddress}
-                        />
-                        <div className={styles.connectRow}>
-                          <button
-                            className={styles.walletToggle}
-                            onClick={() =>
-                              updateField(
-                                "walletConnected",
-                                !formValues.walletConnected,
-                              )
-                            }
-                            type="button"
-                          >
-                            {formValues.walletConnected
-                              ? "Disconnect vault"
-                              : "Reconnect vault"}
-                          </button>
-                          <span className={styles.fieldHint}>
-                            {context.walletHint}
-                          </span>
-                        </div>
-                        {fieldErrors.walletAddress ? (
-                          <p
-                            className={`${styles.fieldMessage} ${styles.errorMessage}`}
-                          >
-                            {fieldErrors.walletAddress}
-                          </p>
-                        ) : (
-                          <p
-                            className={`${styles.fieldMessage} ${styles.successMessage}`}
-                          >
-                            Destination address passes the Stellar public key
-                            format check.
-                          </p>
-                        )}
-                        {fieldErrors.walletConnected ? (
-                          <p
-                            className={`${styles.fieldMessage} ${styles.errorMessage}`}
-                          >
-                            {fieldErrors.walletConnected}
-                          </p>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-
-                  {requestMessage ? (
-                    <p
-                      className={`${styles.fieldMessage} ${styles.warningMessage}`}
-                    >
-                      {requestMessage}
-                    </p>
-                  ) : null}
-
-                  <div className={styles.actionBar}>
-                    <div className={styles.actionMeta}>
-                      Primary action stays anchored at the bottom on mobile for
-                      longer forms.
-                    </div>
-                    <div className={styles.actionButtons}>
-                      <button
-                        className={`${styles.button} ${styles.buttonPrimary}`}
-                        disabled={isSubmitting}
-                        type="submit"
-                        data-qa="transaction-review-button"
-                      >
-                        {isSubmitting
-                          ? "Preparing..."
-                          : context.primaryActionLabel}
-                      </button>
-                    </div>
-                  </div>
-                </form>
+                <TransactionFormStage
+                  kind={kind}
+                  formValues={formValues}
+                  fieldErrors={fieldErrors}
+                  isSubmitting={isSubmitting}
+                  requestMessage={requestMessage}
+                  onFieldChange={updateField}
+                  onMaxAmount={handleMaxAmount}
+                  onSubmit={handleReview}
+                />
               ) : null}
 
               {stage === "confirm" && quote ? (
-                <div className={styles.form}>
-                  <div className={styles.summaryCard}>
-                    <p className={styles.heroAmount}>
-                      {formatCurrency(quote.amount)}
-                    </p>
-                    <p className={styles.heroSubtext}>
-                      {kind === "deposit"
-                        ? "Deposit amount"
-                        : "Withdrawal amount"}
-                    </p>
-                  </div>
-
-                  <div className={styles.detailList}>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Amount</span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(quote.amount)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Fees</span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(quote.fee)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>
-                        {kind === "deposit"
-                          ? "Total debit"
-                          : "Net destination amount"}
-                      </span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(
-                          kind === "deposit"
-                            ? quote.totalDebit
-                            : quote.netAmount,
-                        )}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Strategy</span>
-                      <span className={styles.detailValue}>
-                        {quote.strategyLabel}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.referenceCard}>
-                    <p className={styles.referenceLabel}>
-                      Transaction reference
-                    </p>
-                    <p className={styles.referenceValue}>{quote.reference}</p>
-                    <p className={styles.supportingCopy}>
-                      Share this reference with support if you need help tracing
-                      the request.
-                    </p>
-                  </div>
-
-                  <div className={styles.actionBar}>
-                    <div className={styles.actionMeta}>
-                      Confirm after reviewing amount, fees, and reference.
-                    </div>
-                    <div className={styles.actionButtons}>
-                      <button
-                        className={`${styles.button} ${styles.buttonSecondary}`}
-                        onClick={() => setStage("form")}
-                        type="button"
-                      >
-                        Back
-                      </button>
-                      <button
-                        className={`${styles.button} ${styles.buttonPrimary}`}
-                        onClick={handleConfirm}
-                        type="button"
-                        data-qa="transaction-submit-button"
-                      >
-                        {context.confirmActionLabel}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <TransactionConfirmStage
+                  kind={kind}
+                  quote={quote}
+                  isSubmitting={isSubmitting}
+                  onBack={() => setStage("form")}
+                  onConfirm={handleConfirm}
+                />
               ) : null}
 
               {stage === "pending" && pending ? (
-                <div className={`${styles.pendingCard} ${styles.form}`}>
-                  <div className={styles.pendingLayout}>
-                    <div className={styles.pendingSpinner} />
-                    <div className={styles.sectionHeading}>
-                      <h3 className={styles.sectionTitle}>
-                        {pending.statusLabel}
-                      </h3>
-                      <p className={styles.sectionCopy}>{pending.message}</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.referenceCard}>
-                    <p className={styles.referenceLabel}>
-                      Transaction reference
-                    </p>
-                    <p className={styles.referenceValue}>{pending.reference}</p>
-                    <p className={styles.supportingCopy}>
-                      Keep this reference visible while the transaction is
-                      moving through the network.
-                    </p>
-                  </div>
-
-                  <div className={styles.detailList}>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>
-                        Requested amount
-                      </span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(pending.quote.amount)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Fees</span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(pending.quote.fee)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>
-                        Settlement target
-                      </span>
-                      <span className={styles.detailValue}>
-                        {pending.quote.estimatedSettlement}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <TransactionPendingStage pending={pending} />
               ) : null}
 
               {stage === "error" && recovery ? (
@@ -983,110 +500,16 @@ export function TransactionFlow() {
               ) : null}
 
               {(stage === "success" || stage === "failure") && receipt ? (
-                <div className={`${styles.receiptCard} ${styles.form}`}>
-                  <div className={styles.receiptBanner}>
-                    <span
-                      className={`${styles.statusChip} ${
-                        receipt.status === "success"
-                          ? styles.statusSuccess
-                          : styles.statusError
-                      }`}
-                    >
-                      {receipt.status === "success" ? "Success" : "Failed"}
-                    </span>
-                    <h3 className={styles.receiptTitle}>{receipt.message}</h3>
-                    {receipt.failureReason ? (
-                      <p
-                        className={`${styles.fieldMessage} ${styles.errorMessage}`}
-                      >
-                        {receipt.failureReason}
-                      </p>
-                    ) : (
-                      <p
-                        className={`${styles.fieldMessage} ${styles.successMessage}`}
-                      >
-                        Receipt includes the amount, fees, and reference for
-                        follow-up.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className={styles.referenceCard}>
-                    <p className={styles.referenceLabel}>
-                      Transaction reference
-                    </p>
-                    <p className={styles.referenceValue}>{receipt.reference}</p>
-                    <p className={styles.supportingCopy}>
-                      {receipt.explorerLabel ??
-                        "Retry after reviewing the validation state and updated quote."}
-                    </p>
-                  </div>
-
-                  <div className={styles.detailList}>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Amount</span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(receipt.quote.amount)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Fees</span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(receipt.quote.fee)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>
-                        {kind === "deposit"
-                          ? "Credited amount"
-                          : "Destination amount"}
-                      </span>
-                      <span
-                        className={`${styles.detailValue} ${styles.detailValueMono}`}
-                      >
-                        {formatCurrency(receipt.quote.netAmount)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Settled at</span>
-                      <span className={styles.detailValue}>
-                        {formatTimestamp(receipt.settledAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.actionBar}>
-                    <div className={styles.actionMeta}>
-                      {receipt.status === "success"
-                        ? "Start a new transaction or switch flows."
-                        : "Retry after reviewing the updated validation details."}
-                    </div>
-                    <div className={styles.actionButtons}>
-                      <button
-                        className={`${styles.button} ${styles.buttonSecondary}`}
-                        onClick={resetFlow}
-                        type="button"
-                      >
-                        New transaction
-                      </button>
-                      <button
-                        className={`${styles.button} ${styles.buttonPrimary}`}
-                        onClick={() =>
-                          handleKindChange(
-                            kind === "deposit" ? "withdrawal" : "deposit",
-                          )
-                        }
-                        type="button"
-                      >
-                        Switch flow
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <TransactionReceiptStage
+                  kind={kind}
+                  receipt={receipt}
+                  onNewTransaction={resetFlow}
+                  onSwitchFlow={() =>
+                    handleKindChange(
+                      kind === "deposit" ? "withdrawal" : "deposit",
+                    )
+                  }
+                />
               ) : null}
             </section>
 

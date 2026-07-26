@@ -60,6 +60,12 @@ export function useTransactionForm(kind: TransactionKind) {
         setFieldErrors(errors);
     }, []);
 
+    // Needed to hydrate the form from a preview snapshot, which supplies a full
+    // set of arbitrary values rather than resetting to per-kind defaults.
+    const setValues = useCallback((values: TransactionFormValues) => {
+        setFormValues(values);
+    }, []);
+
     return {
         formValues,
         fieldErrors,
@@ -67,5 +73,6 @@ export function useTransactionForm(kind: TransactionKind) {
         validate,
         reset,
         setErrors,
+        setValues,
     };
 }
