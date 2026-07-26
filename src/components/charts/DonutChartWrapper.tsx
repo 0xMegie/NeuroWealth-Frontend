@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import {
   BaseChart,
@@ -24,7 +25,7 @@ interface DonutChartWrapperProps {
   "aria-label"?: string;
 }
 
-export function DonutChartWrapper({
+export const DonutChartWrapper = memo(function DonutChartWrapper({
   data,
   height,
   innerRadius = 60,
@@ -76,4 +77,4 @@ export function DonutChartWrapper({
       </PieChart>
     </BaseChart>
   );
-}
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { ResponsiveContainer } from "recharts";
 import {
   chartDimensions,
@@ -34,7 +34,7 @@ interface BaseChartProps {
   "aria-label"?: string;
 }
 
-export function BaseChart({
+export const BaseChart = memo(function BaseChart({
   children,
   height = chartDimensions.height,
   className,
@@ -82,7 +82,7 @@ export function BaseChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});
 
 // Custom tooltip component that matches design spec
 interface ChartTooltipProps<

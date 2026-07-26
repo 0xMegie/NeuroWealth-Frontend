@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./portfolio-dashboard.module.css";
 import {
@@ -243,8 +243,16 @@ export function PortfolioDashboard() {
           helper: portfolio.summary.strategyDescription,
           tone: "default",
         },
-      ]
     : [];
+
+  const allocationData = useMemo(() => {
+    if (!portfolio) return [];
+    return portfolio.allocation.map((item) => ({
+      name: item.label,
+      value: item.amount,
+      tone: item.tone,
+    }));
+  }, [portfolio]);
 
   return (
     <div className={styles.page}>
@@ -381,11 +389,7 @@ export function PortfolioDashboard() {
                   ) : portfolio && portfolio.allocation.length > 0 ? (
                       <div className={styles.allocationLayout}>
                         <AllocationChart 
-                          data={portfolio.allocation.map(item => ({
-                            name: item.label,
-                            value: item.amount,
-                            tone: item.tone
-                          }))}
+                          data={allocationData}
                           height={200}
                           innerRadius={60}
                           outerRadius={90}
