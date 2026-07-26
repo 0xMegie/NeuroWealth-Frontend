@@ -25,7 +25,10 @@ export function Switch({ checked, onChange, label, disabled = false }: SwitchPro
         />
         <div
           className={`
-            w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer 
+            w-11 h-6 bg-slate-700 rounded-full peer 
+            peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-sky-500
+            peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white
+            dark:peer-focus-visible:ring-offset-slate-900
             peer-checked:after:translate-x-full peer-checked:after:border-white 
             after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
             after:bg-white after:border-gray-300 after:border after:rounded-full 
