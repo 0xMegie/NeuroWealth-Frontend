@@ -15,7 +15,7 @@ export interface Transaction {
   fee?: number;
   createdAt: string;
   completedAt?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateTransactionParams {
@@ -24,7 +24,7 @@ export interface CreateTransactionParams {
   asset: string;
   fromAddress?: string;
   toAddress?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TransactionFilter {

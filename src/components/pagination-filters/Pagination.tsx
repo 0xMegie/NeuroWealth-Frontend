@@ -165,7 +165,6 @@ export default function Pagination({
             max={totalPages}
             value={jumpVal}
             onChange={(e) => setJumpVal(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleJump(e as any); }}
             aria-label="Jump to page"
             style={{
               width: 52, height: 36, borderRadius: 8, border: "0.5px solid #374151",

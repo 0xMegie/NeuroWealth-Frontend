@@ -10,19 +10,20 @@ import {
   SignOff, 
   KnownIssue 
 } from "@/lib/release-checklist-types";
-import { 
-  CheckCircle2, 
-  Clock, 
-  XCircle, 
-  AlertTriangle, 
+import {
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertTriangle,
   Download,
   Plus,
   Trash2,
   Edit2,
-  Save
+  Save,
+  type LucideIcon,
 } from "lucide-react";
 
-const statusConfig: Record<ChecklistStatus, { label: string; color: string; icon: any }> = {
+const statusConfig: Record<ChecklistStatus, { label: string; color: string; icon: LucideIcon }> = {
   pending: { label: "Pending", color: "bg-slate-500/20 text-slate-300 border-slate-500/30", icon: Clock },
   "in-progress": { label: "In Progress", color: "bg-sky-500/20 text-sky-300 border-sky-500/30", icon: Clock },
   completed: { label: "Completed", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30", icon: CheckCircle2 },
@@ -417,7 +418,11 @@ ${checklist.signOffs.map((signOff) => `- **${signOff.role.charAt(0).toUpperCase(
                     />
                     <select
                       value={signOff.status}
-                      onChange={(e) => updateSignOff(signOff.role, { status: e.target.value as any })}
+                      onChange={(e) =>
+                        updateSignOff(signOff.role, {
+                          status: e.target.value as SignOff["status"],
+                        })
+                      }
                       className={`px-3 py-2 rounded-lg text-sm font-medium border ${
                         signOff.status === "approved"
                           ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"

@@ -55,7 +55,7 @@ test("GET /api/transaction-history returns 200 with valid kind filter", async ()
 
     // Verify all items match the kind filter
     if (kind !== "all") {
-      body.data.items.forEach((item: any) => {
+      body.data.items.forEach((item: { kind: string }) => {
         assert.equal(item.kind, kind, `Item should be of kind ${kind}`);
       });
     }
@@ -165,7 +165,7 @@ test("GET /api/transaction-history returns 200 with date range", async () => {
   const dateTo = new Date("2026-12-31");
   dateTo.setDate(dateTo.getDate() + 1); // Date filter is exclusive of next day
 
-  body.data.items.forEach((item: any) => {
+  body.data.items.forEach((item: { occurredAt: string }) => {
     const itemDate = new Date(item.occurredAt);
     assert.ok(
       itemDate >= dateFrom && itemDate < dateTo,
