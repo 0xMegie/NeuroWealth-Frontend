@@ -1,4 +1,4 @@
-import { BaseAdapter } from "./base-adapter";
+import { BaseAdapter, MockStore } from "./base-adapter";
 import {
   ServiceResponse,
   PaginatedResponse,
@@ -34,8 +34,8 @@ export interface PortfolioHistory {
 }
 
 export class PortfolioService extends BaseAdapter {
-  private mockPortfolios: Map<string, Portfolio> = new Map();
-  private mockHistory: Map<string, PortfolioHistory[]> = new Map();
+  private mockPortfolios = new MockStore<string, Portfolio>();
+  private mockHistory = new MockStore<string, PortfolioHistory[]>();
 
   constructor(config: Partial<ServiceConfig> = {}) {
     super(config);
@@ -166,7 +166,7 @@ export class PortfolioService extends BaseAdapter {
 
       const newAsset: Asset = {
         ...asset,
-        id: `asset_${Date.now()}`,
+        id: this.generateId("asset"),
         value: asset.balance * 1, // Simplified valuation
         valueChange24h: 0,
         valueChange24hPercent: 0,

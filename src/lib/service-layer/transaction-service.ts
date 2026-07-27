@@ -1,4 +1,4 @@
-import { BaseAdapter } from "./base-adapter";
+import { BaseAdapter, MockStore } from "./base-adapter";
 import {
   ServiceResponse,
   PaginatedResponse,
@@ -41,7 +41,7 @@ export interface TransactionFilter {
 }
 
 export class TransactionService extends BaseAdapter {
-  private mockTransactions: Map<string, Transaction[]> = new Map();
+  private mockTransactions = new MockStore<string, Transaction[]>();
 
   constructor(config: Partial<ServiceConfig> = {}) {
     super(config);
@@ -100,7 +100,7 @@ export class TransactionService extends BaseAdapter {
   ): Promise<ServiceResponse<Transaction>> {
     return this.executeWithRetry(async () => {
       const transaction: Transaction = {
-        id: `tx_${Date.now()}`,
+        id: this.generateId("tx"),
         userId,
         type: params.type,
         amount: params.amount,

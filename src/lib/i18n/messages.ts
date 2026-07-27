@@ -547,7 +547,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
       items: [
         {
           name: "Conservative",
-          apy: "3–6%",
+          apy: "4–6%",
           risk: "Low",
           desc: "Stablecoin lending on Blend. Steady, predictable returns with minimal exposure.",
           accentText: "text-sky-400",
@@ -556,7 +556,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
         },
         {
           name: "Balanced",
-          apy: "6–10%",
+          apy: "7–10%",
           risk: "Medium",
           desc: "Mix of lending and DEX liquidity provision for better yield without excessive risk.",
           accentText: "text-emerald-400",
@@ -566,8 +566,8 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
         },
         {
           name: "Growth",
-          apy: "10–15%",
-          risk: "Higher",
+          apy: "11–18%",
+          risk: "High",
           desc: "Aggressive multi-protocol deployment for maximum returns.",
           accentText: "text-amber-400",
           border: "border-amber-500/20",
@@ -1069,7 +1069,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
       items: [
         {
           name: "Prudente",
-          apy: "3–6 %",
+          apy: "4–6 %",
           risk: "faible",
           desc: "Prêts en stablecoins sur Blend pour des rendements stables et prévisibles.",
           accentText: "text-sky-400",
@@ -1078,7 +1078,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
         },
         {
           name: "Équilibrée",
-          apy: "6–10 %",
+          apy: "7–10 %",
           risk: "moyen",
           desc: "Combinaison de lending et de liquidité DEX pour un bon équilibre risque/rendement.",
           accentText: "text-emerald-400",
@@ -1088,7 +1088,7 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
         },
         {
           name: "Croissance",
-          apy: "10–15 %",
+          apy: "11–18 %",
           risk: "élevé",
           desc: "Allocation agressive multi-protocole pour maximiser le potentiel de rendement.",
           accentText: "text-amber-400",

@@ -1,4 +1,4 @@
-import { BaseAdapter } from "./base-adapter";
+import { BaseAdapter, MockStore } from "./base-adapter";
 import {
   ServiceResponse,
   PaginatedResponse,
@@ -40,9 +40,9 @@ export interface StrategyPerformance {
 }
 
 export class StrategyService extends BaseAdapter {
-  private mockStrategies: Map<string, Strategy> = new Map();
-  private mockAllocations: Map<string, StrategyAllocation[]> = new Map();
-  private mockPerformance: Map<string, StrategyPerformance[]> = new Map();
+  private mockStrategies = new MockStore<string, Strategy>();
+  private mockAllocations = new MockStore<string, StrategyAllocation[]>();
+  private mockPerformance = new MockStore<string, StrategyPerformance[]>();
 
   constructor(config: Partial<ServiceConfig> = {}) {
     super(config);
@@ -189,7 +189,7 @@ export class StrategyService extends BaseAdapter {
       }
 
       const allocation: StrategyAllocation = {
-        id: `alloc_${Date.now()}`,
+        id: this.generateId("alloc"),
         userId,
         strategyId,
         amount,

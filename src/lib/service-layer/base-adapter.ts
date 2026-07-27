@@ -52,6 +52,34 @@ function createServiceError(
   };
 }
 
+export class MockStore<K, V> {
+  private store = new Map<K, V>();
+
+  get(key: K): V | undefined {
+    return this.store.get(key);
+  }
+
+  set(key: K, value: V): void {
+    this.store.set(key, value);
+  }
+
+  has(key: K): boolean {
+    return this.store.has(key);
+  }
+
+  delete(key: K): boolean {
+    return this.store.delete(key);
+  }
+
+  values(): IterableIterator<V> {
+    return this.store.values();
+  }
+
+  keys(): IterableIterator<K> {
+    return this.store.keys();
+  }
+}
+
 export abstract class BaseAdapter {
   protected config: ServiceConfig;
 
@@ -161,5 +189,9 @@ export abstract class BaseAdapter {
 
   public getConfig(): ServiceConfig {
     return { ...this.config };
+  }
+
+  protected generateId(prefix: string): string {
+    return `${prefix}_${Date.now()}_${random().toString(36).substr(2, 9)}`;
   }
 }

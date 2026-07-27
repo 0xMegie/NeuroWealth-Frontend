@@ -77,7 +77,7 @@ export function PrivacyModal() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; }}>Reject all</button>
           <button onClick={() => savePreferences(localPrefs)} style={{ flex: 1, height: "44px", borderRadius: "10px", fontSize: "13px", fontWeight: 500, cursor: "pointer", background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.3)", color: CYAN }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(34,211,238,0.18)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(34,211,238,0.1)"; }}>Save preferences</button>
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(34,211,238,0.1)"; }}>Save Preferences</button>
           <button onClick={acceptAll} style={{ flex: 1, height: "44px", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: "pointer", background: "linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)", border: "none", color: "#020917" }}
             onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>Accept all</button>
