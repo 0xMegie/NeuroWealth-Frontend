@@ -45,6 +45,7 @@ Object.defineProperty(globalThis, "localStorage", {
 // Import AFTER defining globals so every adapter method call sees window +
 // localStorage from the first test onward.
 import { mockAuth } from "@/lib/mock-auth";
+import { resetRateLimitStore } from "@/lib/rate-limit";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ function seedStorage(session: AuthSession) {
 
 // ── Test lifecycle ────────────────────────────────────────────────────────────
 
-test.beforeEach(() => { store.clear(); });
+test.beforeEach(() => { store.clear(); resetRateLimitStore(); });
 
 // ── Loading state ─────────────────────────────────────────────────────────────
 // AuthContext initialises with loading=true and user=null. After mount it calls
@@ -199,12 +200,12 @@ test("AuthContext — signUp success: new user is immediately authenticated", as
   assert.equal(mockAuth.isAuthenticated(), true);
 });
 
-test("AuthContext — signUp failure: duplicate email throws", async () => {
+test("AuthContext — signUp failure: duplicate email throws (enumeration-safe)", async () => {
   await mockAuth.signUp("dup@example.com", "First", "securePass1!");
   store.clear(); // clear storage so the second call isn't blocked by an existing session
   await assert.rejects(
     () => mockAuth.signUp("dup@example.com", "Second", "securePass1!"),
-    /already exists/i,
+    /confirmation has been sent/i,
   );
 });
 
