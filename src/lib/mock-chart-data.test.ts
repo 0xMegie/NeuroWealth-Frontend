@@ -66,6 +66,15 @@ describe("mock-chart-data", () => {
 
       assert.deepStrictEqual(first, second);
     });
+
+    it("normalized: values always sum to 100", () => {
+      for (const seed of ["sum-a", "sum-b", "sum-c", "sum-d"]) {
+        reseed(seed);
+        const data = generateAssetAllocationData();
+        const total = data.reduce((s, d) => s + d.value, 0);
+        assert.strictEqual(total, 100, `allocation must sum to 100 for seed ${seed}`);
+      }
+    });
   });
 
   describe("generateMonthlyYieldData()", () => {
