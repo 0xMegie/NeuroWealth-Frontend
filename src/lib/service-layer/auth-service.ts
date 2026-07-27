@@ -1,4 +1,4 @@
-import { BaseAdapter } from "./base-adapter";
+import { BaseAdapter, MockStore } from "./base-adapter";
 import { ServiceResponse, type ServiceConfig } from "./types";
 import { random } from "../seeded-rng";
 
@@ -29,8 +29,8 @@ export interface AuthSession {
 }
 
 export class AuthService extends BaseAdapter {
-  private mockUsers: Map<string, AuthUser> = new Map();
-  private mockSessions: Map<string, AuthSession> = new Map();
+  private mockUsers = new MockStore<string, AuthUser>();
+  private mockSessions = new MockStore<string, AuthSession>();
 
   constructor(config: Partial<ServiceConfig> = {}) {
     super(config);
