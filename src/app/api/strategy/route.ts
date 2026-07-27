@@ -14,10 +14,14 @@ import {
 import { strategyUpdateSchema, zodErrorToDetails } from "@/lib/validation/api";
 import { createServerFetcher } from "@/lib/api-client";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { requireAuth } from "@/lib/api-auth";
 
 const STRATEGY_COOKIE_KEY = STORAGE_KEYS.STRATEGY_PREFERENCE;
 
 export async function GET(request: NextRequest) {
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   const strategyPath =
     process.env.NEUROWEALTH_STRATEGY_PATH ?? "/strategy/preference";
   const fetchBackend = createServerFetcher();
@@ -49,6 +53,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
   const limit = checkRateLimit(`PUT:/api/strategy:${ip}`, {
     maxRequests: 10,

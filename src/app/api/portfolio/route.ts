@@ -11,9 +11,13 @@ import {
 } from "@/lib/api-response";
 import { portfolioQuerySchema, zodErrorToDetails } from "@/lib/validation/api";
 import { createServerFetcher } from "@/lib/api-client";
+import { requireAuth } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   const parsedQuery = portfolioQuerySchema.safeParse({
     scenario: request.nextUrl.searchParams.get("scenario") ?? undefined,
   });

@@ -25,10 +25,18 @@ export default function AvatarDemo() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-3 border-b border-gray-700">
+        <div
+          role="tablist"
+          aria-label="Avatar demo sections"
+          className="flex gap-3 border-b border-gray-700"
+        >
           <button
+            role="tab"
+            id="avatar-tab-components"
+            aria-selected={activeTab === "components"}
+            aria-controls="avatar-panel-components"
             onClick={() => setActiveTab("components")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "components"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -37,8 +45,12 @@ export default function AvatarDemo() {
             Components
           </button>
           <button
+            role="tab"
+            id="avatar-tab-uploader"
+            aria-selected={activeTab === "uploader"}
+            aria-controls="avatar-panel-uploader"
             onClick={() => setActiveTab("uploader")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "uploader"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -47,8 +59,12 @@ export default function AvatarDemo() {
             Avatar Uploader
           </button>
           <button
+            role="tab"
+            id="avatar-tab-a11y"
+            aria-selected={activeTab === "a11y"}
+            aria-controls="avatar-panel-a11y"
             onClick={() => setActiveTab("a11y")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "a11y"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -59,13 +75,33 @@ export default function AvatarDemo() {
         </div>
 
         {/* Content */}
-        {activeTab === "components" && (
+        <div
+          id="avatar-panel-components"
+          role="tabpanel"
+          aria-labelledby="avatar-tab-components"
+          hidden={activeTab !== "components"}
+          tabIndex={0}
+        >
           <ComponentsView savedAvatar={savedAvatar} />
-        )}
-        {activeTab === "uploader" && (
+        </div>
+        <div
+          id="avatar-panel-uploader"
+          role="tabpanel"
+          aria-labelledby="avatar-tab-uploader"
+          hidden={activeTab !== "uploader"}
+          tabIndex={0}
+        >
           <UploaderView onSave={setSavedAvatar} savedAvatar={savedAvatar} />
-        )}
-        {activeTab === "a11y" && <AccessibilityView />}
+        </div>
+        <div
+          id="avatar-panel-a11y"
+          role="tabpanel"
+          aria-labelledby="avatar-tab-a11y"
+          hidden={activeTab !== "a11y"}
+          tabIndex={0}
+        >
+          <AccessibilityView />
+        </div>
       </div>
     </div>
   );

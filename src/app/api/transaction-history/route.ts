@@ -12,8 +12,12 @@ import {
   successResponse,
 } from "@/lib/api-response";
 import { transactionHistoryQuerySchema, zodErrorToDetails } from "@/lib/validation/api";
+import { requireAuth } from "@/lib/api-auth";
 
 export function GET(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
   const params = req.nextUrl.searchParams;
 
   const rawQuery = {

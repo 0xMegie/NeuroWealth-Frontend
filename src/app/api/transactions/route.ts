@@ -18,8 +18,12 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { isSandboxScenario, parseSandboxScenario } from "@/lib/sandbox-scenario";
 import { createServerFetcher } from "@/lib/api-client";
+import { requireAuth } from "@/lib/api-auth";
 
 export async function POST(request: NextRequest) {
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   const bodyResult = await readJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const rawPayload = bodyResult.data;
