@@ -1,7 +1,14 @@
 "use client";
 import { ReactNode } from "react";
 import { Networks } from "@stellar/stellar-sdk";
-import { AuthProvider, WalletProvider } from "@/contexts";
+import { AuthProvider } from "@/contexts";
+import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
+
+const WalletProvider = dynamic(
+  () => import("@/contexts/WalletProvider").then((mod) => mod.WalletProvider),
+  { ssr: false }
+);
 import { I18nProvider } from "@/contexts/I18nContext";
 import { SandboxProvider } from "@/contexts/SandboxContext";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
@@ -41,16 +48,24 @@ const Providers = composeProviders([
   ThemeProvider,
   I18nProvider,
   AuthProvider,
-  [WalletProvider, { network: stellarConfig.network, horizonUrl: stellarConfig.horizonUrl }],
   ToastProvider,
   CookieConsentProvider,
 ]);
 
 export function ClientProviders({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isWalletPossible = pathname?.startsWith("/dashboard") || pathname?.startsWith("/profile");
+
   return (
     <Providers>
       <ErrorTrackingMount />
-      {children}
+      {isWalletPossible ? (
+        <WalletProvider network={stellarConfig.network} horizonUrl={stellarConfig.horizonUrl}>
+          {children}
+        </WalletProvider>
+      ) : (
+        children
+      )}
       <CookieBanner />
       <PrivacyModal />
     </Providers>
