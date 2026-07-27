@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 // Fixes issue 443: Implement frontend performance optimization pass
 const nextConfig = {
+  output: "standalone",
   eslint: {
     // Lint errors must be resolved before a production build succeeds.
     ignoreDuringBuilds: false,
