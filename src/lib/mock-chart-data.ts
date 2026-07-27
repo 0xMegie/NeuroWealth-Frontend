@@ -74,12 +74,18 @@ export function generateMonthlyYieldData(): ChartDatum[] {
 
 /** Generate asset-allocation slices (donut chart). */
 export function generateAssetAllocationData(): AssetAllocationSlice[] {
-  return [
-    { name: "USDC", value: randomInt(35, 50), tone: "primary" },
-    { name: "USDT", value: randomInt(20, 30), tone: "accent" },
-    { name: "XLM", value: randomInt(15, 25), tone: "warning" },
-    { name: "Other", value: randomInt(5, 15), tone: "neutral-strong" },
+  const raw = [
+    { name: "USDC", value: randomInt(35, 50), tone: "primary" as ChartTone },
+    { name: "USDT", value: randomInt(20, 30), tone: "accent" as ChartTone },
+    { name: "XLM", value: randomInt(15, 25), tone: "warning" as ChartTone },
+    { name: "Other", value: randomInt(5, 15), tone: "neutral-strong" as ChartTone },
   ];
+  const total = raw.reduce((s, d) => s + d.value, 0);
+  const normal = raw.map((d) => ({ ...d, value: Math.round((d.value * 100) / total) }));
+  const last = normal.length - 1;
+  const normTotal = normal.reduce((s, d) => s + d.value, 0);
+  normal[last] = { ...normal[last], value: normal[last].value + (100 - normTotal) };
+  return normal;
 }
 
 /** Generate benchmark-comparison data (multi-series line chart). */

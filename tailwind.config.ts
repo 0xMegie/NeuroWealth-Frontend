@@ -30,15 +30,10 @@ const config: Config = {
         "body-medium": "500",
       },
       animation: {
-        shimmer: "shimmer 1.5s infinite",
         "fade-in": "fadeIn 0.2s ease-in-out",
         "slide-up": "slideUp 0.2s ease-out",
       },
       keyframes: {
-        shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
-        },
         fadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
@@ -48,44 +43,7 @@ const config: Config = {
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
-      backgroundImage: {
-        "skeleton-gradient":
-          "linear-gradient(90deg, #1F2937 25%, #374151 50%, #1F2937 75%)",
-        slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-        },
-        sky: {
-          400: '#38bdf8',
-          500: '#0ea5e9',
-        },
-        emerald: {
-          400: '#34d399',
-          500: '#10b981',
-        },
-        amber: {
-          500: '#f59e0b',
-        },
-        cyan: {
-          300: '#06b6d4',
-          500: '#06b6d4',
-        },
-        red: {
-          500: '#ef4444',
-        },
-        gray: {
-          800: '#1f2937',
-          900: '#111827',
-        },
-      },
+      backgroundImage: {},
       backdropBlur: {
         md: '12px',
       },
