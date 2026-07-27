@@ -70,10 +70,18 @@ export default function DateTimeDemoPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 border-b border-gray-700">
+        <div
+          role="tablist"
+          aria-label="Date/time picker demo sections"
+          className="flex gap-4 border-b border-gray-700"
+        >
           <button
+            role="tab"
+            id="datetime-tab-pickers"
+            aria-selected={activeTab === "pickers"}
+            aria-controls="datetime-panel-pickers"
             onClick={() => setActiveTab("pickers")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "pickers"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -82,8 +90,12 @@ export default function DateTimeDemoPage() {
             Pickers
           </button>
           <button
+            role="tab"
+            id="datetime-tab-filters"
+            aria-selected={activeTab === "filters"}
+            aria-controls="datetime-panel-filters"
             onClick={() => setActiveTab("filters")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "filters"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -92,8 +104,12 @@ export default function DateTimeDemoPage() {
             Filtering Hooks
           </button>
           <button
+            role="tab"
+            id="datetime-tab-a11y"
+            aria-selected={activeTab === "a11y"}
+            aria-controls="datetime-panel-a11y"
             onClick={() => setActiveTab("a11y")}
-            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
               activeTab === "a11y"
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-gray-300"
@@ -104,9 +120,33 @@ export default function DateTimeDemoPage() {
         </div>
 
         {/* Content */}
-        {activeTab === "pickers" && <PickersTab />}
-        {activeTab === "filters" && <FiltersTab mockData={MOCK_DATA} />}
-        {activeTab === "a11y" && <AccessibilityTab />}
+        <div
+          id="datetime-panel-pickers"
+          role="tabpanel"
+          aria-labelledby="datetime-tab-pickers"
+          hidden={activeTab !== "pickers"}
+          tabIndex={0}
+        >
+          <PickersTab />
+        </div>
+        <div
+          id="datetime-panel-filters"
+          role="tabpanel"
+          aria-labelledby="datetime-tab-filters"
+          hidden={activeTab !== "filters"}
+          tabIndex={0}
+        >
+          <FiltersTab mockData={MOCK_DATA} />
+        </div>
+        <div
+          id="datetime-panel-a11y"
+          role="tabpanel"
+          aria-labelledby="datetime-tab-a11y"
+          hidden={activeTab !== "a11y"}
+          tabIndex={0}
+        >
+          <AccessibilityTab />
+        </div>
       </div>
     </div>
   );

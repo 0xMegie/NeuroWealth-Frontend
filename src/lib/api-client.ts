@@ -296,10 +296,26 @@ export async function apiRequest<T>(
  *
  * Automatically injects:
  *   - baseUrl  from NEUROWEALTH_API_BASE_URL
- *   - Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN>
+ *   - Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN> (server credential)
+ *   - X-User-Identity: <userIdentity> (per-user identity from session)
+ *
+ * Trust Model:
+ *   The backend receives two credentials:
+ *   1. Authorization header: Shared server-to-server credential (NEUROWEALTH_API_AUTH_TOKEN)
+ *      - Proves the request originated from this Next.js frontend server
+ *      - Allows backend to trust the frontend as a trusted proxy
+ *   2. X-User-Identity header: Per-user identity derived from session cookie
+ *      - Identifies which user issued the request
+ *      - Allows backend to apply per-user authorization and data filtering
+ *      - Backend should validate this against its own session store or JWT
+ *
+ *   This dual-credential approach ensures:
+ *   - Backend can distinguish between users (per-user identity)
+ *   - Backend trusts the frontend source (shared server credential)
+ *   - Backend can enforce user-specific access controls
  *
  * Usage in a Next.js route handler:
- *   const client = createServerApiClient();
+ *   const client = createServerApiClient(userIdentity);
  *   if (!client) {
  *     // NEUROWEALTH_API_BASE_URL is not set — fall back to demo data
  *   } else {
@@ -309,7 +325,9 @@ export async function apiRequest<T>(
  * Returns null when NEUROWEALTH_API_BASE_URL is not configured so callers
  * can cleanly branch to demo/mock mode without checking env themselves.
  */
-export function createServerApiClient(): (<T>(
+export function createServerApiClient(
+  userIdentity?: string,
+): (<T>(
   path: string,
   options?: Omit<ApiRequestOptions, "baseUrl">,
 ) => Promise<T>) | null {
@@ -326,6 +344,9 @@ export function createServerApiClient(): (<T>(
     if (token && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`);
     }
+    if (userIdentity && !headers.has("X-User-Identity")) {
+      headers.set("X-User-Identity", userIdentity);
+    }
     return apiRequest<T>(path, { ...options, baseUrl, headers });
   };
 }
@@ -338,11 +359,17 @@ export function createServerApiClient(): (<T>(
  * backend's status/content-type verbatim instead of unwrapping it.
  *
  * Automatically injects:
- *   - Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN>
+ *   - Authorization: Bearer <NEUROWEALTH_API_AUTH_TOKEN> (server credential)
+ *   - X-User-Identity: <userIdentity> (per-user identity from session)
  * and resolves `path` against NEUROWEALTH_API_BASE_URL via resolveServerEndpoint.
  *
+ * Trust Model:
+ *   See createServerApiClient() documentation for the dual-credential approach.
+ *   The backend receives both a shared server credential (Authorization) and
+ *   a per-user identity (X-User-Identity) to enable proper authorization.
+ *
  * Usage in a Next.js route handler:
- *   const fetchBackend = createServerFetcher();
+ *   const fetchBackend = createServerFetcher(userIdentity);
  *   if (!fetchBackend) {
  *     // NEUROWEALTH_API_BASE_URL is not set — fall back to demo data
  *   } else {
@@ -352,7 +379,9 @@ export function createServerApiClient(): (<T>(
  * Returns null when NEUROWEALTH_API_BASE_URL is not configured so callers
  * can cleanly branch to demo/mock mode without checking env themselves.
  */
-export function createServerFetcher(): ((
+export function createServerFetcher(
+  userIdentity?: string,
+): ((
   path: string,
   init?: RequestInit,
 ) => Promise<Response>) | null {
@@ -365,6 +394,9 @@ export function createServerFetcher(): ((
     const headers = new Headers(init.headers);
     if (token && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`);
+    }
+    if (userIdentity && !headers.has("X-User-Identity")) {
+      headers.set("X-User-Identity", userIdentity);
     }
     return fetch(resolveServerEndpoint(baseUrl, path), { ...init, headers });
   };

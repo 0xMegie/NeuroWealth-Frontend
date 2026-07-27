@@ -81,7 +81,7 @@ export default function OnboardingStepper({ steps, currentStep, onStepClick }: O
       
       {/* Mobile Step Counter */}
       <div className="md:hidden text-center mb-6">
-        <span className="text-sm text-slate-400">
+        <span className="text-sm text-slate-400" aria-live="polite">
           Step {currentStep + 1} of {steps.length}
         </span>
       </div>

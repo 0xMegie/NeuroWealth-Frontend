@@ -2,7 +2,7 @@
 
 // #335 — presentation only. Step orchestration lives in useOnboardingFlow.
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import OnboardingStepper from './OnboardingStepper';
@@ -69,6 +69,15 @@ export default function OnboardingFlow({
     onSkip,
   });
 
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    // Move focus to the step heading when step changes
+    if (stepHeadingRef.current && !isCompleted) {
+      stepHeadingRef.current.focus();
+    }
+  }, [currentStep, isCompleted]);
+
   if (isCompleted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center px-4">
@@ -109,6 +118,14 @@ export default function OnboardingFlow({
           </p>
         </div>
 
+        <h2
+          ref={stepHeadingRef}
+          tabIndex={-1}
+          className="sr-only"
+        >
+          {onboardingSteps[currentStep].title}
+        </h2>
+
         <OnboardingStepper
           steps={onboardingSteps}
           currentStep={currentStep}
@@ -135,7 +152,7 @@ export default function OnboardingFlow({
               )}
             </div>
 
-            <div className="text-sm text-slate-400">
+            <div className="text-sm text-slate-400" aria-live="polite">
               Step {currentStep + 1} of {onboardingSteps.length}
             </div>
 
