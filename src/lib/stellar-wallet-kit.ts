@@ -8,10 +8,7 @@ import {
   HanaModule,
   WalletNetwork,
 } from "@creit.tech/stellar-wallets-kit";
-import {
-  getNetwork as getFreighterNetwork,
-  isConnected as getFreighterIsConnected,
-} from "@stellar/freighter-api";
+
 
 export { FREIGHTER_ID };
 
@@ -86,6 +83,7 @@ export async function getFreighterNetworkPassphrase(): Promise<
   if (typeof window === "undefined") return undefined;
 
   try {
+    const { getNetwork: getFreighterNetwork } = await import("@stellar/freighter-api");
     const { networkPassphrase, error } = await getFreighterNetwork();
     if (error || !networkPassphrase) return undefined;
     return networkPassphrase;
@@ -103,6 +101,7 @@ export async function connectFreighter(): Promise<{ address: string }> {
     throw new Error("Freighter connect requires a browser environment");
   }
 
+  const { isConnected: getFreighterIsConnected } = await import("@stellar/freighter-api");
   const { isConnected, error: connectedError } = await getFreighterIsConnected();
   if (connectedError || !isConnected) {
     throw new Error("Freighter is not installed or not available");

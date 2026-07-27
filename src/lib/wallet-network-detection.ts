@@ -1,7 +1,4 @@
-import {
-  FREIGHTER_ID,
-  getFreighterNetworkPassphrase,
-} from "@/lib/stellar-wallet-kit";
+
 import {
   formatConfiguredNetworkLabel,
   getConfiguredNetworkPassphrase,
@@ -30,6 +27,8 @@ export async function detectWalletNetworkMismatch(
 ): Promise<WalletNetworkStatus> {
   const expectedPassphrase = getConfiguredNetworkPassphrase();
   const appNetworkLabel = formatConfiguredNetworkLabel();
+
+  const { FREIGHTER_ID, getFreighterNetworkPassphrase } = await import("@/lib/stellar-wallet-kit");
 
   if (!walletProviderId || walletProviderId !== FREIGHTER_ID) {
     return {

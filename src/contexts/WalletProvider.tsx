@@ -340,7 +340,18 @@ export function WalletProvider({
 export function useWallet(): WalletContextState {
   const context = useContext(WalletContext);
   if (context === undefined) {
-    throw new Error("useWallet must be used within a WalletProvider");
+    return {
+      connected: false,
+      isRestoring: false,
+      publicKey: undefined,
+      walletName: undefined,
+      walletProviderId: undefined,
+      networkStatus: { hasMismatch: false, appNetworkLabel: "" },
+      balances: [],
+      connect: async () => {},
+      disconnect: async () => {},
+      refreshBalances: async () => {},
+    };
   }
   return context;
 }
