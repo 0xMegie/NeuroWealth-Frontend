@@ -43,4 +43,31 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# ── Required environment variables at docker run time ─────────────────────────
+# The following NEXT_PUBLIC_* variables are baked into the client bundle at
+# build time (they can't be injected at runtime). They MUST be provided as
+# --build-arg flags when running `docker build`, not as -e flags at runtime.
+#
+# If you only have the pre-built image and need to override these values,
+# rebuild from source with the correct ARG values.
+#
+# Required for the application to start without crashing (see instrumentation.ts):
+#   NEXT_PUBLIC_API_URL         — backend REST API base URL
+#   NEXT_PUBLIC_WEBHOOK_URL     — webhook receiver endpoint
+#
+# Optional but expected (see .env.example for the full list):
+#   NEXT_PUBLIC_APP_URL         — canonical public URL of this deployment
+#   NEXT_PUBLIC_STELLAR_NETWORK — "testnet" or "mainnet"
+#   NEXT_PUBLIC_STELLAR_HORIZON_URL — Stellar Horizon endpoint
+#
+# Example build command (supply all required build args):
+#   docker build \
+#     --build-arg NEXT_PUBLIC_API_URL=https://api.example.com \
+#     --build-arg NEXT_PUBLIC_WEBHOOK_URL=https://hooks.example.com \
+#     --build-arg NEXT_PUBLIC_APP_URL=https://app.example.com \
+#     -t neurowealth-frontend .
+#
+# Then run without any extra env flags:
+#   docker run -p 3000:3000 neurowealth-frontend
+
 CMD ["node", "server.js"]

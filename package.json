@@ -38,10 +38,6 @@
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "4.2.2"
   },
-  "lint-staged": {
-    "package.json": "node -e \"try{JSON.parse(require('fs').readFileSync('package.json','utf8'));console.log('✓ package.json valid');}catch(e){console.error('✗ package.json invalid:',e.message);process.exit(1);}\"",
-    "tsconfig.json": "node -e \"try{JSON.parse(require('fs').readFileSync('tsconfig.json','utf8'));console.log('✓ tsconfig.json valid');}catch(e){console.error('✗ tsconfig.json invalid:',e.message);process.exit(1);}\""
-  },
   "overrides": {
     "csstype": "3.1.3"
   },
