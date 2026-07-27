@@ -16,6 +16,7 @@ import {
 import type { User } from "@/types";
 import type { AuthAdapter, AuthSession } from "./auth-adapter";
 import { random } from "./seeded-rng";
+import { checkRateLimit } from "./rate-limit";
 
 export type { AuthSession } from "./auth-adapter";
 
@@ -110,6 +111,16 @@ export const mockAuth: AuthAdapter = {
   },
 
   async signIn(email: string, password: string): Promise<AuthSession> {
+    const limit = checkRateLimit(`signIn:${email.toLowerCase()}`, {
+      maxRequests: 5,
+      windowMs: 60_000,
+    });
+    if (!limit.allowed) {
+      throw new Error(
+        "Too many sign-in attempts. Please try again later.",
+      );
+    }
+
     await new Promise((r) => setTimeout(r, 400)); // simulate network
     const record = MOCK_USERS[email.toLowerCase()];
     if (!record || record.password !== password) {
@@ -133,7 +144,10 @@ export const mockAuth: AuthAdapter = {
   ): Promise<AuthSession> {
     await new Promise((r) => setTimeout(r, 400));
     if (MOCK_USERS[email.toLowerCase()]) {
-      throw new Error("An account with this email already exists");
+      // Use a generic message to avoid confirming whether an account exists.
+      // A real backend should return the same response for both duplicate and
+      // new registrations (e.g. "check your email") to prevent enumeration.
+      throw new Error("If this email is available, a confirmation has been sent.");
     }
     const user: MockAuthUserRecord = {
       id: `usr_${random().toString(36).slice(2)}`,

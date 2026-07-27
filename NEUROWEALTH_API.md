@@ -40,8 +40,23 @@ All backend responses must conform to this structure:
 {
   "success": true,
   "data": {
-    "portfolioValue": 125000.5,
-    "assets": [{ "symbol": "XLM", "amount": 5000, "value": 1250 }]
+    "summary": {
+      "totalBalance": 46320.82,
+      "totalYield": 2941.16,
+      "apy": 8.4,
+      "strategy": "balanced",
+      "strategyLabel": "Balanced",
+      "strategyDescription": "Yield split across Blend lending, DEX liquidity, and a protective stable reserve."
+    },
+    "allocation": [
+      { "id": "alloc-usdc-lend", "label": "Blend USDC lending", "symbol": "USDC", "amount": 22420.45, "share": 48.4, "change": 1.2, "tone": "primary" }
+    ],
+    "activity": [
+      { "id": "event-yield", "kind": "yield", "title": "Yield settled", "detail": "Daily earnings swept into your core balance.", "occurredAt": "2026-03-24T07:42:00.000Z", "amount": 142.38, "status": "completed" }
+    ],
+    "updatedAt": "2026-03-24T08:42:00.000Z",
+    "source": "demo",
+    "notice": "Using preview data until NEUROWEALTH_API_BASE_URL is configured for the live backend."
   }
 }
 ```
@@ -120,23 +135,57 @@ Accept: application/json
 {
   "success": true,
   "data": {
-    "portfolioValue": 125000.5,
-    "dayChange": 1250.0,
-    "dayChangePercent": 1.01,
-    "assets": [
+    "summary": {
+      "totalBalance": 46320.82,
+      "totalYield": 2941.16,
+      "apy": 8.4,
+      "strategy": "balanced",
+      "strategyLabel": "Balanced",
+      "strategyDescription": "Yield split across Blend lending, DEX liquidity, and a protective stable reserve."
+    },
+    "allocation": [
       {
-        "symbol": "XLM",
-        "amount": 5000,
-        "value": 1250.0,
-        "dayChangePercent": 0.5
+        "id": "alloc-usdc-lend",
+        "label": "Blend USDC lending",
+        "symbol": "USDC",
+        "amount": 22420.45,
+        "share": 48.4,
+        "change": 1.2,
+        "tone": "primary"
       },
       {
-        "symbol": "USDC",
-        "amount": 50000,
-        "value": 50000.0,
-        "dayChangePercent": 0.0
+        "id": "alloc-dex-lp",
+        "label": "Stellar DEX LP",
+        "symbol": "XLM",
+        "amount": 12860.11,
+        "share": 27.8,
+        "change": 2.4,
+        "tone": "accent"
       }
-    ]
+    ],
+    "activity": [
+      {
+        "id": "event-yield",
+        "kind": "yield",
+        "title": "Yield settled",
+        "detail": "Daily earnings swept into your core balance.",
+        "occurredAt": "2026-03-24T07:42:00.000Z",
+        "amount": 142.38,
+        "status": "completed"
+      },
+      {
+        "id": "event-deposit",
+        "kind": "deposit",
+        "title": "Deposit confirmed",
+        "detail": "Wallet deposit routed to the Balanced strategy.",
+        "occurredAt": "2026-03-23T18:22:00.000Z",
+        "amount": 8500,
+        "status": "completed"
+      }
+    ],
+    "updatedAt": "2026-03-24T08:42:00.000Z",
+    "source": "demo",
+    "notice": "Using preview data until NEUROWEALTH_API_BASE_URL is configured for the live backend."
   }
 }
 ```
@@ -302,7 +351,7 @@ Updates the user's strategy and risk profile.
 
 ### Making authenticated requests (frontend)
 
-Browser requests to Next.js `/api/*` routes are authenticated via the httpOnly session cookie. No extra header is needed:
+Browser requests to Next.js `/api/*` routes are authenticated via the session cookie (`nw_session`). This cookie is client-readable (not httpOnly) and unsigned in the current mock-auth setup. No extra header is needed:
 
 ```typescript
 // Browser → Next.js (cookie auth automatic)
@@ -426,14 +475,14 @@ The backend **must** maintain backward compatibility for at least **2 major vers
 - Deprecated fields must continue to be sent for at least one version
 - Breaking changes must be communicated and coordinated with the frontend team
 
-Example: If adding a new field `riskScore` to portfolio:
+Example: If adding a new field `riskScore` to the portfolio summary:
 
 ```json
 // v1 (current)
-{ "portfolioValue": 1000, "dayChange": 50 }
+{ "summary": { "totalBalance": 46320.82, "totalYield": 2941.16, "apy": 8.4, "strategy": "balanced" } }
 
-// v1.1 (backward compatible)
-{ "portfolioValue": 1000, "dayChange": 50, "riskScore": 0.42 }
+// v1.1 (backward compatible — additive field)
+{ "summary": { "totalBalance": 46320.82, "totalYield": 2941.16, "apy": 8.4, "strategy": "balanced", "riskScore": 0.42 } }
 
 // v2 (breaking — must be coordinated)
 ```
