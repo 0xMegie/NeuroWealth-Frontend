@@ -43,13 +43,25 @@ function resolveStellarConfig() {
 // body created a new component type every render and remounted the whole tree.
 const stellarConfig = resolveStellarConfig();
 
+// Providers are grouped into named sub-composers by concern, then combined
+// below in the same order the flat list used before — order matters because
+// each provider can only read context from providers above it in the tree,
+// and some (e.g. ToastProvider surfacing auth errors) depend on that.
+//
+//   1. AppShellProviders — display/runtime concerns with no dependencies on
+//      the others: sandbox mode, theme, locale.
+//   2. AuthProviders — identity; sits above feedback so toasts triggered by
+//      auth actions (login/logout) can read the auth context if needed.
+//   3. FeedbackProviders — user-facing feedback surfaces: toasts and the
+//      cookie-consent banner/modal state.
+const AppShellProviders = composeProviders([SandboxProvider, ThemeProvider, I18nProvider]);
+const AuthProviders = composeProviders([AuthProvider]);
+const FeedbackProviders = composeProviders([ToastProvider, CookieConsentProvider]);
+
 const Providers = composeProviders([
-  SandboxProvider,
-  ThemeProvider,
-  I18nProvider,
-  AuthProvider,
-  ToastProvider,
-  CookieConsentProvider,
+  AppShellProviders,
+  AuthProviders,
+  FeedbackProviders,
 ]);
 
 export function ClientProviders({ children }: { children: ReactNode }) {
