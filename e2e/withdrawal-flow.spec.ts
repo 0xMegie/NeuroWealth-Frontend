@@ -14,6 +14,11 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal form has wallet address input", async ({ page }) => {
+    // Authenticate first before accessing protected route
+    await page.goto("/login");
+    await page.getByRole("button", { name: /continue with demo/i }).click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=interactive");
     await page.waitForLoadState("networkidle");
 
@@ -25,6 +30,11 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal shows confirm step", async ({ page }) => {
+    // Authenticate first before accessing protected route
+    await page.goto("/login");
+    await page.getByRole("button", { name: /continue with demo/i }).click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=confirm");
     await page.waitForLoadState("networkidle");
 
@@ -33,6 +43,11 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal shows pending state", async ({ page }) => {
+    // Authenticate first before accessing protected route
+    await page.goto("/login");
+    await page.getByRole("button", { name: /continue with demo/i }).click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=pending");
     await page.waitForLoadState("networkidle");
 
@@ -40,6 +55,11 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal shows success receipt", async ({ page }) => {
+    // Authenticate first before accessing protected route
+    await page.goto("/login");
+    await page.getByRole("button", { name: /continue with demo/i }).click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=success");
     await page.waitForLoadState("networkidle");
 
@@ -47,6 +67,11 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal handles error recovery", async ({ page }) => {
+    // Authenticate first before accessing protected route
+    await page.goto("/login");
+    await page.getByRole("button", { name: /continue with demo/i }).click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=interactive");
     await page.waitForLoadState("networkidle");
 
