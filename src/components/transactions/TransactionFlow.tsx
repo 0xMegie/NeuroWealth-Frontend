@@ -1,340 +1,53 @@
 "use client";
 
-import { startTransition, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./transaction-flow.module.css";
 import { formatCurrency } from "@/lib/formatters";
-import {
-  buildPreviewSnapshot,
-  buildStatusChips,
-  buildTransactionReceipt,
-  getTransactionContext,
-  parsePreviewState,
-  parseTransactionKind,
-  PendingTransaction,
-  TransactionKind,
-  TransactionPreviewState,
-  TransactionQuote,
-  TransactionReceipt,
-  type RecoveryAction,
-} from "@/lib/transactions";
+import { buildStatusChips } from "@/lib/transactions";
 import { useSandbox } from "@/contexts/SandboxContext";
 import { TransactionErrorRecovery } from "./TransactionErrorRecovery";
 import { TransactionFormStage } from "./stages/TransactionFormStage";
 import { TransactionConfirmStage } from "./stages/TransactionConfirmStage";
 import { TransactionPendingStage } from "./stages/TransactionPendingStage";
 import { TransactionReceiptStage } from "./stages/TransactionReceiptStage";
-import { useTransactionForm } from "./hooks/useTransactionForm";
-import { useTransactionAPI } from "./hooks/useTransactionAPI";
-import {
-  currentStepIndex,
-  getTheme,
-} from "./utils/transaction-utils";
+import { useTransactionFlow } from "./hooks/useTransactionFlow";
+import { currentStepIndex } from "./utils/transaction-utils";
 import { getToneClassName } from "./utils/transaction-style-utils";
-
-type ThemeMode = "light" | "dark";
 
 export function TransactionFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getCurrentScenario, isSandboxMode } = useSandbox();
-  const timeoutRef = useRef<number | null>(null);
-
-  const [theme, setTheme] = useState<ThemeMode>(() => getTheme(searchParams));
-  const [kind, setKind] = useState<TransactionKind>(() =>
-    parseTransactionKind(searchParams.get("kind")),
-  );
-  const [preview, setPreview] = useState<TransactionPreviewState>(() =>
-    parsePreviewState(searchParams.get("preview")),
-  );
-  const [stage, setStage] = useState<
-    "form" | "confirm" | "pending" | "success" | "failure" | "error"
-  >("form");
-  const [quote, setQuote] = useState<TransactionQuote | null>(null);
-  const [pending, setPending] = useState<PendingTransaction | null>(null);
-  const [receipt, setReceipt] = useState<TransactionReceipt | null>(null);
-  const [requestMessage, setRequestMessage] = useState<string | null>(null);
-  const [lastFailedAction, setLastFailedAction] = useState<
-    "review" | "confirm" | null
-  >(null);
-
-  const {
-    formValues,
-    fieldErrors,
-    updateField,
-    validate,
-    reset: resetForm,
-    setErrors,
-    setValues,
-  } = useTransactionForm(kind);
-
-  const {
-    isSubmitting,
-    recovery,
-    lastErrorReference,
-    requestQuote,
-    submitTransaction,
-    clearRecovery,
-    setSubmitting,
-    cancelRequest,
-    reset: resetApi,
-  } = useTransactionAPI();
-
-  const context = getTransactionContext(kind);
-  const statusChips = buildStatusChips(kind, formValues);
   const scenario = getCurrentScenario("transactions");
 
-  useEffect(() => {
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    cancelRequest();
-
-    if (preview === "interactive") {
-      setStage("form");
-      resetForm();
-      setQuote(null);
-      setPending(null);
-      setReceipt(null);
-      setRequestMessage(null);
-      resetApi();
-      setLastFailedAction(null);
-      return;
-    }
-
-    const snapshot = buildPreviewSnapshot(kind, preview);
-
-    setStage(snapshot.stage);
-    setValues(snapshot.form);
-    setErrors(snapshot.fieldErrors);
-    setQuote(snapshot.quote);
-    setPending(snapshot.pending);
-    setReceipt(snapshot.receipt);
-    setRequestMessage(null);
-    resetApi();
-    setLastFailedAction(null);
-  }, [
+  const {
+    theme,
     kind,
     preview,
-    cancelRequest,
-    resetForm,
-    resetApi,
-    setValues,
-    setErrors,
-  ]);
+    stage,
+    quote,
+    pending,
+    receipt,
+    requestMessage,
+    context,
+    formValues,
+    fieldErrors,
+    isSubmitting,
+    recovery,
+    updateField,
+    handleThemeChange,
+    handleKindChange,
+    handlePreviewChange,
+    handleMaxAmount,
+    handleReview,
+    handleConfirm,
+    handleRecoveryAction,
+    resetFlow,
+    setStage,
+  } = useTransactionFlow({ searchParams, router, isSandboxMode, scenario });
 
-  // Handle sandbox scenarios
-  useEffect(() => {
-    if (isSandboxMode && scenario !== "success") {
-      if (scenario === "loading") {
-        setSubmitting(true);
-        setRequestMessage("Loading transaction data...");
-        const timer = setTimeout(() => {
-          setSubmitting(false);
-          setRequestMessage(null);
-        }, 3000);
-        return () => clearTimeout(timer);
-      } else if (scenario === "timeout") {
-        setSubmitting(true);
-        setRequestMessage("Request timed out. Please try again.");
-        const timer = setTimeout(() => {
-          setSubmitting(false);
-          setRequestMessage(
-            "Connection timeout. Please check your network and retry.",
-          );
-        }, 5000);
-        return () => clearTimeout(timer);
-      } else if (scenario === "partial-failure") {
-        setRequestMessage(
-          "Partial service degradation. Some features may be unavailable.",
-        );
-        setStage("form");
-      } else if (scenario === "empty") {
-        setStage("form");
-        resetForm();
-        setQuote(null);
-        setPending(null);
-        setReceipt(null);
-        setRequestMessage("No transaction data available.");
-      }
-    }
-  }, [scenario, isSandboxMode, kind, setSubmitting, resetForm]);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        window.clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-      // Abort any in-flight request on unmount to prevent state updates on an
-      // unmounted component and to avoid leaking the pending completion timer.
-      cancelRequest();
-    };
-  }, [cancelRequest]);
-
-  function syncRoute(
-    nextTheme: ThemeMode,
-    nextKind: TransactionKind,
-    nextPreview: TransactionPreviewState,
-  ) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("theme", nextTheme);
-    params.set("kind", nextKind);
-
-    if (nextPreview === "interactive") {
-      params.delete("preview");
-    } else {
-      params.set("preview", nextPreview);
-    }
-
-    startTransition(() => {
-      router.replace(`/dashboard/transactions?${params.toString()}`, {
-        scroll: false,
-      });
-    });
-  }
-
-  function handleThemeChange(nextTheme: ThemeMode) {
-    setTheme(nextTheme);
-    syncRoute(nextTheme, kind, preview);
-  }
-
-  function handleKindChange(nextKind: TransactionKind) {
-    setKind(nextKind);
-    syncRoute(theme, nextKind, preview);
-  }
-
-  function handlePreviewChange(nextPreview: TransactionPreviewState) {
-    setPreview(nextPreview);
-    syncRoute(theme, kind, nextPreview);
-  }
-
-  function handleMaxAmount() {
-    updateField("amount", context.availableAmount.toFixed(2));
-  }
-
-  async function submitReview() {
-    if (preview !== "interactive") {
-      return;
-    }
-
-    if (!validate()) {
-      return;
-    }
-
-    setRequestMessage(null);
-    clearRecovery();
-    setLastFailedAction(null);
-
-    const result = await requestQuote(kind, formValues, quote?.reference);
-
-    if (result.status === "aborted") {
-      return;
-    }
-
-    if (result.status === "success") {
-      setErrors({});
-      setQuote(result.quote);
-      setStage("confirm");
-      setLastFailedAction(null);
-      return;
-    }
-
-    setLastFailedAction("review");
-    setErrors(result.fieldErrors);
-    setStage("error");
-  }
-
-  async function handleReview(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await submitReview();
-  }
-
-  async function handleConfirm() {
-    if (preview !== "interactive") {
-      return;
-    }
-
-    setRequestMessage(null);
-    clearRecovery();
-    setLastFailedAction(null);
-
-    const result = await submitTransaction(kind, formValues, quote?.reference);
-
-    if (result.status === "aborted") {
-      return;
-    }
-
-    if (result.status === "success") {
-      setPending(result.pending);
-      setQuote(result.pending.quote);
-      setStage("pending");
-      setLastFailedAction(null);
-
-      timeoutRef.current = window.setTimeout(() => {
-        const nextReceipt = buildTransactionReceipt(
-          result.pending,
-          result.pending.nextStatus === "failure" ? "failure" : "success",
-        );
-
-        setReceipt(nextReceipt);
-        setStage(nextReceipt.status);
-        setSubmitting(false);
-      }, result.pending.completionDelayMs);
-      return;
-    }
-
-    setLastFailedAction("confirm");
-    setErrors(result.fieldErrors);
-    setStage("error");
-  }
-
-  function resetFlow() {
-    handlePreviewChange("interactive");
-  }
-
-  /**
-   * Handles recovery actions from the error recovery UI.
-   * Maps user choices to product actions: retry (submitAgain), edit (backToForm), or support (open email).
-   */
-  function handleRecoveryAction(action: RecoveryAction) {
-    switch (action) {
-      case "retry": {
-        // Clear error state and retry the failed operation with the saved values.
-        clearRecovery();
-        setRequestMessage("Retrying request...");
-        if (lastFailedAction === "confirm" && quote) {
-          void handleConfirm();
-        } else {
-          void submitReview();
-        }
-        break;
-      }
-      case "edit": {
-        // Return to form so user can review and edit amount or wallet details
-        setStage("form");
-        clearRecovery();
-        setSubmitting(false);
-        setLastFailedAction(null);
-        break;
-      }
-      case "support": {
-        // Open email client to contact support with transaction reference
-        const email = recovery?.supportEmail || "support@neurowealth.com";
-        const subject = encodeURIComponent(
-          `Transaction issue - Reference: ${lastErrorReference || "unknown"}`,
-        );
-        const body = encodeURIComponent(
-          `Describe your issue here.\n\nTransaction Reference: ${lastErrorReference || "N/A"}\nTransaction Type: ${kind}\n`,
-        );
-        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-        break;
-      }
-    }
-  }
+  const statusChips = buildStatusChips(kind, formValues);
 
   return (
     <div className={styles.page}>
