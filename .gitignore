@@ -14,6 +14,8 @@
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+*.test.js
+*.spec.js
 
 # next.js
 /.next/
