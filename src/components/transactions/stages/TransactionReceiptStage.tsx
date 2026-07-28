@@ -23,7 +23,11 @@ export function TransactionReceiptStage({
   onSwitchFlow,
 }: TransactionReceiptStageProps) {
   return (
-    <div className={`${styles.receiptCard} ${styles.form}`}>
+    <div
+      className={`${styles.receiptCard} ${styles.form}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className={styles.receiptBanner}>
         <span
           className={`${styles.statusChip} ${

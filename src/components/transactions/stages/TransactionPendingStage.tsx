@@ -17,9 +17,17 @@ export function TransactionPendingStage({
   pending,
 }: TransactionPendingStageProps) {
   return (
-    <div className={`${styles.pendingCard} ${styles.form}`}>
+    <div
+      className={`${styles.pendingCard} ${styles.form}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className={styles.pendingLayout}>
-        <div className={styles.pendingSpinner} />
+        <div
+          className={styles.pendingSpinner}
+          role="progressbar"
+          aria-label="Processing transaction"
+        />
         <div className={styles.sectionHeading}>
           <h3 className={styles.sectionTitle}>{pending.statusLabel}</h3>
           <p className={styles.sectionCopy}>{pending.message}</p>

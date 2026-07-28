@@ -28,7 +28,11 @@ export function TransactionConfirmStage({
     kind === "deposit" ? "Confirm deposit" : "Confirm withdrawal";
 
   return (
-    <div className={styles.form}>
+    <div
+      className={styles.form}
+      role="status"
+      aria-live="polite"
+    >
       <div className={styles.summaryCard}>
         <p className={styles.heroAmount}>{formatCurrency(quote.amount)}</p>
         <p className={styles.heroSubtext}>
