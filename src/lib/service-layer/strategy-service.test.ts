@@ -91,7 +91,7 @@ test("createAllocation accepts a valid amount and computes the expected return f
   assert.equal(response.data.amount, 500);
 
   // expectedReturn = amount * (expectedApy / 100) * (lockPeriod / 365)
-  const expected = 500 * (5.5 / 100) * (30 / 365);
+  const expected = 500 * (5 / 100) * (30 / 365);
   assert.ok(
     Math.abs(response.data.expectedReturn - expected) < 1e-9,
     `expected ~${expected}, got ${response.data.expectedReturn}`,

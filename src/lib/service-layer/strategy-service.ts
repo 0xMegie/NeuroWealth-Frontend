@@ -56,7 +56,7 @@ export class StrategyService extends BaseAdapter {
         name: "Conservative Yield",
         description: "Low-risk strategy focusing on stable returns",
         riskLevel: "low",
-        expectedApy: 5.5,
+        expectedApy: 5, // matches Conservative 4-6% range in strategies.ts/messages.ts
         minDeposit: 100,
         maxDeposit: 50000,
         lockPeriod: 30,
@@ -68,7 +68,7 @@ export class StrategyService extends BaseAdapter {
         name: "Balanced Growth",
         description: "Moderate risk with balanced growth potential",
         riskLevel: "medium",
-        expectedApy: 12.5,
+        expectedApy: 8.5, // matches Balanced 7-10% range in strategies.ts/messages.ts
         minDeposit: 500,
         maxDeposit: 100000,
         lockPeriod: 90,
@@ -80,7 +80,7 @@ export class StrategyService extends BaseAdapter {
         name: "Aggressive Yield",
         description: "High-risk strategy for maximum returns",
         riskLevel: "high",
-        expectedApy: 25.0,
+        expectedApy: 14.5, // matches Growth 11-18% range in strategies.ts/messages.ts
         minDeposit: 1000,
         maxDeposit: 500000,
         lockPeriod: 180,
