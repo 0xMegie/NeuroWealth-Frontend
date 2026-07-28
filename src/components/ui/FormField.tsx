@@ -7,7 +7,7 @@ import { joinDescribedBy } from "@/lib/form-validation";
 
 interface FormFieldProps {
   id: string;
-  label: ReactNode;
+  label?: ReactNode;
   error?: string;
   hint?: ReactNode;
   children: (props: FormFieldControlProps) => ReactNode;
@@ -58,13 +58,15 @@ export function FormField({
 
   return (
     <div className={className}>
-      <label
-        htmlFor={id}
-        className={labelClassName}
-      >
-        {label}
-        {required && <span className="text-red-400"> *</span>}
-      </label>
+      {label && (
+        <label
+          htmlFor={id}
+          className={labelClassName}
+        >
+          {label}
+          {required && <span className="text-red-400"> *</span>}
+        </label>
+      )}
       {children(controlProps)}
       {hint && (
         <p id={hintId} className={cn(hintClassName)}>

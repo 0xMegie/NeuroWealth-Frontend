@@ -7,6 +7,7 @@ import {
   Card,
   FieldError,
   FormErrorSummary,
+  FormField,
   SectionError,
 } from "@/components/ui";
 import {
@@ -272,231 +273,175 @@ export default function SupportForm() {
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <SectionError title="Contact Details" message={contactSectionError}>
             <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="support-name"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Name
-                </label>
-                <input
-                  id="support-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(event) => updateField("name", event.target.value)}
-                  aria-invalid={Boolean(errors.name)}
-                  aria-describedby={
-                    errors.name ? "support-name-error" : undefined
-                  }
-                  className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                    errors.name
-                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
-                      : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
-                  }`}
-                  placeholder="Your full name"
-                />
-                <FieldError id="support-name-error" message={errors.name} />
-              </div>
+              <FormField id="support-name" label="Name" error={errors.name}>
+                {(controlProps) => (
+                  <input
+                    {...controlProps}
+                    type="text"
+                    value={formData.name}
+                    onChange={(event) => updateField("name", event.target.value)}
+                    className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
+                      errors.name
+                        ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
+                        : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
+                    }`}
+                    placeholder="Your full name"
+                  />
+                )}
+              </FormField>
 
-              <div>
-                <label
-                  htmlFor="support-email"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Email Address
-                </label>
-                <input
-                  id="support-email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(event) => updateField("email", event.target.value)}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={
-                    errors.email ? "support-email-error" : undefined
-                  }
-                  className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                    errors.email
-                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
-                      : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
-                  }`}
-                  placeholder="name@example.com"
-                />
-                <FieldError id="support-email-error" message={errors.email} />
-              </div>
+              <FormField id="support-email" label="Email Address" error={errors.email}>
+                {(controlProps) => (
+                  <input
+                    {...controlProps}
+                    type="email"
+                    value={formData.email}
+                    onChange={(event) => updateField("email", event.target.value)}
+                    className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
+                      errors.email
+                        ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
+                        : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
+                    }`}
+                    placeholder="name@example.com"
+                  />
+                )}
+              </FormField>
             </div>
           </SectionError>
 
           <SectionError title="Request Details" message={requestSectionError}>
             <div className="space-y-5">
-              <div>
-                <label
-                  htmlFor="support-category"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Category
-                </label>
-                <select
-                  id="support-category"
-                  value={formData.category}
-                  onChange={(event) =>
-                    updateField("category", event.target.value)
-                  }
-                  aria-invalid={Boolean(errors.category)}
-                  aria-describedby={
-                    errors.category ? "support-category-error" : undefined
-                  }
-                  className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                    errors.category
-                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
-                      : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
-                  }`}
-                >
-                  {categories.map((category) => (
-                    <option
-                      key={category}
-                      value={category}
-                      className="bg-slate-950"
-                    >
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <FieldError
-                  id="support-category-error"
-                  message={errors.category}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="support-subject"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Subject
-                </label>
-                <input
-                  id="support-subject"
-                  type="text"
-                  value={formData.subject}
-                  onChange={(event) =>
-                    updateField("subject", event.target.value)
-                  }
-                  maxLength={MAX_SUBJECT_LENGTH}
-                  aria-invalid={Boolean(errors.subject)}
-                  aria-describedby={joinDescribedBy(
-                    "support-subject-hint",
-                    errors.subject ? "support-subject-error" : undefined,
-                  )}
-                  className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                    errors.subject
-                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
-                      : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
-                  }`}
-                  placeholder="Brief description of your issue"
-                />
-                <div className="mt-2 flex items-center justify-between text-sm text-slate-500">
-                  <span id="support-subject-hint">Required</span>
-                  <span>
-                    {formData.subject.length}/{MAX_SUBJECT_LENGTH}
-                  </span>
-                </div>
-                <FieldError
-                  id="support-subject-error"
-                  message={errors.subject}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="support-transaction-id"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Transaction ID
-                </label>
-                <div className="relative">
-                  <input
-                    id="support-transaction-id"
-                    type="text"
-                    value={formData.transactionId}
+              <FormField id="support-category" label="Category" error={errors.category}>
+                {(controlProps) => (
+                  <select
+                    {...controlProps}
+                    value={formData.category}
                     onChange={(event) =>
-                      updateField("transactionId", event.target.value)
-                    }
-                    aria-invalid={Boolean(errors.transactionId)}
-                    aria-describedby={joinDescribedBy(
-                      "support-transaction-hint",
-                      errors.transactionId
-                        ? "support-transaction-error"
-                        : undefined,
-                    )}
-                    aria-busy={
-                      asyncValidationState.transactionId === "validating"
+                      updateField("category", event.target.value)
                     }
                     className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                      errors.transactionId
+                      errors.category
                         ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
                         : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
                     }`}
-                    placeholder="Optional: TX-123..."
-                  />
-                  {asyncValidationState.transactionId === "validating" && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-400/30 border-t-sky-400" />
-                    </div>
-                  )}
-                </div>
-                <p
-                  id="support-transaction-hint"
-                  className="mt-2 text-sm text-slate-500"
-                >
-                  Async mock check: references containing{" "}
-                  <span className="font-mono">404</span> fail lookup.
-                </p>
-                <FieldError
-                  id="support-transaction-error"
-                  message={errors.transactionId}
-                />
-              </div>
+                  >
+                    {categories.map((category) => (
+                      <option
+                        key={category}
+                        value={category}
+                        className="bg-slate-950"
+                      >
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
 
-              <div>
-                <label
-                  htmlFor="support-message"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="support-message"
-                  value={formData.message}
-                  onChange={(event) =>
-                    updateField("message", event.target.value)
-                  }
-                  maxLength={MAX_MESSAGE_LENGTH}
-                  rows={6}
-                  aria-invalid={Boolean(errors.message)}
-                  aria-describedby={joinDescribedBy(
-                    "support-message-hint",
-                    errors.message ? "support-message-error" : undefined,
-                  )}
-                  className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
-                    errors.message
-                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
-                      : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
-                  }`}
-                  placeholder="Please provide details about your issue or question."
-                />
-                <div className="mt-2 flex items-center justify-between text-sm text-slate-500">
-                  <span id="support-message-hint">
-                    Please be as detailed as possible
+              <FormField
+                id="support-subject"
+                label="Subject"
+                error={errors.subject}
+                hint={
+                  <span className="flex items-center justify-between w-full">
+                    <span>Required</span>
+                    <span>
+                      {formData.subject.length}/{MAX_SUBJECT_LENGTH}
+                    </span>
                   </span>
-                  <span>
-                    {formData.message.length}/{MAX_MESSAGE_LENGTH}
+                }
+              >
+                {(controlProps) => (
+                  <input
+                    {...controlProps}
+                    type="text"
+                    value={formData.subject}
+                    onChange={(event) =>
+                      updateField("subject", event.target.value)
+                    }
+                    maxLength={MAX_SUBJECT_LENGTH}
+                    className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
+                      errors.subject
+                        ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
+                        : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
+                    }`}
+                    placeholder="Brief description of your issue"
+                  />
+                )}
+              </FormField>
+
+              <FormField
+                id="support-transaction-id"
+                label="Transaction ID"
+                error={errors.transactionId}
+                hint={
+                  <>
+                    Async mock check: references containing{" "}
+                    <span className="font-mono">404</span> fail lookup.
+                  </>
+                }
+              >
+                {(controlProps) => (
+                  <div className="relative">
+                    <input
+                      {...controlProps}
+                      type="text"
+                      value={formData.transactionId}
+                      onChange={(event) =>
+                        updateField("transactionId", event.target.value)
+                      }
+                      aria-busy={
+                        asyncValidationState.transactionId === "validating"
+                      }
+                      className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
+                        errors.transactionId
+                          ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
+                          : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
+                      }`}
+                      placeholder="Optional: TX-123..."
+                    />
+                    {asyncValidationState.transactionId === "validating" && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-400/30 border-t-sky-400" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </FormField>
+
+              <FormField
+                id="support-message"
+                label="Message"
+                error={errors.message}
+                hint={
+                  <span className="flex items-center justify-between w-full">
+                    <span>
+                      Please be as detailed as possible
+                    </span>
+                    <span>
+                      {formData.message.length}/{MAX_MESSAGE_LENGTH}
+                    </span>
                   </span>
-                </div>
-                <FieldError
-                  id="support-message-error"
-                  message={errors.message}
-                />
-              </div>
+                }
+              >
+                {(controlProps) => (
+                  <textarea
+                    {...controlProps}
+                    value={formData.message}
+                    onChange={(event) =>
+                      updateField("message", event.target.value)
+                    }
+                    maxLength={MAX_MESSAGE_LENGTH}
+                    rows={6}
+                    className={`w-full rounded-xl border bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition ${
+                      errors.message
+                        ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
+                        : "border-slate-700/60 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/15"
+                    }`}
+                    placeholder="Please provide details about your issue or question."
+                  />
+                )}
+              </FormField>
             </div>
           </SectionError>
 
