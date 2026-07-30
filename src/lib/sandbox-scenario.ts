@@ -31,12 +31,20 @@ const SANDBOX_SCENARIOS = new Set<SandboxScenario>([
  * Unknown / missing values fall back to `"live"` so that routes behave normally
  * when no sandbox override is active.
  *
+ * In production, scenario overrides are always ignored and "live" is returned
+ * to prevent sandbox scenarios from being triggered in deployed environments.
+ *
  * @param value - Raw string from a URL search param or null/undefined when absent.
  * @returns A validated SandboxScenario value.
  */
 export function parseSandboxScenario(
   value: string | null | undefined,
 ): SandboxScenario {
+  // In production, ignore all scenario overrides and return "live"
+  if (process.env.NODE_ENV === "production") {
+    return "live";
+  }
+
   if (value === "empty") return "empty";
   if (value === "loading") return "loading";
   if (value === "partial-failure") return "partial-failure";

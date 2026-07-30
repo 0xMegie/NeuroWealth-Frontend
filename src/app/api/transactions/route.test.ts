@@ -150,3 +150,60 @@ test("POST /api/transactions simulation failure returns failure outcome", async 
   assert.equal(body.success, true);
   assert.ok(body.data.pending);
 });
+
+test("POST /api/transactions validates negative amount before backend proxy", async () => {
+  const req = makePostRequest({
+    intent: "quote",
+    kind: "deposit",
+    values: {
+      amount: "-100",
+      walletAddress: VALID_STELLAR_ADDRESS,
+      walletConnected: true,
+    },
+  });
+  const res = await POST(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 400);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "VALIDATION_ERROR");
+  assert.ok(body.error.details.amount);
+});
+
+test("POST /api/transactions validates oversized amount before backend proxy", async () => {
+  const req = makePostRequest({
+    intent: "quote",
+    kind: "withdrawal",
+    values: {
+      amount: "999999",
+      walletAddress: VALID_STELLAR_ADDRESS,
+      walletConnected: true,
+    },
+  });
+  const res = await POST(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 400);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "VALIDATION_ERROR");
+  assert.ok(body.error.details.amount);
+});
+
+test("POST /api/transactions validates invalid wallet address for withdrawals", async () => {
+  const req = makePostRequest({
+    intent: "quote",
+    kind: "withdrawal",
+    values: {
+      amount: "100",
+      walletAddress: "INVALID-ADDRESS",
+      walletConnected: true,
+    },
+  });
+  const res = await POST(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 400);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "VALIDATION_ERROR");
+  assert.ok(body.error.details.walletAddress);
+});

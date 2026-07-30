@@ -51,6 +51,22 @@ export async function POST(request: NextRequest) {
   );
   const fetchBackend = createServerFetcher();
 
+  // Validate transaction values BEFORE forwarding to backend
+  // This ensures semantic checks (amount range, wallet format, etc.) are
+  // enforced regardless of whether we're using a backend or local mock
+  const errors = validateTransactionValues(kind, values);
+
+  if (Object.keys(errors).length > 0) {
+    return NextResponse.json(
+      errorResponse(
+        ERROR_CODE.VALIDATION_ERROR,
+        "Fix the highlighted fields and try again.",
+        errors,
+      ),
+      { status: HTTP_STATUS.BAD_REQUEST },
+    );
+  }
+
   if (fetchBackend && !isSandboxScenario(scenario)) {
     try {
       const response = await fetchBackend(transactionPath, {
@@ -92,18 +108,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const errors = validateTransactionValues(kind, values);
-
-  if (Object.keys(errors).length > 0) {
-    return NextResponse.json(
-      errorResponse(
-        ERROR_CODE.VALIDATION_ERROR,
-        "Fix the highlighted fields and try again.",
-        errors,
-      ),
-      { status: HTTP_STATUS.BAD_REQUEST },
-    );
-  }
+  // Local mock path: validation already done above
 
   if (payload.intent === "submit") {
     const outcome = payload.simulation === "failure" ? "failure" : "success";

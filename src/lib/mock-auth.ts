@@ -15,7 +15,6 @@ import {
 } from "./user";
 import type { User } from "@/types";
 import type { AuthAdapter, AuthSession } from "./auth-adapter";
-import { random } from "./seeded-rng";
 import { checkRateLimit } from "./rate-limit";
 
 export type { AuthSession } from "./auth-adapter";
@@ -34,8 +33,19 @@ const MOCK_USERS: Record<string, { password: string; user: MockAuthUserRecord }>
   },
 };
 
+/**
+ * Generate a cryptographically secure session token.
+ * Uses crypto.randomUUID (Web Crypto API) to ensure unpredictability,
+ * independent of NEXT_PUBLIC_DEMO_SEED or any seeded RNG.
+ */
 function generateToken(): string {
-  return `mock_token_${random().toString(36).slice(2)}`;
+  // Use crypto API for secure randomness
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return `mock_token_${crypto.randomUUID()}`;
+  }
+  // Fallback for environments without crypto.randomUUID (Node < 19 without polyfill)
+  // This should never happen in modern environments but provides a safe fallback
+  throw new Error("crypto.randomUUID is not available in this environment");
 }
 
 function isLegacyMockAuthUserRecord(value: unknown): value is MockAuthUserRecord {
@@ -150,7 +160,7 @@ export const mockAuth: AuthAdapter = {
       throw new Error("If this email is available, a confirmation has been sent.");
     }
     const user: MockAuthUserRecord = {
-      id: `usr_${random().toString(36).slice(2)}`,
+      id: `usr_${crypto.randomUUID()}`,
       email: email.toLowerCase(),
       name,
       createdAt: new Date().toISOString(),
