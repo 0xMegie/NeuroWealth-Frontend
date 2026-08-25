@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { mockAuditService } from "@/lib/mock-audit";
+import { logger } from "@/lib/logger";
 
 type SaveStatus = "idle" | "success" | "error";
 
@@ -35,7 +36,12 @@ export function useSettingsForm<T>(
           setSaved(data);
           setDraft(data);
         }
-      } catch {}
+      } catch (error) {
+        logger.error("Failed to load saved settings from localStorage", {
+          storageKey,
+          error,
+        });
+      }
       setPageLoading(false);
     }, options.loadDelayMs ?? 600);
     return () => clearTimeout(timer);
