@@ -236,7 +236,8 @@ test("base-adapter — error-handling: ServiceError is passed through", async ()
       executeWithRetry(async () => {
         throw serviceError;
       }),
-    (err) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (err: any) =>
       err === serviceError &&
       err.code === "SERVICE_ERROR",
   );

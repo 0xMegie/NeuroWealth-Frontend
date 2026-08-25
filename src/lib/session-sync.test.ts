@@ -6,6 +6,22 @@ import {
   SESSION_COOKIE_NAME,
 } from "./auth-constants";
 
+if (typeof globalThis.StorageEvent === "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).StorageEvent = class StorageEvent extends Event {
+    key: string | null;
+    newValue: string | null;
+    oldValue: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(type: string, init?: any) {
+      super(type, init);
+      this.key = init?.key ?? null;
+      this.newValue = init?.newValue ?? null;
+      this.oldValue = init?.oldValue ?? null;
+    }
+  };
+}
+
 // ── Constants are properly defined ────────────────────────────────────────
 
 test("session-sync — constants: SESSION_STORAGE_KEY is a non-empty string", () => {
@@ -106,7 +122,7 @@ test("session-sync — cross-tab: session cleared in one tab triggers sync in ot
 test("session-sync — cross-tab: session update in one tab triggers sync in others", () => {
   const storageKey = SESSION_STORAGE_KEY;
   let syncTriggered = false;
-  let newSessionValue = null;
+  let newSessionValue: string | null = null;
 
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === storageKey && e.newValue !== null) {
@@ -123,7 +139,7 @@ test("session-sync — cross-tab: session update in one tab triggers sync in oth
 
   handleStorageChange(event);
   assert.equal(syncTriggered, true);
-  assert.ok(newSessionValue?.includes("new-token"));
+  assert.ok((newSessionValue as string | null)?.includes("new-token"));
 });
 
 // ── Cookie handling ──────────────────────────────────────────────────────
