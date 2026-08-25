@@ -30,6 +30,11 @@ export default function SettingsLayout({
                   Notifications
                 </Link>
               </li>
+              <li>
+                <Link href="/dashboard/settings/privacy" className="settings-nav-link">
+                  Privacy
+                </Link>
+              </li>
             </ul>
           </nav>
         </aside>
