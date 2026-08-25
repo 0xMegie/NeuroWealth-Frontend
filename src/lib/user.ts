@@ -10,7 +10,9 @@
  */
 
 import type { ApiResponse } from "@/lib/api-response";
-import type { User } from "@/types";
+import type { User, UserRole } from "@/types";
+
+const DEFAULT_USER_ROLE: UserRole = "user";
 
 export interface MockAuthUserRecord {
   id: string;
@@ -19,6 +21,7 @@ export interface MockAuthUserRecord {
   avatar?: string;
   walletAddress?: string;
   createdAt: string;
+  role?: UserRole;
 }
 
 export interface ApiUserRecord {
@@ -31,6 +34,7 @@ export interface ApiUserRecord {
   walletAddress?: string | null;
   address?: string | null;
   createdAt?: string | null;
+  role?: UserRole | null;
 }
 
 export interface ApiUserPayload {
@@ -94,6 +98,7 @@ export function adaptMockAuthUser(record: MockAuthUserRecord): User {
     avatarUrl: record.avatar,
     avatarInitials: getUserInitials(displayName),
     createdAt: record.createdAt,
+    role: record.role ?? DEFAULT_USER_ROLE,
   };
 }
 
@@ -116,6 +121,7 @@ export function adaptApiUser(record: ApiUserRecord): User {
     avatarUrl: pickFirstValue(record.avatarUrl, record.avatar),
     avatarInitials: getUserInitials(displayName),
     createdAt: record.createdAt ?? undefined,
+    role: record.role ?? DEFAULT_USER_ROLE,
   };
 }
 

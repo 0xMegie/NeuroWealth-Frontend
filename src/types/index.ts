@@ -1,6 +1,6 @@
 import type { User } from "./user";
 
-export type { User } from "./user";
+export type { User, UserRole } from "./user";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 

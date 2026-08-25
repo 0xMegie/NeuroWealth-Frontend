@@ -45,6 +45,7 @@ const AUTHED_USER: User = {
   id: "usr_fixture",
   displayName: "Test User",
   email: "test@example.com",
+  role: "user",
 };
 
 // ── Loading state ─────────────────────────────────────────────────────────────
@@ -111,12 +112,12 @@ test("ProtectedRoute — authenticated: renders children when user is present", 
 });
 
 test("ProtectedRoute — authenticated: any non-null user satisfies the guard", () => {
-  const minimalUser: User = { id: "u_min", displayName: "Min" };
+  const minimalUser: User = { id: "u_min", displayName: "Min", role: "user" };
   assert.equal(resolveGuard(false, minimalUser), "children");
 });
 
 test("ProtectedRoute — authenticated: user without optional fields still grants access", () => {
-  const bareUser: User = { id: "u_bare", displayName: "Bare User" };
+  const bareUser: User = { id: "u_bare", displayName: "Bare User", role: "user" };
   assert.equal(resolveGuard(false, bareUser), "children");
 });
 
