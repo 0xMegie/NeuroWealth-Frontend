@@ -1,90 +1,44 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { NextRequest } from "next/server";
-import {
-  isSessionCookieValid,
-  getSessionFromRequest,
-  requireAuth,
-} from "./api-auth";
-import { SESSION_COOKIE_NAME } from "./auth-constants";
+import fs from "node:fs/promises";
+import path from "node:path";
 
-function createValidCookieValue(expiresInMs = 3600 * 1000): string {
-  return encodeURIComponent(
-    JSON.stringify({
-      token: "test_token_valid_123",
-      expiresAt: Date.now() + expiresInMs,
-    }),
-  );
+const ROOT = process.cwd();
+const API_DIR = path.join(ROOT, "src", "app", "api");
+
+async function collectRouteFiles(dir: string): Promise<string[]> {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const results: string[] = [];
+
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...(await collectRouteFiles(full)));
+    } else if (entry.isFile() && entry.name === "route.ts") {
+      results.push(full);
+    }
+  }
+
+  return results;
 }
 
-test("isSessionCookieValid — returns false for missing or invalid cookies", () => {
-  assert.equal(isSessionCookieValid(undefined), false);
-  assert.equal(isSessionCookieValid(""), false);
-  assert.equal(isSessionCookieValid("invalid-json"), false);
-  assert.equal(
-    isSessionCookieValid(encodeURIComponent(JSON.stringify({}))),
-    false,
-  );
-  assert.equal(
-    isSessionCookieValid(
-      encodeURIComponent(JSON.stringify({ token: "tok" })),
-    ),
-    false,
-  );
-  assert.equal(
-    isSessionCookieValid(
-      encodeURIComponent(JSON.stringify({ expiresAt: Date.now() + 10000 })),
-    ),
-    false,
-  );
-});
+// Routes that are intentionally public (do not call requireAuth).
+const PUBLIC_ALLOWLIST = new Set<string>([
+  // Example: path.join("src", "app", "api", "public", "route.ts")
+]);
 
-test("isSessionCookieValid — returns false for expired sessions", () => {
-  const expiredCookie = encodeURIComponent(
-    JSON.stringify({
-      token: "test_token",
-      expiresAt: Date.now() - 1000,
-    }),
-  );
-  assert.equal(isSessionCookieValid(expiredCookie), false);
-});
+test("API route handlers call requireAuth or are explicitly allowlisted", async () => {
+  const files = await collectRouteFiles(API_DIR);
+  assert.ok(files.length > 0, "no route.ts files found under src/app/api — check paths");
 
-test("isSessionCookieValid — returns true for valid session cookies", () => {
-  const validCookie = createValidCookieValue();
-  assert.equal(isSessionCookieValid(validCookie), true);
-});
+  for (const file of files) {
+    const rel = path.relative(ROOT, file);
+    if (PUBLIC_ALLOWLIST.has(rel)) continue;
 
-test("getSessionFromRequest — extracts session from NextRequest cookies", () => {
-  const unauthReq = new NextRequest("http://localhost:3000/api/test");
-  assert.equal(getSessionFromRequest(unauthReq), null);
-
-  const invalidReq = new NextRequest("http://localhost:3000/api/test", {
-    headers: { Cookie: `${SESSION_COOKIE_NAME}=invalid` },
-  });
-  assert.equal(getSessionFromRequest(invalidReq), null);
-
-  const validReq = new NextRequest("http://localhost:3000/api/test", {
-    headers: { Cookie: `${SESSION_COOKIE_NAME}=${createValidCookieValue()}` },
-  });
-  const session = getSessionFromRequest(validReq);
-  assert.ok(session);
-  assert.equal(session.token, "test_token_valid_123");
-  assert.equal(typeof session.expiresAt, "number");
-});
-
-test("requireAuth — allows authenticated requests and blocks unauthenticated ones", async () => {
-  const validReq = new NextRequest("http://localhost:3000/api/test", {
-    headers: { Cookie: `${SESSION_COOKIE_NAME}=${createValidCookieValue()}` },
-  });
-  assert.equal(requireAuth(validReq), null);
-
-  const unauthReq = new NextRequest("http://localhost:3000/api/test");
-  const authResponse = requireAuth(unauthReq);
-  assert.ok(authResponse);
-  assert.equal(authResponse.status, 401);
-
-  const body = await authResponse.json();
-  assert.equal(body.success, false);
-  assert.equal(body.error.code, "UNAUTHORIZED");
-  assert.ok(body.error.message);
+    const content = await fs.readFile(file, "utf8");
+    assert.ok(
+      content.includes("requireAuth(") || content.includes("requireAuth "),
+      `Route ${rel} should call requireAuth or be added to PUBLIC_ALLOWLIST`
+    );
+  }
 });

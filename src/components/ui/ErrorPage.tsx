@@ -1,4 +1,7 @@
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, useEffect, useRef } from "react";
+import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 import { Button } from "./Button";
 
 interface ErrorPageProps {
@@ -23,8 +26,19 @@ export function ErrorPage({
   primaryAction,
   secondaryAction,
 }: ErrorPageProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    containerRef.current?.focus({ preventScroll: true });
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-900 px-4">
+    <div 
+      ref={containerRef}
+      id={MAIN_CONTENT_LANDMARK_ID}
+      tabIndex={-1}
+      className="min-h-screen flex items-center justify-center bg-dark-900 px-4"
+    >
       <div className="text-center max-w-md">
         {icon && (
           <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-red-500/10 text-red-400 mx-auto mb-6">
