@@ -1,7 +1,8 @@
-import { describe, it, beforeEach } from "node:test";
+import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { renderHook, act } from "@/test-utils/render-hook";
 import { useSettingsForm } from "./useSettingsForm";
+import { logger } from "@/lib/logger";
 
 interface Draft {
   enabled: boolean;
@@ -14,6 +15,10 @@ function flush(ms = 0) {
 describe("useSettingsForm", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    mock.restoreAll();
   });
 
   it("loads defaults when storage is empty, then clears pageLoading", async () => {
@@ -44,6 +49,28 @@ describe("useSettingsForm", () => {
 
     assert.deepEqual(result.current.saved, { enabled: true });
     assert.deepEqual(result.current.draft, { enabled: true });
+  });
+  it("logs and keeps defaults when stored settings JSON is malformed", async () => {
+    localStorage.setItem("bad-settings", "{not valid json");
+    const errorSpy = mock.method(logger, "error");
+
+    const { result } = renderHook(() =>
+      useSettingsForm<Draft>("bad-settings", { enabled: false }, { auditSection: "test", loadDelayMs: 0 }),
+    );
+
+    await act(async () => {
+      await flush(0);
+    });
+
+    assert.equal(result.current.pageLoading, false);
+    assert.deepEqual(result.current.saved, { enabled: false });
+    assert.deepEqual(result.current.draft, { enabled: false });
+    assert.equal(errorSpy.mock.callCount(), 1);
+
+    const [message, context] = errorSpy.mock.calls[0].arguments;
+    assert.equal(message, "Failed to load saved settings from localStorage");
+    assert.equal((context as { storageKey: string }).storageKey, "bad-settings");
+    assert.ok((context as { error: unknown }).error instanceof SyntaxError);
   });
 
   it("tracks isDirty and persists on handleSave", async () => {
