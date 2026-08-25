@@ -29,7 +29,7 @@ export function DiagnosticsPanelContent({ onClose }: DiagnosticsPanelContentProp
         role="dialog"
         aria-modal="true"
         aria-labelledby="diagnostics-panel-title"
-        className="w-[400px] h-[500px] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 zoom-in-95 duration-200"
+        className="w-[calc(100vw-2rem)] max-w-[400px] h-[500px] max-h-[calc(100vh-2rem)] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 zoom-in-95 duration-200"
       >
         <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
           <h3 id="diagnostics-panel-title" className="text-xs font-bold text-white uppercase tracking-widest">
