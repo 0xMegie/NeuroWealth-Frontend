@@ -77,20 +77,20 @@ export const signTransaction = async ({
  * share one integration path with StellarWalletsKit (#655). Kit does not
  * expose getNetwork, so this thin wrapper is intentional.
  */
-export async function getFreighterNetworkPassphrase(): Promise<
-  string | undefined
-> {
-  if (typeof window === "undefined") return undefined;
+export const freighterAPI = {
+  async getFreighterNetworkPassphrase(): Promise<string | undefined> {
+    if (typeof window === "undefined") return undefined;
 
-  try {
-    const { getNetwork: getFreighterNetwork } = await import("@stellar/freighter-api");
-    const { networkPassphrase, error } = await getFreighterNetwork();
-    if (error || !networkPassphrase) return undefined;
-    return networkPassphrase;
-  } catch {
-    return undefined;
+    try {
+      const { getNetwork: getFreighterNetwork } = await import("@stellar/freighter-api");
+      const { networkPassphrase, error } = await getFreighterNetwork();
+      if (error || !networkPassphrase) return undefined;
+      return networkPassphrase;
+    } catch {
+      return undefined;
+    }
   }
-}
+};
 
 /**
  * Landing/quick Freighter connect via the shared kit path (setWallet + getAddress).

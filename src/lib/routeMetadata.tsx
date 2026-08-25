@@ -139,6 +139,10 @@ const appRouteDefinitions: AppRouteDefinition[] = [
     icon: SlidersHorizontal,
   },
   {
+    href: "/dashboard/settings/privacy",
+    label: "Privacy",
+  },
+  {
     href: "/dashboard/settings/security",
     label: "Security",
     icon: Shield,

@@ -31,7 +31,7 @@ export function composeProviders(providers: ProviderComponent[]) {
     return providers.reduceRight<ReactNode>((acc, entry) => {
       if (Array.isArray(entry)) {
         const [Provider, props] = entry;
-        return createElement(Provider, { ...props, children: acc });
+        return createElement(Provider, props, acc);
       }
       const Provider = entry;
       return createElement(Provider, null, acc);

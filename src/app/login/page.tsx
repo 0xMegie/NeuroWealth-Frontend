@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 type LoginState = "idle" | "loading" | "error" | "success";
 
-export const isValidRedirect = (url: string): boolean => {
+const isValidRedirect = (url: string): boolean => {
   return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\");
 };
 
