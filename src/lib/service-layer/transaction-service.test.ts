@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { TransactionService, type Transaction } from "./transaction-service";
+import { MockStore } from "./base-adapter";
 import { assertRejectsWithOriginalMessage } from "./test-helpers";
 
 function createService() {
@@ -63,7 +64,7 @@ test("getTransactionStats counts failed volume separately from totalVolume", asy
 
   // Seed via the private mock map used by the service (test-only).
   (
-    service as unknown as { mockTransactions: Map<string, Transaction[]> }
+    service as unknown as { mockTransactions: MockStore<string, Transaction[]> }
   ).mockTransactions.set("user_stats", [failed, completed]);
 
   const response = await service.getTransactionStats("user_stats");

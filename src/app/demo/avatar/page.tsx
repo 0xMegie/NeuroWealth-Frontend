@@ -5,6 +5,7 @@ import Avatar from "@/components/avatar/Avatar";
 import AvatarUploader from "@/components/avatar/AvatarUploader";
 import FileUpload from "@/components/avatar/FileUpload";
 import ImageCrop from "@/components/avatar/ImageCrop";
+import { logger } from "@/lib/logger";
 
 export default function AvatarDemo() {
   const [activeTab, setActiveTab] = useState<
@@ -229,9 +230,9 @@ function ComponentsView({ savedAvatar }: { savedAvatar?: string }) {
             accept="image/*"
             maxSizeMB={5}
             onUploadComplete={(file) =>
-              console.log("Upload complete:", file.file.name)
+              logger.info("avatar.upload.complete", { fileName: file.file.name })
             }
-            onCancel={(fileId) => console.log("Upload cancelled:", fileId)}
+            onCancel={(fileId) => logger.info("avatar.upload.cancelled", { fileId })}
           />
         </div>
       </section>
