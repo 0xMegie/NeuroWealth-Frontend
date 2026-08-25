@@ -23,7 +23,7 @@ export function useNotificationPreferences() {
   const [loading] = useState(false);
 
   const updatePreference = (
-    section: "categories" | "channels",
+    section: "categories" | "channels" | "emailDigest",
     key: string,
     value: boolean
   ) => {
