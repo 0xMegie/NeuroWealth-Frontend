@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useRef } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -24,6 +24,7 @@ import { apiRequest, ApiRequestError } from "@/lib/api-client";
 import { formatApyRange } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/contexts/I18nContext";
+import { logger } from "@/lib/logger";
 import type { AppMessages } from "@/lib/i18n/messages";
 
 type StrategiesMessages = AppMessages["settings"]["strategies"];
@@ -43,10 +44,13 @@ interface State {
   saveStatus: SaveStatus;
   errorMessage: string | null;
   loadingInitial: boolean;
+  loadError: string | null;
 }
 
 type Action =
   | { type: "LOAD_SUCCESS"; strategy: StrategyKind | null }
+  | { type: "LOAD_ERROR"; message: string }
+  | { type: "RETRY_LOAD" }
   | { type: "REQUEST_CHANGE"; strategy: StrategyKind }
   | { type: "CANCEL_CHANGE" }
   | { type: "SAVE_START" }
@@ -56,7 +60,11 @@ type Action =
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "LOAD_SUCCESS":
-      return { ...state, current: action.strategy, loadingInitial: false };
+      return { ...state, current: action.strategy, loadingInitial: false, loadError: null };
+    case "LOAD_ERROR":
+      return { ...state, loadingInitial: false, loadError: action.message };
+    case "RETRY_LOAD":
+      return { ...state, loadingInitial: true, loadError: null };
     case "REQUEST_CHANGE":
       return { ...state, pending: action.strategy, saveStatus: "idle", errorMessage: null };
     case "CANCEL_CHANGE":
@@ -82,6 +90,7 @@ const INITIAL_STATE: State = {
   saveStatus: "idle",
   errorMessage: null,
   loadingInitial: true,
+  loadError: null,
 };
 
 // ─── Design-spec risk badge ───────────────────────────────────────────────────
@@ -481,6 +490,7 @@ function SkeletonCards() {
 
 export function StrategySelector() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [retryNonce, setRetryNonce] = useState(0);
   const { messages } = useI18n();
   const t = messages.settings.strategies;
   const localizedStrategies = useMemo(
@@ -492,20 +502,38 @@ export function StrategySelector() {
 
   // Load preference on mount — client localStorage first, then API
   useEffect(() => {
+    const controller = new AbortController();
+
     const stored = loadStoredPreference();
     if (stored) {
       dispatch({ type: "LOAD_SUCCESS", strategy: stored });
-      return;
+      return () => controller.abort();
     }
 
-    apiRequest<StrategyPreference>("/api/strategy", { timeoutMs: 8000 })
+    apiRequest<StrategyPreference>("/api/strategy", {
+      timeoutMs: 8000,
+      signal: controller.signal,
+    })
       .then((data) => {
         dispatch({ type: "LOAD_SUCCESS", strategy: data.strategy });
       })
-      .catch(() => {
-        dispatch({ type: "LOAD_SUCCESS", strategy: null });
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        logger.error("Failed to load strategy preference", err);
+        const message =
+          err instanceof ApiRequestError
+            ? err.message
+            : "Unable to load your saved strategy. You can still pick one below.";
+        dispatch({ type: "LOAD_ERROR", message });
       });
-  }, []);
+
+    return () => controller.abort();
+  }, [retryNonce]);
+
+  function retryLoad() {
+    dispatch({ type: "RETRY_LOAD" });
+    setRetryNonce((n) => n + 1);
+  }
 
   function handleSelect(kind: StrategyKind) {
     if (kind === state.current) return;
@@ -540,7 +568,7 @@ export function StrategySelector() {
     }
   }
 
-  const { current, pending, saveStatus, errorMessage, loadingInitial } = state;
+  const { current, pending, saveStatus, errorMessage, loadingInitial, loadError } = state;
 
   return (
     <main className="min-h-screen bg-dark-900 pt-24 pb-16">
@@ -558,6 +586,23 @@ export function StrategySelector() {
         {saveStatus === "success" && current && (
           <div className="mb-6">
             <SuccessBanner strategy={getLocalizedStrategy(current)} t={t} />
+          </div>
+        )}
+
+        {/* Load error banner — fetch-on-mount failed; user can still pick a strategy below */}
+        {loadError && (
+          <div
+            role="alert"
+            className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+          >
+            <span>{loadError}</span>
+            <button
+              type="button"
+              onClick={retryLoad}
+              className="shrink-0 rounded-lg border border-red-400/40 px-3 py-1.5 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-400"
+            >
+              Retry
+            </button>
           </div>
         )}
 
