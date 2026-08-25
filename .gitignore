@@ -33,7 +33,7 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
+..
 # local env files
 .env*.local
 .env.production
@@ -59,3 +59,7 @@ install.log
 .idea/
 *.swp
 *.swo
+
+# issue templates
+issue.md
+pr.md

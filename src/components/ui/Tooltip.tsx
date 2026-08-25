@@ -34,7 +34,7 @@ export function Tooltip({ label, children, className = "" }: TooltipProps) {
         if (e.key === "Escape") setOpen(false);
       }}
     >
-      <span tabIndex={0} aria-describedby={open ? id : undefined} className="outline-none">
+      <span tabIndex={0} aria-describedby={open ? id : undefined} className="outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 rounded-sm">
         {children}
       </span>
       <span

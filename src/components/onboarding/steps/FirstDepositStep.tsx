@@ -114,14 +114,22 @@ export default function FirstDepositStep({ onNext, onSkip, onBack }: FirstDeposi
           {assets.map((asset) => (
             <div
               key={asset.id}
+              role="button"
+              tabIndex={0}
               className={`
                 border-2 rounded-xl p-4 cursor-pointer transition-all duration-200
-                ${selectedAsset === asset.id 
-                  ? 'border-green-500 bg-green-500/10' 
+                ${selectedAsset === asset.id
+                  ? 'border-green-500 bg-green-500/10'
                   : 'border-white/10 bg-white/5 hover:bg-white/10'
                 }
               `}
               onClick={() => setSelectedAsset(asset.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedAsset(asset.id);
+                }
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -201,7 +209,7 @@ export default function FirstDepositStep({ onNext, onSkip, onBack }: FirstDeposi
       {/* Error Message */}
       {depositError && (
         <div className="max-w-2xl mx-auto">
-          <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+          <div role="alert" className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
             <div className="flex items-center gap-2 text-red-400">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
