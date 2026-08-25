@@ -334,6 +334,57 @@ test("useTransactionFlow — a non-interactive preview short-circuits to its sna
   assert.ok(result.current.quote, "confirm preview snapshot includes a quote");
 });
 
+test("useTransactionFlow — recovery 'support' navigates to a mailto link containing the support address and error reference", async () => {
+  // Intercept window.location.href assignments — jsdom rejects mailto: navigation,
+  // so we proxy window to capture the value without triggering a real navigation.
+  const locationHrefs: string[] = [];
+  const realWindow = globalThis.window;
+  const mockWindow = new Proxy(realWindow, {
+    get(target, prop) {
+      if (prop === "location") {
+        return new Proxy(target.location, {
+          set(_t, p, value) {
+            if (p === "href") { locationHrefs.push(value as string); return true; }
+            return Reflect.set(_t, p, value);
+          },
+        });
+      }
+      return Reflect.get(target, prop);
+    },
+  });
+  Object.defineProperty(globalThis, "window", { value: mockWindow, writable: true, configurable: true });
+
+  try {
+    mockErrorResponse({ amount: ["Amount exceeds available balance"] });
+
+    const { result } = renderHook(() =>
+      useTransactionFlow({
+        searchParams: makeSearchParams({ theme: "light", kind: "deposit" }),
+        router: makeRouter(),
+        isSandboxMode: false,
+        scenario: "success",
+      }),
+    );
+
+    act(() => { result.current.updateField("amount", "100"); });
+    await act(async () => { await result.current.submitReview?.(); });
+    assert.equal(result.current.stage, "error");
+
+    act(() => { result.current.handleRecoveryAction("support"); });
+
+    assert.equal(locationHrefs.length, 1, "window.location.href was set exactly once");
+    const href = locationHrefs[0];
+    assert.match(href, /^mailto:/, "link must use the mailto: scheme");
+    assert.match(href, /neurowealth\.com/, "link must address the support inbox");
+    assert.match(href, /subject=/, "link must include an encoded subject");
+    assert.match(href, /Transaction%20issue/, "subject must identify the issue type");
+    assert.match(href, /body=/, "link must include an encoded body");
+    assert.match(href, /deposit/, "body must include the transaction kind");
+  } finally {
+    Object.defineProperty(globalThis, "window", { value: realWindow, writable: true, configurable: true });
+  }
+});
+
 test("useTransactionFlow — submitReview and handleConfirm are no-ops while a non-interactive preview is active", async () => {
   let fetchCalled = false;
   globalThis.fetch = async () => {
