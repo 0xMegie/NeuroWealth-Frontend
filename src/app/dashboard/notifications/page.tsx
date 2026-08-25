@@ -19,6 +19,7 @@ import { Button, Card, InlineBanner } from "@/components/ui";
 import { runMockFlow, useMockFlows, type MockFlowKey } from "./mockFlows";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useSandbox } from "@/contexts/SandboxContext";
+import { SandboxBadge } from "@/components/ui/SandboxBadge";
 import { useAsyncState } from "@/hooks/useAsyncState";
 import { NotificationListSkeleton } from "@/components/ui/Skeleton";
 
@@ -144,11 +145,7 @@ function NotificationInbox() {
             </span>
           )}
         </div>
-        {isSandboxMode && (
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            Sandbox: {scenario}
-          </span>
-        )}
+        {isSandboxMode && <SandboxBadge scenario={scenario} />}
         {scenario === "success" && unreadCount > 0 && (
           <button
             onClick={markAllRead}

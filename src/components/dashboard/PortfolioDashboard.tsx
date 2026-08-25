@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { SandboxBadge } from "@/components/ui/SandboxBadge";
 
 const toneMap: Record<string, string> = {
   primary: "#3b82f6",
@@ -317,10 +318,7 @@ export function PortfolioDashboard() {
               </span>
             </div>
             <div className={styles.bannerChips}>
-              {isSandboxMode && (
-                <span className={styles.chip} style={{ backgroundColor: "#10b981", color: "white" }}>{t.sandbox}: {scenario}
-                </span>
-              )}
+              {isSandboxMode && <SandboxBadge scenario={scenario} label={t.sandbox} />}
               <span className={styles.chip}>{t.theme}: {theme}</span>
               <span className={styles.chip}>{t.source}:{" "}
                 {portfolio ? renderSourceLabel(portfolio.source, t) : "Loading"}
