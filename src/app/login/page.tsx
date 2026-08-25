@@ -6,11 +6,15 @@ import { useAuth } from "@/contexts";
 import { MAIN_CONTENT_LANDMARK_ID } from "@/lib/app-landmarks";
 import { Loader2, Zap, Eye, EyeOff, Github, Chrome } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FormField } from "@/components/ui";
+import { FormField } from "@/components/ui/FormField";
 
 export const dynamic = "force-dynamic";
 
 type LoginState = "idle" | "loading" | "error" | "success";
+
+export const isValidRedirect = (url: string): boolean => {
+  return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\");
+};
 
 function LoginContent() {
   const { signIn, user, loading } = useAuth();
@@ -18,9 +22,6 @@ function LoginContent() {
   const searchParams = useSearchParams();
   
   const rawFrom = searchParams.get("from") ?? "/dashboard";
-  const isValidRedirect = (url: string) => {
-    return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("\\");
-  };
   const from = isValidRedirect(rawFrom) ? rawFrom : "/dashboard";
 
   const [state, setState] = useState<LoginState>("idle");
@@ -37,7 +38,7 @@ function LoginContent() {
     }
   }, [loading, user, router, from]);
 
-  const validate = () => {
+  const validate = useCallback(() => {
     let valid = true;
     if (!email) {
       setEmailError("Email is required.");
@@ -60,7 +61,7 @@ function LoginContent() {
     }
 
     return valid;
-  };
+  }, [email, password]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -88,7 +89,7 @@ function LoginContent() {
         setFormError("Sign-in failed. Please try again.");
       }
     },
-    [email, password, signIn, router, from],
+    [email, password, signIn, router, from, validate],
   );
 
   const handleDemoFill = () => {

@@ -5,22 +5,57 @@ import { GET, PUT } from "./route";
 import { NextRequest } from "next/server";
 import { ERROR_CODE, HTTP_STATUS, MAX_BODY_BYTES } from "@/lib/api-response";
 
-function makeGetRequest(cookieValue?: string): NextRequest {
+const VALID_SESSION_COOKIE = encodeURIComponent(
+  JSON.stringify({ token: "test_token", expiresAt: Date.now() + 3600 * 1000 }),
+);
+
+function makeGetRequest(cookieValue?: string, authenticated = true): NextRequest {
   const url = "http://localhost:3000/api/strategy";
-  const headers = new Headers();
+  const cookies: string[] = [];
+  if (authenticated) {
+    cookies.push(`nw_session=${VALID_SESSION_COOKIE}`);
+  }
   if (cookieValue) {
-    headers.set("Cookie", `nw_strategy_preference=${cookieValue}`);
+    cookies.push(`nw_strategy_preference=${cookieValue}`);
+  }
+  const headers = new Headers();
+  if (cookies.length > 0) {
+    headers.set("Cookie", cookies.join("; "));
   }
   return new NextRequest(url, { headers });
 }
 
-function makePutRequest(body: unknown): NextRequest {
+function makePutRequest(body: unknown, authenticated = true): NextRequest {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (authenticated) {
+    headers.set("Cookie", `nw_session=${VALID_SESSION_COOKIE}`);
+  }
   return new NextRequest("http://localhost:3000/api/strategy", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
 }
+
+test("GET /api/strategy returns 401 when unauthenticated", async () => {
+  const req = makeGetRequest(undefined, false);
+  const res = await GET(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "UNAUTHORIZED");
+});
+
+test("PUT /api/strategy returns 401 when unauthenticated", async () => {
+  const req = makePutRequest({ strategy: "balanced" }, false);
+  const res = await PUT(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "UNAUTHORIZED");
+});
 
 test("GET /api/strategy returns 200 with default strategy", async () => {
   const req = makeGetRequest();
@@ -65,7 +100,10 @@ test("PUT /api/strategy returns 400 for invalid strategy", async () => {
 test("PUT /api/strategy returns 400 for malformed JSON", async () => {
   const req = new NextRequest("http://localhost:3000/api/strategy", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `nw_session=${VALID_SESSION_COOKIE}`,
+    },
     body: "not-json",
   });
   const res = await PUT(req);
@@ -85,6 +123,7 @@ test("PUT /api/strategy returns 413 for oversized JSON body", async () => {
     headers: {
       "Content-Type": "application/json",
       "Content-Length": String(MAX_BODY_BYTES + 1),
+      Cookie: `nw_session=${VALID_SESSION_COOKIE}`,
     },
     body: "{}",
   });

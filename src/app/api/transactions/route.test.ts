@@ -5,13 +5,21 @@ import { POST } from "./route";
 import { NextRequest } from "next/server";
 import { ERROR_CODE, HTTP_STATUS, MAX_BODY_BYTES } from "@/lib/api-response";
 
-function makePostRequest(body: unknown, scenario?: string): NextRequest {
+const VALID_SESSION_COOKIE = encodeURIComponent(
+  JSON.stringify({ token: "test_token", expiresAt: Date.now() + 3600 * 1000 }),
+);
+
+function makePostRequest(body: unknown, scenario?: string, authenticated = true): NextRequest {
   const url = scenario
     ? `http://localhost:3000/api/transactions?scenario=${scenario}`
     : "http://localhost:3000/api/transactions";
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (authenticated) {
+    headers.set("Cookie", `nw_session=${VALID_SESSION_COOKIE}`);
+  }
   return new NextRequest(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
 }
@@ -37,6 +45,16 @@ const validWithdrawal = {
     walletConnected: true,
   },
 };
+
+test("POST /api/transactions returns 401 when unauthenticated", async () => {
+  const req = makePostRequest(validDeposit, undefined, false);
+  const res = await POST(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "UNAUTHORIZED");
+});
 
 test("POST /api/transactions returns 200 for valid deposit quote", async () => {
   const req = makePostRequest(validDeposit);
@@ -106,7 +124,10 @@ test("POST /api/transactions returns 400 for missing values", async () => {
 test("POST /api/transactions returns 400 for malformed JSON body", async () => {
   const req = new NextRequest("http://localhost:3000/api/transactions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `nw_session=${VALID_SESSION_COOKIE}`,
+    },
     body: "not-json",
   });
   const res = await POST(req);
@@ -126,6 +147,7 @@ test("POST /api/transactions returns 413 for oversized JSON body", async () => {
     headers: {
       "Content-Type": "application/json",
       "Content-Length": String(MAX_BODY_BYTES + 1),
+      Cookie: `nw_session=${VALID_SESSION_COOKIE}`,
     },
     body: "{}",
   });

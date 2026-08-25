@@ -4,15 +4,33 @@ import test from "node:test";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 
-function makeRequest(params?: Record<string, string>): NextRequest {
+const VALID_SESSION_COOKIE = encodeURIComponent(
+  JSON.stringify({ token: "test_token", expiresAt: Date.now() + 3600 * 1000 }),
+);
+
+function makeRequest(params?: Record<string, string>, authenticated = true): NextRequest {
   const url = new URL("http://localhost:3000/api/transaction-history");
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.set(key, value);
     });
   }
-  return new NextRequest(url.toString());
+  const headers = new Headers();
+  if (authenticated) {
+    headers.set("Cookie", `nw_session=${VALID_SESSION_COOKIE}`);
+  }
+  return new NextRequest(url.toString(), { headers });
 }
+
+test("GET /api/transaction-history returns 401 when unauthenticated", async () => {
+  const req = makeRequest(undefined, false);
+  const res = await GET(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "UNAUTHORIZED");
+});
 
 test("GET /api/transaction-history returns 200 with default params", async () => {
   const req = makeRequest();

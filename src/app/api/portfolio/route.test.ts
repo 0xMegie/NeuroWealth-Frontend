@@ -4,12 +4,30 @@ import test from "node:test";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 
-function makeRequest(scenario?: string): NextRequest {
+const VALID_SESSION_COOKIE = encodeURIComponent(
+  JSON.stringify({ token: "test_token", expiresAt: Date.now() + 3600 * 1000 }),
+);
+
+function makeRequest(scenario?: string, authenticated = true): NextRequest {
   const url = scenario
     ? `http://localhost:3000/api/portfolio?scenario=${scenario}`
     : "http://localhost:3000/api/portfolio";
-  return new NextRequest(url);
+  const headers = new Headers();
+  if (authenticated) {
+    headers.set("Cookie", `nw_session=${VALID_SESSION_COOKIE}`);
+  }
+  return new NextRequest(url, { headers });
 }
+
+test("GET /api/portfolio returns 401 when unauthenticated", async () => {
+  const req = makeRequest("live", false);
+  const res = await GET(req);
+  const body = await res.json();
+
+  assert.equal(res.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(body.error.code, "UNAUTHORIZED");
+});
 
 test("GET /api/portfolio returns 200 with valid scenario", async () => {
   const req = makeRequest("live");
