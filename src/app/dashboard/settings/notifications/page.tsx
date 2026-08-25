@@ -4,6 +4,10 @@ import { AlertCircle, Bell, Mail, Save, ShieldAlert, X } from "lucide-react";
 import { useToast } from "@/components/notifications/ToastProvider";
 import { useI18n } from "@/contexts/I18nContext";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
+import {
+  DEFAULT_PREFERENCES,
+  type NotificationPreferences,
+} from "@/lib/mock-preferences";
 
 export const dynamic = "force-dynamic";
 import { Button, Card, InlineBanner } from "@/components/ui";
@@ -11,22 +15,21 @@ import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
 import { Switch } from "@/components/ui/Switch";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
 
-interface NotificationPreferences {
-  emailNotifications: boolean;
-  transactionAlerts: boolean;
-  weeklyDigest: boolean;
-  marketingEmails: boolean;
-  securityAlerts: boolean;
-}
-
 const STORAGE_KEY = STORAGE_KEYS.NOTIFICATIONS;
-const DEFAULT_PREFERENCES: NotificationPreferences = {
-  emailNotifications: true,
-  transactionAlerts: true,
-  weeklyDigest: true,
-  marketingEmails: false,
-  securityAlerts: true,
-};
+
+/**
+ * This page and the notification-bell dropdown (NotificationPreferencesUI /
+ * useNotificationPreferences) both read/write the shared NotificationPreferences
+ * model from src/lib/mock-preferences.ts under the same STORAGE_KEYS.NOTIFICATIONS
+ * key, so toggling one no longer silently corrupts the other's shape. This
+ * page's five toggles map onto the shared model's nested fields below.
+ */
+type TogglePath =
+  | ["channels", "email"]
+  | ["categories", "transactions"]
+  | ["emailDigest", "weeklyDigest"]
+  | ["categories", "promotions"]
+  | ["emailDigest", "securityAlerts"];
 
 function PreferenceToggle({
   id,
@@ -83,7 +86,7 @@ export default function NotificationsSettingsPage() {
     loadDelayMs: 500,
     saveDelayMs: 800,
     validate: (current) => {
-      if (!current.securityAlerts) {
+      if (!current.emailDigest.securityAlerts) {
         throw new Error("Security alerts must stay enabled in this mock.");
       }
     },
@@ -109,10 +112,25 @@ export default function NotificationsSettingsPage() {
     return <SettingsSectionSkeleton rows={5} />;
   }
 
-  const enabledCount = Object.values(draft).filter(Boolean).length;
+  const enabledCount = [
+    draft.channels.email,
+    draft.categories.transactions,
+    draft.emailDigest.weeklyDigest,
+    draft.categories.promotions,
+    draft.emailDigest.securityAlerts,
+  ].filter(Boolean).length;
 
-  const togglePreference = (key: keyof NotificationPreferences) => {
-    setDraft((current) => ({ ...current, [key]: !current[key] }));
+  const togglePreference = ([section, key]: TogglePath) => {
+    setDraft((current) => {
+      const sectionValue = current[section] as Record<string, boolean>;
+      return {
+        ...current,
+        [section]: {
+          ...sectionValue,
+          [key]: !sectionValue[key],
+        },
+      };
+    });
   };
 
   return (
@@ -150,8 +168,8 @@ export default function NotificationsSettingsPage() {
               variant="secondary"
               size="sm"
               onClick={() => {
-                if (!draft.securityAlerts) {
-                  togglePreference("securityAlerts");
+                if (!draft.emailDigest.securityAlerts) {
+                  togglePreference(["emailDigest", "securityAlerts"]);
                 }
               }}
             >
@@ -163,7 +181,7 @@ export default function NotificationsSettingsPage() {
         </InlineBanner>
       ) : null}
 
-      {!draft.securityAlerts ? (
+      {!draft.emailDigest.securityAlerts ? (
         <InlineBanner variant="warning" title={t.securityAlertsOff.title}>
           {t.securityAlertsOff.desc}
         </InlineBanner>
@@ -186,41 +204,41 @@ export default function NotificationsSettingsPage() {
               id="email-notifications"
               title={t.channels.emailTitle}
               description={t.channels.emailDesc}
-              checked={draft.emailNotifications}
+              checked={draft.channels.email}
               disabled={!editing}
-              onChange={() => togglePreference("emailNotifications")}
+              onChange={() => togglePreference(["channels", "email"])}
             />
             <PreferenceToggle
               id="transaction-alerts"
               title={t.channels.transactionTitle}
               description={t.channels.transactionDesc}
-              checked={draft.transactionAlerts}
-              disabled={!editing || !draft.emailNotifications}
-              onChange={() => togglePreference("transactionAlerts")}
+              checked={draft.categories.transactions}
+              disabled={!editing || !draft.channels.email}
+              onChange={() => togglePreference(["categories", "transactions"])}
             />
             <PreferenceToggle
               id="weekly-digest"
               title={t.channels.weeklyTitle}
               description={t.channels.weeklyDesc}
-              checked={draft.weeklyDigest}
-              disabled={!editing || !draft.emailNotifications}
-              onChange={() => togglePreference("weeklyDigest")}
+              checked={draft.emailDigest.weeklyDigest}
+              disabled={!editing || !draft.channels.email}
+              onChange={() => togglePreference(["emailDigest", "weeklyDigest"])}
             />
             <PreferenceToggle
               id="marketing-emails"
               title={t.channels.productTitle}
               description={t.channels.productDesc}
-              checked={draft.marketingEmails}
-              disabled={!editing || !draft.emailNotifications}
-              onChange={() => togglePreference("marketingEmails")}
+              checked={draft.categories.promotions}
+              disabled={!editing || !draft.channels.email}
+              onChange={() => togglePreference(["categories", "promotions"])}
             />
             <PreferenceToggle
               id="security-alerts"
               title={t.channels.securityTitle}
               description={t.channels.securityDesc}
-              checked={draft.securityAlerts}
+              checked={draft.emailDigest.securityAlerts}
               disabled={!editing}
-              onChange={() => togglePreference("securityAlerts")}
+              onChange={() => togglePreference(["emailDigest", "securityAlerts"])}
             />
           </div>
         </Card>
@@ -245,19 +263,19 @@ export default function NotificationsSettingsPage() {
               <div className="flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-950/35 px-4 py-3 text-sm">
                 <span className="text-slate-300">{t.summary.emailChannel}</span>
                 <span className="font-semibold text-slate-100">
-                  {draft.emailNotifications ? t.summary.active : t.summary.muted}
+                  {draft.channels.email ? t.summary.active : t.summary.muted}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-950/35 px-4 py-3 text-sm">
                 <span className="text-slate-300">{t.summary.securityCoverage}</span>
                 <span
                   className={
-                    draft.securityAlerts
+                    draft.emailDigest.securityAlerts
                       ? "font-semibold text-emerald-300"
                       : "font-semibold text-amber-300"
                   }
                 >
-                  {draft.securityAlerts ? t.summary.protected : t.summary.atRisk}
+                  {draft.emailDigest.securityAlerts ? t.summary.protected : t.summary.atRisk}
                 </span>
               </div>
             </div>

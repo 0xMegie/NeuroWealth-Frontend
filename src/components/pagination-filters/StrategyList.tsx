@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { SearchX } from "lucide-react";
 import FilterChips, { FilterOption } from "./FilterChips";
 import Pagination from "./Pagination";
+import EmptyStateCompact from "@/components/ui/EmptyState";
 import { formatNumber } from "@/lib/formatters";
 
 interface Strategy {
@@ -414,16 +416,10 @@ export default function StrategyList() {
       </div>
 
       {items.length === 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "48px 20px",
-            color: "#6b7280",
-            fontSize: 13,
-          }}
-        >
-          No strategies match the selected filters.
-        </div>
+        <EmptyStateCompact
+          icon={SearchX}
+          title="No strategies match the selected filters."
+        />
       )}
 
       {/* Pagination */}
