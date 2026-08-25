@@ -90,11 +90,6 @@ the seed is set:
 | `src/lib/mock-auth.ts` | Session token and user ID suffixes |
 | `src/lib/mock-audit.ts` | Audit event IDs |
 | `src/lib/transactions.ts` | Transaction reference suffix |
-| `src/lib/service-layer/base-adapter.ts` | Request IDs, simulated latency range, failure rate |
-| `src/lib/service-layer/portfolio-service.ts` | Portfolio value history, simulated 24-hour changes |
-| `src/lib/service-layer/strategy-service.ts` | Strategy APY noise |
-| `src/lib/service-layer/transaction-service.ts` | Initial mock tx hashes, 90% success simulation, completed tx hash |
-| `src/lib/service-layer/auth-service.ts` | Auth token generation |
 | `src/lib/logger.ts` | Log entry IDs |
 | `src/lib/analytics.ts` | Analytics event IDs |
 | `src/components/onboarding/steps/WalletConnectStep.tsx` | 90% connection success simulation |
