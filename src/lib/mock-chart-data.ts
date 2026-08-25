@@ -36,13 +36,6 @@ export interface AssetAllocationSlice extends ChartDatum {
   tone?: ChartTone;
 }
 
-/** Portfolio value vs. a benchmark for a given period (multi-series line). */
-export interface BenchmarkComparisonPoint {
-  name: string;
-  portfolio: number;
-  benchmark: number;
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -88,20 +81,6 @@ export function generateAssetAllocationData(): AssetAllocationSlice[] {
   return normal;
 }
 
-/** Generate benchmark-comparison data (multi-series line chart). */
-export function generateMultiLineData(): BenchmarkComparisonPoint[] {
-  const portfolioValues = generatePortfolioValueData();
-  return months.map((month, i) => {
-    const portfolio = portfolioValues[i].value;
-    const benchmarkBase = 9800 + (i * 400);
-    return {
-      name: month,
-      portfolio,
-      benchmark: benchmarkBase + randomInt(-200, 200),
-    };
-  });
-}
-
 /** Generate categorical bar data (transaction breakdown). */
 export function generateCategoricalBarData(): ChartDatum[] {
   return [
@@ -120,5 +99,4 @@ export function generateCategoricalBarData(): ChartDatum[] {
 export const portfolioValueData: PortfolioValuePoint[] = generatePortfolioValueData();
 export const monthlyYieldData: ChartDatum[] = generateMonthlyYieldData();
 export const assetAllocationData: AssetAllocationSlice[] = generateAssetAllocationData();
-export const multiLineData: BenchmarkComparisonPoint[] = generateMultiLineData();
 export const categoricalBarData: ChartDatum[] = generateCategoricalBarData();
