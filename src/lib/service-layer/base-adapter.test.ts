@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { BaseAdapter } from "./base-adapter";
+import { BaseAdapter, MockStore } from "./base-adapter";
 import { ServiceException } from "./types";
 
 // BaseAdapter is abstract — exercise it through a minimal concrete subclass
@@ -17,6 +17,9 @@ class TestAdapter extends BaseAdapter {
 
   triggerHandleError(error: unknown, context = "TestAdapter.op"): never {
     return this.handleError(error, context);
+  }
+  exposeGenerateId(prefix: string) {
+    return this.generateId(prefix);
   }
 }
 
@@ -200,4 +203,48 @@ test("getConfig returns a copy, not a live reference", () => {
   snapshot.retryAttempts = 999;
 
   assert.notEqual(adapter.getConfig().retryAttempts, 999);
+});
+
+// ── MockStore CRUD helpers ──────────────────────────────────────────────────
+
+test("MockStore supports basic CRUD and iterators", () => {
+  const store = new MockStore<string, number>();
+
+  assert.equal(store.get("a"), undefined);
+  assert.equal(store.has("a"), false);
+
+  store.set("a", 1);
+  store.set("b", 2);
+
+  assert.equal(store.get("a"), 1);
+  assert.equal(store.has("a"), true);
+
+  const keys = Array.from(store.keys());
+  const values = Array.from(store.values());
+
+  assert.ok(keys.includes("a") && keys.includes("b"));
+  assert.ok(values.includes(1) && values.includes(2));
+
+  assert.equal(store.delete("a"), true);
+  assert.equal(store.has("a"), false);
+});
+
+// ── generateId format and collision resistance ─────────────────────────────
+
+test("generateId produces correctly formatted, collision-resistant ids", () => {
+  const adapter = createAdapter();
+
+  // Use the TestAdapter helper that exposes the protected method.
+  const ids = new Set<string>();
+  const prefix = "tx";
+
+  for (let i = 0; i < 500; i++) {
+    const id = (adapter as unknown as TestAdapter).exposeGenerateId(prefix);
+    // Format: prefix_<timestamp>_<alphanumeric>
+    assert.match(id, new RegExp(`^${prefix}_\\d+_[a-z0-9]{9}$`));
+    ids.add(id);
+  }
+
+  // Expect no collisions across 500 generated ids
+  assert.equal(ids.size, 500);
 });
