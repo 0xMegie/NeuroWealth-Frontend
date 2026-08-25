@@ -14,7 +14,6 @@ import {
   generatePortfolioValueData,
   generateMonthlyYieldData,
   generateAssetAllocationData,
-  generateMultiLineData,
   generateCategoricalBarData,
 } from "./mock-chart-data";
 
@@ -84,18 +83,6 @@ describe("mock-chart-data", () => {
 
       reseed("yield-test");
       const second = generateMonthlyYieldData();
-
-      assert.deepStrictEqual(first, second);
-    });
-  });
-
-  describe("generateMultiLineData()", () => {
-    it("is deterministic with the same seed", () => {
-      reseed("multi-test");
-      const first = generateMultiLineData();
-
-      reseed("multi-test");
-      const second = generateMultiLineData();
 
       assert.deepStrictEqual(first, second);
     });

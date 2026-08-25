@@ -78,19 +78,6 @@ function getValueTone(value: number): "positive" | "negative" | "neutral" {
   return "neutral";
 }
 
-function buildDonutBackground(allocation: AllocationItem[]): string {
-  let start = 0;
-
-  const segments = allocation.map((item) => {
-    const end = start + item.share;
-    const segment = `${toneMap[item.tone]} ${start}% ${end}%`;
-    start = end;
-    return segment;
-  });
-
-  return `conic-gradient(${segments.join(", ")})`;
-}
-
 function renderActivityIcon(kind: ActivityItem["kind"]) {
   switch (kind) {
     case "deposit":

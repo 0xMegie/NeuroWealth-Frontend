@@ -32,7 +32,6 @@
  * <SettingsSectionSkeleton rows={3} />
  * <StatCardSkeleton />
  * <ActivityRowSkeleton />
- * <AllocationWidgetSkeleton />
  * ```
  */
 
@@ -675,58 +674,6 @@ export function ActivityRowSkeleton({ className = "" }: ActivityRowSkeletonProps
         <Skeleton width="45%" height={10} />
       </div>
       <Skeleton width={48} height={12} />
-    </div>
-  );
-}
-
-// ─── Preset: AllocationWidget ─────────────────────────────────────────────────
-
-export interface AllocationWidgetSkeletonProps {
-  className?: string;
-}
-
-/**
- * Skeleton for the asset allocation widget.
- * Title + donut chart + allocation items list.
- */
-export function AllocationWidgetSkeleton({ className = "" }: AllocationWidgetSkeletonProps) {
-  return (
-    <div
-      aria-hidden="true"
-      role="presentation"
-      className={className}
-    >
-      {/* Title */}
-      <Skeleton height={14} width="40%" className={styles.allocationTitle} />
-
-      {/* Donut chart placeholder + list */}
-      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", marginTop: 16 }}>
-        {/* Donut chart */}
-        <SkeletonCircle size={96} />
-
-        {/* Allocation list */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <SkeletonCircle size={10} />
-              <Skeleton width="70%" height={11} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bar chart rows */}
-      <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <Skeleton width="45%" height={11} />
-              <Skeleton width="20%" height={11} />
-            </div>
-            <Skeleton width="100%" height={6} radius={3} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

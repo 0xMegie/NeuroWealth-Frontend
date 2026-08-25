@@ -1,40 +1,59 @@
 ## Summary
 
-Resolves four linked issues in a single branch: onboarding flow, responsive nav, async state system, and performance optimisation pass.
+Round-3 cleanup pass: removes dead code shipped from a completed-but-unwired
+dashboard refactor, a leftover pre-recharts helper, an unused devDependency,
+and an unused mock chart dataset that ran eagerly at import time.
+
+- `AllocationSection`, `ActivitySection`, and `SummarySection` were split out
+  of `PortfolioDashboard` in a prior refactor but never adopted — the parent
+  still renders the panels inline via i18n-driven JSX, so the extracted
+  components (and their matching `AllocationWidgetSkeleton`) were unused. They
+  hardcode English copy instead of pulling from `useI18n`/`AppMessages`, so
+  wiring them in as-is would have silently dropped translations. Deleted
+  rather than migrated to avoid that regression.
+- `buildDonutBackground()` in `PortfolioDashboard.tsx` was leftover from
+  before the manual CSS conic-gradient donut was replaced by
+  `AllocationChart`/recharts, and was never called.
+- `vitest` was listed as a devDependency but never configured or imported;
+  the test runner is Node's built-in test runner via `tsx`, matching
+  README/CONTRIBUTING.
+- `multiLineData` / `generateMultiLineData()` in `mock-chart-data.ts` was
+  exported but never imported by the charts docs page (unlike its siblings),
+  and ran eagerly at module-import time on every import of the module.
 
 ## Changes
 
-**#440 — Onboarding flow (first-time users)**
-- `/onboarding` page renders `OnboardingFlow` and redirects to dashboard on complete/skip
-- `OnboardingGate` wraps the dashboard page — first-time users (no localStorage state) see the 3-step flow inline before the dashboard renders
-- Completion state persisted via existing `onboarding-state.ts` / `STORAGE_KEYS.ONBOARDING_STATE`
-- `OnboardingSettings` card surfaced in `/dashboard/settings` so users can review or reset onboarding at any time
-- Steps: Wallet Connect → Strategy Overview → First Deposit, each with primary action + skip
+- `src/components/dashboard/PortfolioDashboard.tsx` — remove dead
+  `buildDonutBackground()`
+- `src/components/dashboard/AllocationSection.tsx`,
+  `ActivitySection.tsx`, `SummarySection.tsx` — deleted (unused)
+- `src/components/ui/Skeleton.tsx` — remove unused
+  `AllocationWidgetSkeleton` preset
+- `package.json` / `yarn.lock` — remove unused `vitest` devDependency
+- `src/lib/mock-chart-data.ts` — remove unused `multiLineData`,
+  `generateMultiLineData()`, and the now-orphaned
+  `BenchmarkComparisonPoint` type
+- `src/lib/mock-chart-data.test.ts` — remove the corresponding
+  `generateMultiLineData()` test block
 
-**#454 — Responsive navigation**
-- Fixed `TopHeader` left-offset breakpoints: was `md:left-64` (skipped tablet rail), now `sm:left-14 lg:left-64` — matches sidebar layout at all three breakpoints (mobile / tablet rail 56px / desktop 256px)
-- Sidebar: icon-only rail at 640–1023 px, expands on toggle; full at ≥ 1024 px; hidden on mobile
-- `MobileBottomNav`: fixed bottom bar below 640 px, 44 px touch targets, `aria-current="page"` on active item
-- All nav items meet 44 px min touch target; pointer targets 36 px min on toggle button
+## QA
 
-**#441 — Global async state system**
-- `ErrorBlock`, `EmptyState`, `DataBoundary`, `useAsyncData`, `useAsyncState` — fully wired across portfolio, strategy, transaction, history, and audit pages
-- Skeleton presets (`DashboardSkeleton`, `TableSkeleton`, `TransactionFormSkeleton`, etc.) match final layout dimensions
-- Every error state includes title, description, and retry action
-- `/dashboard/async-states` dev page demonstrates all loading/empty/error flows
+- `yarn install` — clean
+- `yarn typecheck` — no new errors (one pre-existing failure in
+  `src/useDateFilterMock.ts`, confirmed present on `main` before this branch
+  via `git stash` diff)
+- `yarn test` — 15 pre-existing failures, identical count with and without
+  this branch's changes (confirmed via `git stash` diff);
+  `mock-chart-data.test.ts` passes cleanly on its own
+- `yarn lint` — no new errors (2 pre-existing errors in `AuditTrail.tsx` and
+  `composeProviders.tsx`, neither touched here)
 
-**#443 — Performance optimisation**
-- `next.config.mjs`: gzip compression, AVIF/WebP images, `removeConsole` in production, `optimizePackageImports` for `lucide-react`
-- `@next/bundle-analyzer` wired via `yarn analyze` (`ANALYZE=true`)
-- Route-level code splitting via Next.js App Router + `Suspense` boundaries on every dashboard route
-- Skeletons used on all async-heavy sections — no layout shift during load
+No new duplicate abstractions were introduced — this is a pure removal of
+unreferenced code.
 
-## Checks
+## Issues
 
-- `npx tsc --noEmit` — 9 pre-existing errors in demo/test/chart files, none introduced by this PR
-- `npx next lint` — ✔ no warnings or errors
-
-Closes #440
-Closes #454
-Closes #441
-Closes #443
+closes #722
+closes #723
+closes #719
+closes #726
