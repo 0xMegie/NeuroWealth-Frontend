@@ -20,7 +20,7 @@
 | A12 | Fix notification bell's unread count being invisible to screen readers | `a11y`, `bug` |
 | B1 | Add tests for normalizePortfolioPayload's real-backend response path | `testing`, `api` |
 | B2 | Add unit tests for src/lib/user.ts | `testing`, `good first issue` |
-| B3 | Add unit tests for the service-layer adapters and remove `any` from their error types | `testing`, `typescript`, `api` |
+| ~~B3~~ | ~~Add unit tests for the service-layer adapters and remove `any` from their error types~~ | ~~`testing`, `typescript`, `api`~~ — **closed by #727** |
 | B4 | Add tests for the i18n locale-state singleton and locale-aware formatters | `testing`, `good first issue` |
 | B5 | Replace `t: any` with a typed message-namespace in dashboard components | `typescript`, `cleanup`, `good first issue` |
 | B6 | Add tests for useRealtimeStream's cumulative state and stop/reset guarding | `testing`, `dashboard` |
@@ -522,40 +522,17 @@ Sourced from a July 2026 codebase audit (accessibility, testing/type-safety, per
 
 ---
 
-### [B3] Add unit tests for the service-layer adapters and remove `any` from their error types
+### ~~[B3] Add unit tests for the service-layer adapters and remove `any` from their error types~~
 
-## Summary
-
-These files are documented as the reference pattern for a future backend swap, contain real logic (retry backoff, fee calculation, allocation validation), and have zero tests; several signatures also type errors as `any`, erasing compile-time safety for consumers.
-
-## Affected files
-
-- `src/lib/service-layer/base-adapter.ts`
-- `src/lib/service-layer/auth-service.ts`
-- `src/lib/service-layer/portfolio-service.ts`
-- `src/lib/service-layer/strategy-service.ts`
-- `src/lib/service-layer/transaction-service.ts`
-- `src/lib/service-layer/types.ts`
-
-## Tasks
-
-- Add tests for each service's core methods.
-- Replace `any` in error/details types with a proper ServiceError/unknown-narrowed type.
-
-## Acceptance criteria
-
-- [ ] Scope is limited to the files listed (or agreed alternatives in the PR).
-- [ ] Change is verifiable: tests, screenshots, or written QA steps in the PR.
-- [ ] No behavior regressions in related user flows.
-- [ ] No new duplicate abstractions without a one-line rationale in the PR.
+> **Closed — superseded by #727 (August 2026).**
+> `src/lib/service-layer/` was confirmed to have zero external imports and was
+> removed entirely. The directory already had a full `node:test` suite
+> (base-adapter, auth, portfolio, strategy, transaction) and typed error
+> handling at the time of deletion. No further action required.
 
 ## Suggested labels
 
-`testing`, `typescript`, `api`
-
-## Notes
-
-Sourced from a July 2026 codebase audit (accessibility, testing/type-safety, performance, UX/responsive, and API/security/docs passes) against current `main`. Distinct from the already-tracked cleanup batch (#328-#350) and Next.js upgrade (#128).
+~~`testing`, `typescript`, `api`~~
 
 ---
 
