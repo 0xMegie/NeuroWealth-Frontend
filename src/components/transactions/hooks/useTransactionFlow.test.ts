@@ -411,3 +411,88 @@ test("useTransactionFlow — submitReview and handleConfirm are no-ops while a n
   assert.equal(fetchCalled, false);
   assert.equal(result.current.stage, stageBefore);
 });
+
+test("useTransactionFlow — sandbox mode 'loading' scenario sets submitting state and message, clearing after 3s", (t) => {
+  const timers = t.mock.timers;
+  timers.enable({ apis: ["setTimeout"] });
+
+  const { result } = renderHook(() =>
+    useTransactionFlow({
+      searchParams: makeSearchParams({ theme: "light", kind: "deposit" }),
+      router: makeRouter(),
+      isSandboxMode: true,
+      scenario: "loading",
+    }),
+  );
+
+  assert.equal(result.current.isSubmitting, true);
+  assert.equal(result.current.requestMessage, "Loading transaction data...");
+
+  act(() => {
+    timers.tick(3000);
+  });
+
+  assert.equal(result.current.isSubmitting, false);
+  assert.equal(result.current.requestMessage, null);
+});
+
+test("useTransactionFlow — sandbox mode 'timeout' scenario sets submitting state and message, updating after 5s", (t) => {
+  const timers = t.mock.timers;
+  timers.enable({ apis: ["setTimeout"] });
+
+  const { result } = renderHook(() =>
+    useTransactionFlow({
+      searchParams: makeSearchParams({ theme: "light", kind: "deposit" }),
+      router: makeRouter(),
+      isSandboxMode: true,
+      scenario: "timeout",
+    }),
+  );
+
+  assert.equal(result.current.isSubmitting, true);
+  assert.equal(result.current.requestMessage, "Request timed out. Please try again.");
+
+  act(() => {
+    timers.tick(5000);
+  });
+
+  assert.equal(result.current.isSubmitting, false);
+  assert.equal(
+    result.current.requestMessage,
+    "Connection timeout. Please check your network and retry.",
+  );
+});
+
+test("useTransactionFlow — sandbox mode 'partial-failure' scenario sets stage to form and sets warning message", () => {
+  const { result } = renderHook(() =>
+    useTransactionFlow({
+      searchParams: makeSearchParams({ theme: "light", kind: "deposit" }),
+      router: makeRouter(),
+      isSandboxMode: true,
+      scenario: "partial-failure",
+    }),
+  );
+
+  assert.equal(result.current.stage, "form");
+  assert.equal(
+    result.current.requestMessage,
+    "Partial service degradation. Some features may be unavailable.",
+  );
+});
+
+test("useTransactionFlow — sandbox mode 'empty' scenario resets form, quote, pending, receipt, and sets empty message", () => {
+  const { result } = renderHook(() =>
+    useTransactionFlow({
+      searchParams: makeSearchParams({ theme: "light", kind: "deposit" }),
+      router: makeRouter(),
+      isSandboxMode: true,
+      scenario: "empty",
+    }),
+  );
+
+  assert.equal(result.current.stage, "form");
+  assert.equal(result.current.quote, null);
+  assert.equal(result.current.pending, null);
+  assert.equal(result.current.receipt, null);
+  assert.equal(result.current.requestMessage, "No transaction data available.");
+});

@@ -42,7 +42,7 @@ export const CVD_PALETTES = {
     },
 } as const;
 
-export const CVD_PATTERNS: Record<ChartPatternKey, string> = {
+const CVD_PATTERNS: Record<ChartPatternKey, string> = {
     solid: "0",
     dash: "6 4",
     dot: "1 5",
@@ -57,16 +57,7 @@ export const CHART_TONE_PATTERNS = {
     "neutral-soft": CVD_PATTERNS.longDash,
 } as const;
 
-/**
- * Get CVD-safe color by index
- * Cycles through accessible palette
- */
-export function getCVDSafeColor(index: number): string {
-    const colors = Object.values(CVD_PALETTES.accessible);
-    return colors[index % colors.length];
-}
-
-export function hexToRgb(hex: string): [number, number, number] {
+function hexToRgb(hex: string): [number, number, number] {
     const normalized = hex.replace("#", "");
     if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
         throw new Error(`Invalid hex color: ${hex}`);
@@ -131,7 +122,7 @@ function clampRgbChannel(value: number): number {
  * Simulate a color under a common full-severity CVD mode.
  * The output is RGB so tests can compare pairwise visual distance.
  */
-export function simulateColorVisionDeficiency(
+function simulateColorVisionDeficiency(
     hex: string,
     mode: CvdMode,
 ): [number, number, number] {
@@ -143,7 +134,7 @@ export function simulateColorVisionDeficiency(
     ) as [number, number, number];
 }
 
-export function getRgbDistance(
+function getRgbDistance(
     color1: [number, number, number],
     color2: [number, number, number],
 ): number {
@@ -164,24 +155,3 @@ export function getCvdPairDistance(
         simulateColorVisionDeficiency(color2, mode),
     );
 }
-
-export function meetsCvdDistance(
-    color1: string,
-    color2: string,
-    mode: CvdMode,
-    minDistance: number,
-): boolean {
-    return getCvdPairDistance(color1, color2, mode) >= minDistance;
-}
-
-/**
- * Documentation reference for chart color usage
- * See: docs/qa/chart-colors-cvd.md
- */
-export const CVD_DOCUMENTATION = {
-    issue: "#422",
-    title: "Data viz: verify chart colors against design tokens and contrast for CVD",
-    palettes: "Use primary or accessible palette from CVD_PALETTES",
-    testing: "Colors are tested against WCAG AA graphics contrast and simulated CVD pair distance",
-    patterns: "Use CHART_TONE_PATTERNS for line, bar, and donut redundancy",
-} as const;

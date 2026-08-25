@@ -35,6 +35,8 @@ export function WalletConnectionStates({
       <div
         className="rounded-lg border border-surface-border bg-surface p-4 space-y-3"
         data-qa="wallet-state-restoring"
+        role="status"
+        aria-live="polite"
       >
         <div className="flex items-center gap-3">
           <div className="animate-pulse">
@@ -58,7 +60,12 @@ export function WalletConnectionStates({
 
   if (connected) {
     return (
-      <div className="space-y-3" data-qa="wallet-state-connected">
+      <div 
+        className="space-y-3" 
+        data-qa="wallet-state-connected"
+        role="status"
+        aria-live="polite"
+      >
         <WalletStatusBadge showNetwork={showDetails} />
 
         {showDetails && (
@@ -85,6 +92,8 @@ export function WalletConnectionStates({
     <div
       className="rounded-lg border border-surface-border bg-surface p-4 space-y-4"
       data-qa="wallet-state-disconnected"
+      role="status"
+      aria-live="polite"
     >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
