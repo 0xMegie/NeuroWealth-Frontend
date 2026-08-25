@@ -55,18 +55,20 @@ export function ErrorPage({
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href={primaryAction.href}>
-            <Button variant="primary" size="md">
-              {primaryAction.label}
-            </Button>
+          <a
+            href={primaryAction.href}
+            className="inline-flex items-center justify-center gap-2 text-center whitespace-normal leading-snug transition-all duration-200 bg-sky-500 hover:bg-sky-400 text-white font-semibold shadow-lg shadow-sky-500/20 px-5 py-2.5 text-sm rounded-lg"
+          >
+            {primaryAction.label}
           </a>
 
           {secondaryAction && (
             secondaryAction.href ? (
-              <a href={secondaryAction.href}>
-                <Button variant="secondary" size="md">
-                  {secondaryAction.label}
-                </Button>
+              <a
+                href={secondaryAction.href}
+                className="inline-flex items-center justify-center gap-2 text-center whitespace-normal leading-snug transition-all duration-200 border border-sky-500/60 text-sky-400 hover:bg-sky-500/10 font-medium px-5 py-2.5 text-sm rounded-lg"
+              >
+                {secondaryAction.label}
               </a>
             ) : (
               <Button
