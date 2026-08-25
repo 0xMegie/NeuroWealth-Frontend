@@ -158,6 +158,44 @@
   color: #e2e8f0;
 }
 
+.themeOptions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.themeOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeOption:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #e2e8f0;
+}
+
+.themeOption:focus-visible {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.themeOptionActive,
+.themeOptionActive:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
+  color: #e2e8f0;
+}
+
 .settingsWarning {
   display: flex;
   align-items: center;
@@ -169,27 +207,6 @@
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 6px;
-}
-
-.settingsToggleLabel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #e2e8f0;
-  cursor: pointer;
-}
-
-.settingsToggle {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #38bdf8;
-}
-
-.settingsToggle:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .settingsHint {
@@ -212,7 +229,7 @@
   border-radius: 12px;
   position: sticky;
   bottom: 24px;
-  z-index: 40;
+  z-index: var(--z-index-overlay);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -251,7 +268,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: var(--z-index-modal);
   backdrop-filter: blur(4px);
 }
 
