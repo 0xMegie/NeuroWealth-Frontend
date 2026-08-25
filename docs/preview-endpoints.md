@@ -103,7 +103,14 @@ The endpoint returns an OpenGraph image (1600×1080px) that can be:
 
 ### Caching
 
-Both endpoints use `force-dynamic` to ensure fresh renders on each request. This is important because preview images may be generated with different parameters dynamically.
+Both endpoints export `force-dynamic`, which opts them out of Next.js static generation. They also set explicit `Cache-Control` response headers so CDNs and browsers can cache the rendered images:
+
+| Endpoint | `Cache-Control` header |
+|---|---|
+| `/api/transaction-preview` | `public, s-maxage=86400, max-age=3600` |
+| `/api/widget-preview` | `public, s-maxage=86400, max-age=3600` |
+
+CDNs (e.g. Vercel Edge) may cache a response for up to **24 hours** (`s-maxage=86400`); browsers cache it for up to **1 hour** (`max-age=3600`). Because the images are parameterised by query string, each distinct combination of parameters is cached independently — a fresh render is triggered only when a previously-unseen parameter set is requested, or after the TTL expires.
 
 ### Image Dimensions
 

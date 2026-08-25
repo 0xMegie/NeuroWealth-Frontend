@@ -534,5 +534,11 @@ export async function GET(request: Request) {
     },
   );
 
+  // Add cache headers to match transaction-preview (1-day CDN / 1-hour browser)
+  imageResponse.headers.set(
+    "Cache-Control",
+    "public, s-maxage=86400, max-age=3600"
+  );
+
   return imageResponse;
 }
