@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import fs from "node:fs";
+import path from "node:path";
+import test, { describe } from "node:test";
 
 import { getFormFieldA11yProps } from "./FormField";
 
@@ -43,5 +45,25 @@ test("FormField a11y props prioritize an error id when only an error is present"
     errorId: "login-password-error",
     describedBy: "login-password-error",
     invalid: true,
+  });
+});
+
+describe("FormField optional label rendering", () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), "src/components/ui/FormField.tsx"),
+    "utf8",
+  );
+
+  test("renders a label element only when the label prop is provided", () => {
+    // The conditional guard must wrap the <label> so it is absent when label
+    // is omitted and present when supplied.
+    assert.match(source, /\{label &&\s*\(/);
+    assert.match(source, /<label\b/);
+  });
+
+  test("wires the label htmlFor attribute to the field id", () => {
+    // htmlFor must reference the same id that is passed to the control so
+    // clicking the label focuses the correct input.
+    assert.match(source, /htmlFor=\{id\}/);
   });
 });
