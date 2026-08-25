@@ -12,6 +12,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "TZ=UTC node --import tsx --test $(find src -name '*.test.ts' -print)",
+    "test:e2e": "playwright test",
     "qa:visual-baseline": "node scripts/capture-visual-baselines.mjs",
     "lint": "next lint",
     "validate:env": "yarn validate:env:server && yarn validate:env:frontend",

@@ -30,6 +30,8 @@ The app runs in demo/mock mode with no backend required by default.
 | `yarn typecheck` | TypeScript — no emit |
 | `yarn lint` | ESLint via `next lint` (CI gate) |
 | `yarn test` | Node test runner — `src/**/*.test.ts` |
+| `yarn validate:config` | Validate JSON config files (package.json, tsconfig.json) |
+| `yarn test:e2e` | Run Playwright end-to-end tests (CI gate) |
 | `yarn validate:env` | Validate env vars against Zod schemas |
 | `yarn analyze` | Bundle analysis (writes to `.next/analyze/`) |
 
@@ -37,12 +39,14 @@ The app runs in demo/mock mode with no backend required by default.
 
 Every PR runs `frontend-ci.yml` on GitHub Actions:
 
-1. `yarn typecheck`
-2. `yarn test`
-3. `yarn lint`
-4. `yarn build`
+1. Config validation (`yarn validate:config`)
+2. `yarn typecheck`
+3. `yarn test`
+4. E2E tests (`yarn test:e2e`)
+5. `yarn lint`
+6. `yarn build`
 
-All four must pass before merge. If CI is red, fix it before requesting review.
+All six must pass before merge. If CI is red, fix it before requesting review.
 
 ## Branch rules
 
