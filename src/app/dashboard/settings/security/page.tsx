@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Lock, Shield, AlertCircle, CheckCircle2, Save, X } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { Button } from "@/components/ui/Button";
+import { Switch } from "@/components/ui/Switch";
 
 export const dynamic = "force-dynamic";
 import { mockAuditService } from "@/lib/mock-audit";
@@ -159,17 +160,13 @@ export default function SecurityPage() {
 
         <div className={styles.settingsCardBody}>
           <div className={styles.settingsField}>
-            <label htmlFor="2fa" className={styles.settingsToggleLabel}>
-              <input
-                id="2fa"
-                type="checkbox"
-                checked={draft.twoFactorEnabled}
-                onChange={(e) => setDraft({ ...draft, twoFactorEnabled: e.target.checked })}
-                className={styles.settingsToggle}
-                disabled={!editing}
-              />
-              <span>{t.twoFactor.enableLabel}</span>
-            </label>
+            <Switch
+              id="2fa"
+              label={t.twoFactor.enableLabel}
+              checked={draft.twoFactorEnabled}
+              onChange={(checked) => setDraft({ ...draft, twoFactorEnabled: checked })}
+              disabled={!editing}
+            />
             <p className={styles.settingsHint}>
               {draft.twoFactorEnabled ? t.twoFactor.enabledHint : t.twoFactor.disabledHint}
             </p>
@@ -191,17 +188,13 @@ export default function SecurityPage() {
 
         <div className={styles.settingsCardBody}>
           <div className={styles.settingsField}>
-            <label htmlFor="alerts" className={styles.settingsToggleLabel}>
-              <input
-                id="alerts"
-                type="checkbox"
-                checked={draft.loginAlerts}
-                onChange={(e) => setDraft({ ...draft, loginAlerts: e.target.checked })}
-                className={styles.settingsToggle}
-                disabled={!editing}
-              />
-              <span>{t.loginAlerts.enableLabel}</span>
-            </label>
+            <Switch
+              id="alerts"
+              label={t.loginAlerts.enableLabel}
+              checked={draft.loginAlerts}
+              onChange={(checked) => setDraft({ ...draft, loginAlerts: checked })}
+              disabled={!editing}
+            />
             <p className={styles.settingsHint}>
               {draft.loginAlerts ? t.loginAlerts.enabledHint : t.loginAlerts.disabledHint}
             </p>

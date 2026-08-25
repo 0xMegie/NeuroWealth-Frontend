@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useSandbox } from "@/contexts/SandboxContext";
+import { SandboxBadge } from "@/components/ui/SandboxBadge";
 
 export default function HistoryPage() {
   const { getCurrentScenario, isSandboxMode } = useSandbox();
@@ -40,11 +41,7 @@ export default function HistoryPage() {
     <div className={`px-6 pt-8${scenario === "empty" ? " min-h-[60vh] flex flex-col" : ""}`}>
       <div className="flex items-center justify-between pb-4">
         <h1 className="text-2xl font-bold text-slate-100">History</h1>
-        {isSandboxMode && (
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            Sandbox: {scenario}
-          </span>
-        )}
+        {isSandboxMode && <SandboxBadge scenario={scenario} />}
       </div>
 
       {loading && <TableSkeleton rows={6} cols={5} />}

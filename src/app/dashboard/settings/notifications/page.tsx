@@ -8,6 +8,7 @@ import { STORAGE_KEYS } from "@/lib/storage-keys";
 export const dynamic = "force-dynamic";
 import { Button, Card, InlineBanner } from "@/components/ui";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
+import { Switch } from "@/components/ui/Switch";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
 
 interface NotificationPreferences {
@@ -43,8 +44,7 @@ function PreferenceToggle({
   onChange: () => void;
 }) {
   return (
-    <label
-      htmlFor={id}
+    <div
       className={`flex items-start justify-between gap-4 rounded-xl border border-slate-700/50 bg-slate-950/35 p-4 transition ${
         disabled ? "opacity-65" : "hover:border-slate-600"
       }`}
@@ -53,15 +53,13 @@ function PreferenceToggle({
         <p className="text-sm font-semibold text-slate-100">{title}</p>
         <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
       </div>
-      <input
+      <Switch
         id={id}
-        type="checkbox"
         checked={checked}
         disabled={disabled}
-        onChange={onChange}
-        className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-400 accent-sky-400"
+        onChange={() => onChange()}
       />
-    </label>
+    </div>
   );
 }
 

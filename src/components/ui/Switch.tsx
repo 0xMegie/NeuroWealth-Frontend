@@ -5,11 +5,17 @@ interface SwitchProps {
   onChange: (checked: boolean) => void;
   label?: string;
   disabled?: boolean;
+  id?: string;
 }
 
-export function Switch({ checked, onChange, label, disabled = false }: SwitchProps) {
+export function Switch({ checked, onChange, label, disabled = false, id }: SwitchProps) {
   return (
-    <label className="flex items-center justify-between gap-4 cursor-pointer group min-h-[44px]">
+    <label
+      htmlFor={id}
+      className={`flex items-center justify-between gap-4 group min-h-[44px] ${
+        disabled ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
+    >
       {label && (
         <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
           {label}
@@ -17,6 +23,7 @@ export function Switch({ checked, onChange, label, disabled = false }: SwitchPro
       )}
       <div className="relative inline-flex items-center group">
         <input
+          id={id}
           type="checkbox"
           className="sr-only peer"
           checked={checked}
