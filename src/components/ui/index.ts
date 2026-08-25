@@ -15,6 +15,7 @@ export * from "./InlineBanner";
 export * from "./Modal";
 export type { ModalSize } from "./Modal";
 export * from "./Switch";
+export * from "./SandboxBadge";
 export * from "./Tooltip";
 export { Drawer } from "./Drawer";
 export { DataTable } from "./DataTable";

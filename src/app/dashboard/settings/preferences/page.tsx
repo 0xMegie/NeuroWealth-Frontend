@@ -155,11 +155,11 @@ export default function PreferencesPage() {
           <div className={styles.settingsField}>
             <label className={styles.settingsLabel}>{t.appearance.themeLabel}</label>
             {editing ? (
-              <div className="theme-options">
+              <div className={styles.themeOptions}>
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "light" })}
-                  className={`theme-option ${draft.theme === "light" ? "active" : ""}`}
+                  className={`${styles.themeOption} ${draft.theme === "light" ? styles.themeOptionActive : ""}`}
                   aria-pressed={draft.theme === "light"}
                 >
                   <Sun size={16} />
@@ -168,7 +168,7 @@ export default function PreferencesPage() {
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "dark" })}
-                  className={`theme-option ${draft.theme === "dark" ? "active" : ""}`}
+                  className={`${styles.themeOption} ${draft.theme === "dark" ? styles.themeOptionActive : ""}`}
                   aria-pressed={draft.theme === "dark"}
                 >
                   <Moon size={16} />
@@ -177,7 +177,7 @@ export default function PreferencesPage() {
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, theme: "system" })}
-                  className={`theme-option ${draft.theme === "system" ? "active" : ""}`}
+                  className={`${styles.themeOption} ${draft.theme === "system" ? styles.themeOptionActive : ""}`}
                   aria-pressed={draft.theme === "system"}
                 >
                   <Monitor size={16} />

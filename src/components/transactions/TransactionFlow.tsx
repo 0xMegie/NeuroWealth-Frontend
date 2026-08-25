@@ -6,6 +6,7 @@ import styles from "./transaction-flow.module.css";
 import { formatCurrency } from "@/lib/formatters";
 import { buildStatusChips } from "@/lib/transactions";
 import { useSandbox } from "@/contexts/SandboxContext";
+import { SandboxBadge } from "@/components/ui/SandboxBadge";
 import { TransactionErrorRecovery } from "./TransactionErrorRecovery";
 import { TransactionFormStage } from "./stages/TransactionFormStage";
 import { TransactionConfirmStage } from "./stages/TransactionConfirmStage";
@@ -67,9 +68,7 @@ export function TransactionFlow() {
               </p>
               {isSandboxMode && (
                 <div className="mt-2">
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                    Sandbox: {scenario}
-                  </span>
+                  <SandboxBadge scenario={scenario} />
                 </div>
               )}
             </div>
