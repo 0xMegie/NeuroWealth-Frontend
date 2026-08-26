@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if (typeof global.StorageEvent === "undefined") { global.StorageEvent = class StorageEvent extends Event { key: string | null; newValue: string | null; oldValue: string | null; constructor(type: string, init?: any) { super(type, init); this.key = init?.key ?? null; this.newValue = init?.newValue ?? null; this.oldValue = init?.oldValue ?? null; } } as any; }
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -106,7 +108,7 @@ test("session-sync — cross-tab: session cleared in one tab triggers sync in ot
 test("session-sync — cross-tab: session update in one tab triggers sync in others", () => {
   const storageKey = SESSION_STORAGE_KEY;
   let syncTriggered = false;
-  let newSessionValue = null;
+  let newSessionValue: string | null = null;
 
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === storageKey && e.newValue !== null) {
@@ -123,7 +125,7 @@ test("session-sync — cross-tab: session update in one tab triggers sync in oth
 
   handleStorageChange(event);
   assert.equal(syncTriggered, true);
-  assert.ok(newSessionValue?.includes("new-token"));
+  assert.ok((newSessionValue as string | null)?.includes("new-token"));
 });
 
 // ── Cookie handling ──────────────────────────────────────────────────────
