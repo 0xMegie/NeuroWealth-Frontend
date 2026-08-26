@@ -245,12 +245,10 @@ export default function StrategyList() {
           alignItems: "center",
         }}
       >
-        <h2
-          style={{ fontSize: 16, fontWeight: 500, color: "#f9fafb", margin: 0 }}
-        >
+        <h2 className="m-0 text-base font-medium text-slate-900 dark:text-slate-50">
           Investment Strategies
         </h2>
-        <span style={{ fontSize: 12, color: "#6b7280" }}>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {totalItems} results
         </span>
       </div>
