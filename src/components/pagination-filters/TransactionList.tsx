@@ -64,10 +64,14 @@ export default function TransactionList() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Header */}
+      {/* Header — light/dark text pairing matches DataTable cell text below */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontSize: 16, fontWeight: 500, color: "#f9fafb", margin: 0 }}>Transactions</h2>
-        <span style={{ fontSize: 12, color: "#6b7280" }}>{totalItems} results</span>
+        <h2 className="m-0 text-base font-medium text-slate-700 dark:text-slate-200">
+          Transactions
+        </h2>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {totalItems} results
+        </span>
       </div>
 
       {/* Filters */}
