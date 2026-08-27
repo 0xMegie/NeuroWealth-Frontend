@@ -5,6 +5,7 @@ import { SearchX } from "lucide-react";
 import FilterChips, { FilterOption } from "./FilterChips";
 import Pagination from "./Pagination";
 import EmptyStateCompact from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
 import { formatNumber } from "@/lib/formatters";
 
 interface Strategy {
@@ -110,13 +111,13 @@ const MOCK_STRATEGIES: Strategy[] = [
   },
 ];
 
-const RISK_COLORS: Record<
-  string,
-  { bg: string; color: string; badge: string }
+const RISK_BADGE_VARIANT: Record<
+  Strategy["riskLevel"],
+  "success" | "warning" | "error"
 > = {
-  low: { bg: "rgba(34,197,94,0.12)", color: "#22c55e", badge: "#16a34a" },
-  medium: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", badge: "#d97706" },
-  high: { bg: "rgba(239,68,68,0.12)", color: "#ef4444", badge: "#dc2626" },
+  low: "success",
+  medium: "warning",
+  high: "error",
 };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -245,12 +246,10 @@ export default function StrategyList() {
           alignItems: "center",
         }}
       >
-        <h2
-          style={{ fontSize: 16, fontWeight: 500, color: "#f9fafb", margin: 0 }}
-        >
+        <h2 className="m-0 text-base font-medium text-slate-900 dark:text-slate-50">
           Investment Strategies
         </h2>
-        <span style={{ fontSize: 12, color: "#6b7280" }}>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {totalItems} results
         </span>
       </div>
@@ -281,15 +280,7 @@ export default function StrategyList() {
               display: "flex",
               flexDirection: "column",
               gap: 10,
-              transition: "border-color 0.12s",
-              cursor: "pointer",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "#6366f1")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "#374151")
-            }
           >
             {/* Title + Status */}
             <div
@@ -329,21 +320,12 @@ export default function StrategyList() {
             </div>
 
             {/* Meta */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  borderRadius: 4,
-                  padding: "2px 7px",
-                  background: RISK_COLORS[strategy.riskLevel].bg,
-                  color: RISK_COLORS[strategy.riskLevel].color,
-                }}
-              >
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <Badge variant={RISK_BADGE_VARIANT[strategy.riskLevel]} size="sm">
                 {strategy.riskLevel.charAt(0).toUpperCase() +
                   strategy.riskLevel.slice(1)}{" "}
                 Risk
-              </span>
+              </Badge>
               <span
                 style={{
                   fontSize: 11,

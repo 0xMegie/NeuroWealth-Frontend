@@ -6,7 +6,7 @@ Two modules validate different concerns — do not merge them:
 
 | Module | Used by | Purpose |
 |--------|---------|---------|
-| `scripts/lib/server-env.ts` | `yarn validate:env:server` | WhatsApp, PostgreSQL, Stellar, wallet encryption (integration/server) |
+| `scripts/lib/server-env.ts` | `yarn validate:env:server` | WhatsApp and Stellar env vars (APP_ENV, APP_URL, WhatsApp, Stellar network) |
 | `src/lib/env.ts` | Next.js app (`@/lib/env`) | Public `NEXT_PUBLIC_*` URLs and optional `NEUROWEALTH_*` backend paths |
 
 Run both:
