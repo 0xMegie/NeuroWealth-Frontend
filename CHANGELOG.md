@@ -16,6 +16,10 @@ Versions are tagged in GitHub Releases and linked from this file.
 - Auth middleware, consolidated Tailwind token sources, and env-example hardening (#511, #510)
 - Bundle analyzer support and major dashboard surface work (#497, #496)
 - Comprehensive i18n test coverage and dashboard string migration (#584, #587)
+- Test coverage for pagination, z-index scale, form field validation, and settings hooks (#667, #668, #670, #671)
+- Role/notifications/diagnostics list migration (#701, #696, #698, #699; #762)
+- Privacy settings page, cookie consent settings, and SandboxBadge component (#724, #752)
+- Preview endpoint caching (#716; #753)
 
 ### Changed
 - Consolidated `/signin` into `/login` as the canonical auth route (#381, #508)
@@ -23,6 +27,8 @@ Versions are tagged in GitHub Releases and linked from this file.
 - Unified seed strategy across mock services and chart data (#661)
 - Aligned signup validation with shared helpers; standardized API validation errors to 400 (#658, #571)
 - Unified route metadata and isolated dev-error routes from breadcrumbs (#659, #662)
+- Settings theming cleanup and service-layer ID store strategy consistency (#693, #694, #695, #697; #759, #762)
+- Client providers, navbar, transaction-flow, and auth-context refactor (#332, #333, #334, #336; #679)
 
 ### Fixed
 - Accessibility hardening: modal/drawer focus traps, keyboard-operable controls, navbar touch targets, Switch focus-visible ring (#595, #660, #585, #663)
@@ -30,9 +36,23 @@ Versions are tagged in GitHub Releases and linked from this file.
 - Fetch recovery UX, logger/PII hardening, and API timeout documentation (#389, #390, #357–#360)
 - Storage key / sandbox scenario sharing and frontend persistence cleanup (#341–#344, #513)
 - CI typecheck/test/lint gate stability (including Next 14 `.eslintrc.json` for `next lint`) (#592, #593)
+- Error boundary focus target collision and wallet state a11y (#615, #617; #746, #747)
+- Security and E2E issues (#622, #625; #680)
+- Transaction stages a11y (#616; #681)
+- Switch focus-visible ring (#663)
+- Round 3 audit fixes (#684, #687; #757)
+- Settings/storage error logging (#755)
+
+### Removed
+- Orphaned service layer module (#727; #749)
+- Unused CVD chart-color exports (#725; #751)
+- Dead `next/script` import and stale DB/WALLET_ENCRYPTION_KEY secrets (#717; #672)
 
 ### Security
 - Continued dependency and audit hygiene tracked under `docs/security/` (see npm audit policy reviews)
+- Auth security docs and demo-seed audit fixes (#666, #672)
+- Audit issues remediation (#539, #581, #582, #583; #669, #664)
+- Audit docs and demo issues (#666)
 
 ### Process
 - Release notes remain manual Keep-a-Changelog entries under `[Unreleased]`.

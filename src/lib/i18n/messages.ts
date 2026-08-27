@@ -346,6 +346,14 @@ export interface AppMessages {
         update: string;
       };
     };
+    privacy: {
+      title: string;
+      subtitle: string;
+      cookieSection: {
+        title: string;
+        desc: string;
+      };
+    };
     strategies: {
       eyebrow: string;
       title: string;
@@ -856,6 +864,14 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
           cancel: "Cancel",
           updating: "Updating…",
           update: "Update password",
+        },
+      },
+      privacy: {
+        title: "Privacy",
+        subtitle: "Control how NeuroWealth uses cookies and data on your device.",
+        cookieSection: {
+          title: "Cookie & Privacy Preferences",
+          desc: "Review your current consent status and adjust which cookie categories are active.",
         },
       },
       strategies: {
@@ -1378,6 +1394,14 @@ export const dictionaries: Record<AppLocale, AppMessages> = {
           cancel: "Annuler",
           updating: "Mise à jour…",
           update: "Mettre à jour le mot de passe",
+        },
+      },
+      privacy: {
+        title: "Confidentialité",
+        subtitle: "Contrôlez la façon dont NeuroWealth utilise les cookies et les données sur votre appareil.",
+        cookieSection: {
+          title: "Préférences cookies & confidentialité",
+          desc: "Consultez votre statut de consentement actuel et ajustez les catégories de cookies actives.",
         },
       },
       strategies: {

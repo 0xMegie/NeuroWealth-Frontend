@@ -30,10 +30,6 @@ export function AuditTrail() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <AuditTableSkeleton rows={6} />;
-  }
-
   const filteredEvents = useMemo(() => {
     return events
       .filter((e) => filter === "all" || e.eventType === filter)
@@ -42,6 +38,10 @@ export function AuditTrail() {
         return sortOrder === "desc" ? diff : -diff;
       });
   }, [events, filter, sortOrder]);
+
+  if (loading) {
+    return <AuditTableSkeleton rows={6} />;
+  }
 
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);

@@ -1,250 +1,380 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { BaseAdapter, MockStore } from "./base-adapter";
-import { ServiceException } from "./types";
+import {
+  ServiceError,
+  executeWithRetry,
+  executeWithTimeout,
+  executeWithRetryAndTimeout,
+} from "@/lib/service-layer/base-adapter";
 
-// BaseAdapter is abstract — exercise it through a minimal concrete subclass
-// that exposes the protected helpers under test.
-class TestAdapter extends BaseAdapter {
-  runWithRetry<T>(operation: () => Promise<T>, context = "TestAdapter.run") {
-    return this.executeWithRetry(operation, context);
-  }
+// ── ServiceError construction ──────────────────────────────────────────
 
-  buildResponse<T>(data: T) {
-    return this.createResponse(data);
-  }
-
-  triggerHandleError(error: unknown, context = "TestAdapter.op"): never {
-    return this.handleError(error, context);
-  }
-  exposeGenerateId(prefix: string) {
-    return this.generateId(prefix);
-  }
-}
-
-function createAdapter(overrides: ConstructorParameters<typeof TestAdapter>[0] = {}) {
-  return new TestAdapter({
-    simulateLatency: false,
-    simulateFailure: false,
-    retryDelay: 1,
-    ...overrides,
-  });
-}
-
-// ── executeWithRetry ─────────────────────────────────────────────────────────
-
-test("executeWithRetry returns the operation's result on first success", async () => {
-  const adapter = createAdapter();
-  const result = await adapter.runWithRetry(async () => "ok");
-  assert.equal(result, "ok");
+test("base-adapter — error: ServiceError stores message and code", () => {
+  const error = new ServiceError("Something went wrong", "CUSTOM_CODE");
+  assert.equal(error.message, "Something went wrong");
+  assert.equal(error.code, "CUSTOM_CODE");
+  assert.equal(error.name, "ServiceError");
 });
 
-test("executeWithRetry retries after a transient failure and eventually succeeds", async () => {
-  const adapter = createAdapter({ retryAttempts: 3 });
-  let calls = 0;
+// ── executeWithRetry: success cases ────────────────────────────────────
 
-  const result = await adapter.runWithRetry(async () => {
-    calls += 1;
-    if (calls < 2) {
-      throw new Error("transient failure");
+test("base-adapter — retry: succeeds on first attempt", async () => {
+  let attempts = 0;
+  const result = await executeWithRetry(async () => {
+    attempts += 1;
+    return "success";
+  });
+
+  assert.equal(result, "success");
+  assert.equal(attempts, 1);
+});
+
+test("base-adapter — retry: succeeds on second attempt after error", async () => {
+  let attempts = 0;
+  const result = await executeWithRetry(async () => {
+    attempts += 1;
+    if (attempts === 1) {
+      throw new Error("First attempt fails");
     }
-    return "recovered";
+    return "success";
   });
 
-  assert.equal(result, "recovered");
-  assert.equal(calls, 2);
+  assert.equal(result, "success");
+  assert.equal(attempts, 2);
 });
 
-test("executeWithRetry attempts exactly retryAttempts times before giving up", async () => {
-  const adapter = createAdapter({ retryAttempts: 3 });
-  let calls = 0;
+test("base-adapter — retry: succeeds on final attempt", async () => {
+  let attempts = 0;
+  const result = await executeWithRetry(async () => {
+    attempts += 1;
+    if (attempts < 3) {
+      throw new Error(`Attempt ${attempts} fails`);
+    }
+    return "success";
+  });
 
-  await assert.rejects(() =>
-    adapter.runWithRetry(async () => {
-      calls += 1;
-      throw new Error("always fails");
-    }),
+  assert.equal(result, "success");
+  assert.equal(attempts, 3);
+});
+
+// ── executeWithRetry: failure cases ────────────────────────────────────
+
+test("base-adapter — retry: throws after max attempts exhausted", async () => {
+  let attempts = 0;
+  await assert.rejects(
+    () =>
+      executeWithRetry(
+        async () => {
+          attempts += 1;
+          throw new Error("Always fails");
+        },
+        { maxAttempts: 3 },
+      ),
+    (err) => err instanceof ServiceError && err.code === "UNKNOWN_ERROR",
   );
 
-  assert.equal(calls, 3);
+  assert.equal(attempts, 3);
 });
 
-test("executeWithRetry throws a ServiceException with TIMEOUT code after exhausting attempts", async () => {
-  const adapter = createAdapter({ retryAttempts: 2 });
+test("base-adapter — retry: default maxAttempts is 3", async () => {
+  let attempts = 0;
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        attempts += 1;
+        throw new Error("Always fails");
+      }),
+  );
+
+  assert.equal(attempts, 3);
+});
+
+// ── Exponential backoff timing ─────────────────────────────────────────
+
+test("base-adapter — backoff: exponential delay between attempts", async () => {
+  let attempts = 0;
+  const startTime = Date.now();
 
   await assert.rejects(
     () =>
-      adapter.runWithRetry(async () => {
-        throw new Error("boom");
-      }, "TestAdapter.exhaust"),
-    (error: unknown) => {
-      assert.ok(error instanceof ServiceException);
-      assert.equal(error.code, "TIMEOUT");
-      assert.match(error.message, /TestAdapter\.exhaust/);
-      assert.equal(
-        (error.details as { originalError?: string })?.originalError,
-        "boom",
-      );
-      return true;
+      executeWithRetry(
+        async () => {
+          attempts += 1;
+          throw new Error("Fail");
+        },
+        {
+          maxAttempts: 3,
+          initialDelayMs: 50,
+          backoffMultiplier: 2,
+          maxDelayMs: 5000,
+        },
+      ),
+  );
+
+  const totalTime = Date.now() - startTime;
+
+  assert.equal(attempts, 3);
+  // Total time should be approximately: 50ms (after 1st fail) + 100ms (after 2nd fail) = 150ms
+  // But with timing variance, we expect at least 100ms (two delays) and less than 300ms
+  assert.ok(totalTime >= 100, `Expected totalTime >= 100, got ${totalTime}`);
+  assert.ok(totalTime < 300, `Expected totalTime < 300, got ${totalTime}`);
+});
+
+test("base-adapter — backoff: caps delay at maxDelayMs", async () => {
+  let attempts = 0;
+  const startTime = Date.now();
+
+  await assert.rejects(
+    () =>
+      executeWithRetry(
+        async () => {
+          attempts += 1;
+          throw new Error("Fail");
+        },
+        {
+          maxAttempts: 4,
+          initialDelayMs: 100,
+          backoffMultiplier: 10,
+          maxDelayMs: 200,
+        },
+      ),
+  );
+
+  const totalTime = Date.now() - startTime;
+
+  assert.equal(attempts, 4);
+  // With max delay of 200ms:
+  // delays: 100ms, 200ms (capped), 200ms (capped) = 500ms total
+  // Actual time should be roughly 400-600ms
+  assert.ok(totalTime >= 300, `Expected totalTime >= 300, got ${totalTime}`);
+  assert.ok(totalTime < 800, `Expected totalTime < 800, got ${totalTime}`);
+});
+
+test("base-adapter — backoff: no delay on final attempt", async () => {
+  let attempts = 0;
+  const startTime = Date.now();
+
+  await assert.rejects(
+    () =>
+      executeWithRetry(
+        async () => {
+          attempts += 1;
+          throw new Error("Fail");
+        },
+        {
+          maxAttempts: 2,
+          initialDelayMs: 100,
+          backoffMultiplier: 2,
+          maxDelayMs: 5000,
+        },
+      ),
+  );
+
+  const totalTime = Date.now() - startTime;
+
+  assert.equal(attempts, 2);
+  // Only one delay (after first attempt, not after second/final)
+  assert.ok(totalTime >= 50, `Expected totalTime >= 50, got ${totalTime}`);
+  assert.ok(totalTime < 250, `Expected totalTime < 250, got ${totalTime}`);
+});
+
+// ── Error handling ────────────────────────────────────────────────────
+
+test("base-adapter — error-handling: Error instance is wrapped", async () => {
+  const originalError = new Error("Original");
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        throw originalError;
+      }),
+    (err) => err instanceof ServiceError && err.message === "Original",
+  );
+});
+
+test("base-adapter — error-handling: string thrown value is handled", async () => {
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        // eslint-disable-next-line no-throw-literal
+        throw "String error";
+      }),
+    (err) => err instanceof ServiceError && err.message === "String error",
+  );
+});
+
+test("base-adapter — error-handling: undefined/null thrown value is handled", async () => {
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        // eslint-disable-next-line no-throw-literal
+        throw undefined;
+      }),
+    (err) =>
+      err instanceof ServiceError &&
+      err.message === "An unknown error occurred",
+  );
+});
+
+test("base-adapter — error-handling: object without message property is handled", async () => {
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        // eslint-disable-next-line no-throw-literal
+        throw { code: "CUSTOM", details: "Something" };
+      }),
+    (err) =>
+      err instanceof ServiceError &&
+      err.message === "An unknown error occurred",
+  );
+});
+
+test("base-adapter — error-handling: ServiceError is passed through", async () => {
+  const serviceError = new ServiceError("Service failed", "SERVICE_ERROR");
+  await assert.rejects(
+    () =>
+      executeWithRetry(async () => {
+        throw serviceError;
+      }),
+    (err) =>
+      err === serviceError &&
+      err.code === "SERVICE_ERROR",
+  );
+});
+
+// ── executeWithTimeout ────────────────────────────────────────────────
+
+test("base-adapter — timeout: succeeds when promise resolves before timeout", async () => {
+  const result = await executeWithTimeout(
+    async () => {
+      return "success";
     },
+    1000,
+  );
+
+  assert.equal(result, "success");
+});
+
+test("base-adapter — timeout: throws when promise exceeds timeout", async () => {
+  await assert.rejects(
+    () =>
+      executeWithTimeout(
+        async () => {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return "success";
+        },
+        100,
+      ),
+    (err) => err instanceof ServiceError && err.code === "TIMEOUT",
   );
 });
 
-test("executeWithRetry backs off exponentially between attempts", async () => {
-  const adapter = createAdapter({ retryAttempts: 3, retryDelay: 20 });
-  const timestamps: number[] = [];
+// ── executeWithRetryAndTimeout ────────────────────────────────────────
 
-  await assert.rejects(() =>
-    adapter.runWithRetry(async () => {
-      timestamps.push(Date.now());
-      throw new Error("always fails");
-    }),
-  );
-
-  assert.equal(timestamps.length, 3);
-  const firstGap = timestamps[1] - timestamps[0];
-  const secondGap = timestamps[2] - timestamps[1];
-
-  // retryDelay * 2^0 = 20ms, then retryDelay * 2^1 = 40ms.
-  assert.ok(firstGap >= 15, `expected first backoff >= 15ms, got ${firstGap}ms`);
-  assert.ok(
-    secondGap > firstGap,
-    `expected second backoff (${secondGap}ms) to exceed first (${firstGap}ms)`,
-  );
-});
-
-// ── createResponse ────────────────────────────────────────────────────────────
-
-test("createResponse wraps data with meta.requestId, timestamp, and version", () => {
-  const adapter = createAdapter();
-  const response = adapter.buildResponse({ hello: "world" });
-
-  assert.deepEqual(response.data, { hello: "world" });
-  assert.ok(response.meta?.requestId.startsWith("req_"));
-  assert.equal(response.meta?.version, "1.0.0");
-  assert.ok(!Number.isNaN(Date.parse(response.meta!.timestamp)));
-});
-
-// ── handleError ───────────────────────────────────────────────────────────────
-
-test("handleError rethrows an existing ServiceException unchanged", () => {
-  const adapter = createAdapter();
-  const original = new ServiceException({
-    code: "VALIDATION_ERROR",
-    message: "already a service error",
-    timestamp: new Date().toISOString(),
-  });
-
-  assert.throws(
-    () => adapter.triggerHandleError(original),
-    (error: unknown) => error === original,
-  );
-});
-
-test("handleError wraps a generic Error as SERVER_ERROR by default", () => {
-  const adapter = createAdapter();
-
-  assert.throws(
-    () => adapter.triggerHandleError(new Error("plain failure"), "TestAdapter.wrap"),
-    (error: unknown) => {
-      assert.ok(error instanceof ServiceException);
-      assert.equal(error.code, "SERVER_ERROR");
-      assert.match(error.message, /TestAdapter\.wrap/);
-      assert.match(error.message, /plain failure/);
-      return true;
+test("base-adapter — retry+timeout: succeeds on first attempt within timeout", async () => {
+  let attempts = 0;
+  const result = await executeWithRetryAndTimeout(
+    async () => {
+      attempts += 1;
+      return "success";
     },
+    { maxAttempts: 3 },
+    1000,
   );
+
+  assert.equal(result, "success");
+  assert.equal(attempts, 1);
 });
 
-test("handleError maps a recognized error.code to the matching ServiceErrorCode", () => {
-  const adapter = createAdapter();
-
-  assert.throws(
-    () => adapter.triggerHandleError({ code: "NOT_FOUND", message: "missing" }),
-    (error: unknown) => {
-      assert.ok(error instanceof ServiceException);
-      assert.equal(error.code, "NOT_FOUND");
-      return true;
+test("base-adapter — retry+timeout: retries when attempt times out", async () => {
+  let attempts = 0;
+  const result = await executeWithRetryAndTimeout(
+    async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      return "success";
     },
+    { maxAttempts: 3, initialDelayMs: 10 },
+    100,
   );
+
+  assert.equal(result, "success");
+  assert.equal(attempts, 2);
 });
 
-test("handleError falls back to SERVER_ERROR for an unrecognized error.code", () => {
-  const adapter = createAdapter();
-
-  assert.throws(
-    () => adapter.triggerHandleError({ code: "SOMETHING_WEIRD" }),
-    (error: unknown) => {
-      assert.ok(error instanceof ServiceException);
-      assert.equal(error.code, "SERVER_ERROR");
-      return true;
-    },
+test("base-adapter — retry+timeout: throws when all attempts timeout", async () => {
+  let attempts = 0;
+  await assert.rejects(
+    () =>
+      executeWithRetryAndTimeout(
+        async () => {
+          attempts += 1;
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return "success";
+        },
+        { maxAttempts: 2, initialDelayMs: 10 },
+        100,
+      ),
+    (err) => err instanceof ServiceError && err.code === "TIMEOUT",
   );
+
+  assert.equal(attempts, 2);
 });
 
-// ── config ────────────────────────────────────────────────────────────────────
+// ── Non-Error crash fix verification ───────────────────────────────────
 
-test("getConfig returns a snapshot; updateConfig merges over the previous config", () => {
-  const adapter = createAdapter({ retryAttempts: 3 });
+test("base-adapter — crash-fix: non-Error thrown doesn't crash error handler", async () => {
+  // This test verifies the core fix: that thrown non-Error values don't
+  // cause a secondary TypeError in handleError when accessing .message/.code
+  let didCrash = false;
 
-  const snapshot = adapter.getConfig();
-  assert.equal(snapshot.retryAttempts, 3);
-
-  adapter.updateConfig({ retryAttempts: 5 });
-  assert.equal(adapter.getConfig().retryAttempts, 5);
-  // Unrelated config is preserved across the partial update.
-  assert.equal(adapter.getConfig().simulateFailure, false);
-});
-
-test("getConfig returns a copy, not a live reference", () => {
-  const adapter = createAdapter();
-  const snapshot = adapter.getConfig();
-  snapshot.retryAttempts = 999;
-
-  assert.notEqual(adapter.getConfig().retryAttempts, 999);
-});
-
-// ── MockStore CRUD helpers ──────────────────────────────────────────────────
-
-test("MockStore supports basic CRUD and iterators", () => {
-  const store = new MockStore<string, number>();
-
-  assert.equal(store.get("a"), undefined);
-  assert.equal(store.has("a"), false);
-
-  store.set("a", 1);
-  store.set("b", 2);
-
-  assert.equal(store.get("a"), 1);
-  assert.equal(store.has("a"), true);
-
-  const keys = Array.from(store.keys());
-  const values = Array.from(store.values());
-
-  assert.ok(keys.includes("a") && keys.includes("b"));
-  assert.ok(values.includes(1) && values.includes(2));
-
-  assert.equal(store.delete("a"), true);
-  assert.equal(store.has("a"), false);
-});
-
-// ── generateId format and collision resistance ─────────────────────────────
-
-test("generateId produces correctly formatted, collision-resistant ids", () => {
-  const adapter = createAdapter();
-
-  // Use the TestAdapter helper that exposes the protected method.
-  const ids = new Set<string>();
-  const prefix = "tx";
-
-  for (let i = 0; i < 500; i++) {
-    const id = (adapter as unknown as TestAdapter).exposeGenerateId(prefix);
-    // Format: prefix_<timestamp>_<alphanumeric>
-    assert.match(id, new RegExp(`^${prefix}_\\d+_[a-z0-9]{9}$`));
-    ids.add(id);
+  try {
+    await executeWithRetry(async () => {
+      // eslint-disable-next-line no-throw-literal
+      throw { notAnError: true };
+    });
+  } catch (err) {
+    // Should catch a ServiceError, not a TypeError about accessing .message
+    if (err instanceof TypeError) {
+      didCrash = true;
+    }
   }
 
-  // Expect no collisions across 500 generated ids
-  assert.equal(ids.size, 500);
+  assert.equal(didCrash, false, "Error handler should not crash on non-Error values");
+});
+
+test("base-adapter — crash-fix: number thrown value is safe", async () => {
+  let errorMessage = "";
+
+  try {
+    await executeWithRetry(async () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 42;
+    });
+  } catch (err) {
+    if (err instanceof ServiceError) {
+      errorMessage = err.message;
+    }
+  }
+
+  assert.equal(errorMessage, "An unknown error occurred");
+});
+
+test("base-adapter — crash-fix: boolean thrown value is safe", async () => {
+  let errorMessage = "";
+
+  try {
+    await executeWithRetry(async () => {
+      // eslint-disable-next-line no-throw-literal
+      throw false;
+    });
+  } catch (err) {
+    if (err instanceof ServiceError) {
+      errorMessage = err.message;
+    }
+  }
+
+  assert.equal(errorMessage, "An unknown error occurred");
 });

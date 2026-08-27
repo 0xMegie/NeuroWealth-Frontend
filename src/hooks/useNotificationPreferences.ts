@@ -8,12 +8,22 @@ export function useNotificationPreferences() {
   const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
     if (typeof window === "undefined") return DEFAULT_PREFERENCES;
     const stored = localStorage.getItem(NOTIFICATION_PREFERENCES_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_PREFERENCES;
+    if (!stored) return DEFAULT_PREFERENCES;
+    try {
+      return JSON.parse(stored);
+    } catch {
+      // Malformed JSON - fallback to defaults and repair corrupted storage
+      localStorage.setItem(
+        NOTIFICATION_PREFERENCES_STORAGE_KEY,
+        JSON.stringify(DEFAULT_PREFERENCES),
+      );
+      return DEFAULT_PREFERENCES;
+    }
   });
   const [loading] = useState(false);
 
   const updatePreference = (
-    section: "categories" | "channels",
+    section: "categories" | "channels" | "emailDigest",
     key: string,
     value: boolean
   ) => {

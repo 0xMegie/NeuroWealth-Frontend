@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { logger } from "@/lib/logger";
+import { SandboxBadge } from "@/components/ui/SandboxBadge";
 
 const toneMap: Record<string, string> = {
   primary: "#3b82f6",
@@ -77,19 +77,6 @@ function getValueTone(value: number): "positive" | "negative" | "neutral" {
   if (value > 0) return "positive";
   if (value < 0) return "negative";
   return "neutral";
-}
-
-function buildDonutBackground(allocation: AllocationItem[]): string {
-  let start = 0;
-
-  const segments = allocation.map((item) => {
-    const end = start + item.share;
-    const segment = `${toneMap[item.tone]} ${start}% ${end}%`;
-    start = end;
-    return segment;
-  });
-
-  return `conic-gradient(${segments.join(", ")})`;
 }
 
 function renderActivityIcon(kind: ActivityItem["kind"]) {
@@ -332,10 +319,7 @@ export function PortfolioDashboard() {
               </span>
             </div>
             <div className={styles.bannerChips}>
-              {isSandboxMode && (
-                <span className={styles.chip} style={{ backgroundColor: "#10b981", color: "white" }}>{t.sandbox}: {scenario}
-                </span>
-              )}
+              {isSandboxMode && <SandboxBadge scenario={scenario} label={t.sandbox} />}
               <span className={styles.chip}>{t.theme}: {theme}</span>
               <span className={styles.chip}>{t.source}:{" "}
                 {portfolio ? renderSourceLabel(portfolio.source, t) : "Loading"}

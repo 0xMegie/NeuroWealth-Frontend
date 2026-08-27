@@ -3,8 +3,9 @@
 import React from "react";
 import FilterChips from "./FilterChips";
 import Pagination from "./Pagination";
-import { useTransactionList, buildFilterOptions, MOCK_TRANSACTIONS } from "../../hooks/useTransactionList";
+import { useTransactionList, buildFilterOptions, MOCK_TRANSACTIONS, type Transaction } from "../../hooks/useTransactionList";
 import { formatNumber } from "@/lib/formatters";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   completed: { bg: "rgba(16,185,129,0.12)", color: "#10b981" },
@@ -12,6 +13,48 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   failed:    { bg: "rgba(239,68,68,0.12)",   color: "#ef4444" },
   cancelled: { bg: "rgba(107,114,128,0.12)", color: "#6b7280" },
 };
+
+const COLUMNS: DataTableColumn<Transaction>[] = [
+  { key: "date", header: "Date", accessor: (tx) => tx.date },
+  { key: "description", header: "Description", accessor: (tx) => tx.description },
+  {
+    key: "type",
+    header: "Type",
+    accessor: (tx) => tx.type,
+    render: (tx) => (
+      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        {tx.type}
+      </span>
+    ),
+  },
+  {
+    key: "amount",
+    header: "Amount",
+    accessor: (tx) => tx.amount,
+    align: "right",
+    render: (tx) => (
+      <span className="tabular-nums">
+        {formatNumber(tx.amount)} {tx.currency}
+      </span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    accessor: (tx) => tx.status,
+    render: (tx) => (
+      <span
+        className="rounded px-2 py-0.5 text-[11px]"
+        style={{
+          background: STATUS_COLORS[tx.status]?.bg,
+          color: STATUS_COLORS[tx.status]?.color,
+        }}
+      >
+        {tx.status}
+      </span>
+    ),
+  },
+];
 
 export default function TransactionList() {
   const { items, totalItems, page, setPage, selectedFilters, setSelectedFilters, itemsPerPage } =
@@ -21,10 +64,14 @@ export default function TransactionList() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Header */}
+      {/* Header — light/dark text pairing matches DataTable cell text below */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontSize: 16, fontWeight: 500, color: "#f9fafb", margin: 0 }}>Transactions</h2>
-        <span style={{ fontSize: 12, color: "#6b7280" }}>{totalItems} results</span>
+        <h2 className="m-0 text-base font-medium text-slate-700 dark:text-slate-200">
+          Transactions
+        </h2>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {totalItems} results
+        </span>
       </div>
 
       {/* Filters */}
@@ -35,56 +82,14 @@ export default function TransactionList() {
       />
 
       {/* Table */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }} aria-label="Transaction history">
-          <caption style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
-            Transaction history, {totalItems} results
-          </caption>
-          <thead>
-            <tr style={{ borderBottom: "0.5px solid #21262d" }}>
-              {["Date", "Description", "Type", "Amount", "Status"].map((h) => (
-                <th key={h} style={{ textAlign: "left", padding: "8px 12px", color: "#6b7280", fontWeight: 400, fontSize: 11, letterSpacing: "0.05em" }}>
-                  {h.toUpperCase()}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((tx) => (
-              <tr key={tx.id} style={{ borderBottom: "0.5px solid #161b22" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#161b22")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <td style={{ padding: "10px 12px", color: "#6b7280", whiteSpace: "nowrap" }}>{tx.date}</td>
-                <td style={{ padding: "10px 12px", color: "#e5e7eb" }}>{tx.description}</td>
-                <td style={{ padding: "10px 12px" }}>
-                  <span style={{ fontSize: 11, color: "#9ca3af", background: "#1f2937", borderRadius: 4, padding: "2px 7px" }}>
-                    {tx.type}
-                  </span>
-                </td>
-                <td style={{ padding: "10px 12px", color: "#e5e7eb", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                  {formatNumber(tx.amount)} {tx.currency}
-                </td>
-                <td style={{ padding: "10px 12px" }}>
-                  <span style={{
-                    fontSize: 11, borderRadius: 4, padding: "2px 8px",
-                    background: STATUS_COLORS[tx.status]?.bg,
-                    color: STATUS_COLORS[tx.status]?.color,
-                  }}>
-                    {tx.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {items.length === 0 && (
-          <div style={{ textAlign: "center", padding: "32px 0", color: "#6b7280", fontSize: 13 }}>
-            No transactions match the selected filters.
-          </div>
-        )}
-      </div>
+      <DataTable
+        data={items}
+        columns={COLUMNS}
+        rowKey={(tx) => tx.id}
+        searchable={false}
+        caption={`Transaction history, ${totalItems} results`}
+        emptyMessage="No transactions match the selected filters."
+      />
 
       {/* Pagination */}
       <Pagination

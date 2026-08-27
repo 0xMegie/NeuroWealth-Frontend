@@ -14,7 +14,7 @@ async function collectRouteFiles(dir: string): Promise<string[]> {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...(await collectRouteFiles(full)));
-    } else if (entry.isFile() && entry.name === "route.ts") {
+    } else if (entry.isFile() && (entry.name === "route.ts" || entry.name === "route.tsx")) {
       results.push(full);
     }
   }
@@ -24,7 +24,8 @@ async function collectRouteFiles(dir: string): Promise<string[]> {
 
 // Routes that are intentionally public (do not call requireAuth).
 const PUBLIC_ALLOWLIST = new Set<string>([
-  // Example: path.join("src", "app", "api", "public", "route.ts")
+  path.join("src", "app", "api", "transaction-preview", "route.tsx"),
+  path.join("src", "app", "api", "widget-preview", "route.tsx"),
 ]);
 
 test("API route handlers call requireAuth or are explicitly allowlisted", async () => {

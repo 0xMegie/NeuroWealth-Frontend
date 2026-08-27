@@ -33,7 +33,6 @@
     "react-dom": "^18",
     "recharts": "^3.8.1",
     "tailwind-merge": "^2.2.1",
-    "yarn": "^1.22.22",
     "zod": "^3.25.76"
   },
   "optionalDependencies": {
@@ -65,7 +64,6 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.20.6",
-    "typescript": "^5",
-    "vitest": "^4.1.10"
+    "typescript": "^5"
   }
 }
