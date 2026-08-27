@@ -1,40 +1,29 @@
 ## Summary
 
-Resolves four linked issues in a single branch: onboarding flow, responsive nav, async state system, and performance optimisation pass.
+Fixes four issues: cookie-consent shape validation, PortfolioDashboard error logging, and adds missing a11y/responsive/keyboard tests.
 
 ## Changes
 
-**#440 — Onboarding flow (first-time users)**
-- `/onboarding` page renders `OnboardingFlow` and redirects to dashboard on complete/skip
-- `OnboardingGate` wraps the dashboard page — first-time users (no localStorage state) see the 3-step flow inline before the dashboard renders
-- Completion state persisted via existing `onboarding-state.ts` / `STORAGE_KEYS.ONBOARDING_STATE`
-- `OnboardingSettings` card surfaced in `/dashboard/settings` so users can review or reset onboarding at any time
-- Steps: Wallet Connect → Strategy Overview → First Deposit, each with primary action + skip
+**#794 — Audit: reopen and fix issues mis-closed by PR #755**
 
-**#454 — Responsive navigation**
-- Fixed `TopHeader` left-offset breakpoints: was `md:left-64` (skipped tablet rail), now `sm:left-14 lg:left-64` — matches sidebar layout at all three breakpoints (mobile / tablet rail 56px / desktop 256px)
-- Sidebar: icon-only rail at 640–1023 px, expands on toggle; full at ≥ 1024 px; hidden on mobile
-- `MobileBottomNav`: fixed bottom bar below 640 px, 44 px touch targets, `aria-current="page"` on active item
-- All nav items meet 44 px min touch target; pointer targets 36 px min on toggle button
+- **#689 — CookieConsentContext shape validation**: Added `isValidConsentState()` that validates `status` is one of `pending|accepted|rejected|custom`, `lastUpdated` is `string|null`, and all four `preferences` booleans are present. Invalid stored data is now logged, cleared from localStorage, and the banner is re-shown instead of trusting a corrupt shape.
+- **#690 — PortfolioDashboard logger.error**: The catch block in `loadPortfolio()` now calls `logger.error("portfolio_fetch_failed", loadError)` before setting the error state, routing failures through the centralized logger.
 
-**#441 — Global async state system**
-- `ErrorBlock`, `EmptyState`, `DataBoundary`, `useAsyncData`, `useAsyncState` — fully wired across portfolio, strategy, transaction, history, and audit pages
-- Skeleton presets (`DashboardSkeleton`, `TableSkeleton`, `TransactionFormSkeleton`, etc.) match final layout dimensions
-- Every error state includes title, description, and retry action
-- `/dashboard/async-states` dev page demonstrates all loading/empty/error flows
+**#790 — WalletConnectionStates aria-live tests**
+- Added `WalletConnectionStates.test.ts` asserting all three connection states (restoring/connected/disconnected) have `role="status"` and `aria-live="polite"`, plus `data-qa` selectors per state.
 
-**#443 — Performance optimisation**
-- `next.config.mjs`: gzip compression, AVIF/WebP images, `removeConsole` in production, `optimizePackageImports` for `lucide-react`
-- `@next/bundle-analyzer` wired via `yarn analyze` (`ANALYZE=true`)
-- Route-level code splitting via Next.js App Router + `Suspense` boundaries on every dashboard route
-- Skeletons used on all async-heavy sections — no layout shift during load
+**#789 — DiagnosticsPanelContent responsive-layout test**
+- Added `DiagnosticsPanelContent.test.ts` locking in the fixed `w-[400px]` width class, `h-[500px]` height, fixed bottom-right positioning, and verifying the width is not viewport-relative (no `vw`/`min()`/`max()` units).
+
+**#788 — FirstDepositStep keyboard-operability test**
+- Added `FirstDepositStep.test.ts` simulating Enter and Space keydown on asset cards, asserting selection fires and `preventDefault` is called (stops page scroll). Also verifies other keys (Tab, Escape) don't trigger selection, and that cards have `tabIndex=0` and `role="button"`.
 
 ## Checks
 
-- `npx tsc --noEmit` — 9 pre-existing errors in demo/test/chart files, none introduced by this PR
-- `npx next lint` — ✔ no warnings or errors
+- `npx tsc --noEmit` — pre-existing errors only, none introduced by this PR
+- `npx next lint` — no warnings or errors
 
-Closes #440
-Closes #454
-Closes #441
-Closes #443
+Closes #794
+Closes #790
+Closes #789
+Closes #788

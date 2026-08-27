@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { logger } from "@/lib/logger";
 
 const toneMap: Record<string, string> = {
   primary: "#3b82f6",
@@ -187,6 +188,7 @@ export function PortfolioDashboard() {
           loadError instanceof ApiRequestError || loadError instanceof Error
             ? loadError.message
             : "Unable to load portfolio widgets.";
+        logger.error("portfolio_fetch_failed", loadError);
         setError(message);
         setPortfolio(null);
       } finally {
