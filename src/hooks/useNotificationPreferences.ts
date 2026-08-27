@@ -27,18 +27,20 @@ export function useNotificationPreferences() {
     key: string,
     value: boolean
   ) => {
-    const updated = {
-      ...preferences,
-      [section]: {
-        ...preferences[section],
-        [key]: value,
-      },
-    };
-    setPreferences(updated);
-    localStorage.setItem(
-      NOTIFICATION_PREFERENCES_STORAGE_KEY,
-      JSON.stringify(updated),
-    );
+    setPreferences((current) => {
+      const updated = {
+        ...current,
+        [section]: {
+          ...current[section],
+          [key]: value,
+        },
+      };
+      localStorage.setItem(
+        NOTIFICATION_PREFERENCES_STORAGE_KEY,
+        JSON.stringify(updated),
+      );
+      return updated;
+    });
   };
 
   return {
