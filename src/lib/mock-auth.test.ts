@@ -47,3 +47,23 @@ test("mockAuth.signUp — handles new account creation and returns enumeration-s
     /If this email is available, a confirmation has been sent\./,
   );
 });
+
+test("mockAuth.signUp — enforces rate limiting after max request threshold", async () => {
+  const email = "ratelimit-signup-test@example.com";
+  // First call succeeds; the rate limit is keyed by email regardless of
+  // outcome, so repeat calls (which now hit the duplicate-account error)
+  // still consume the allowance.
+  await mockAuth.signUp(email, "Rate Limit Test", "password123");
+  for (let i = 0; i < 4; i++) {
+    await assert.rejects(
+      async () => mockAuth.signUp(email, "Rate Limit Test", "password123"),
+      /If this email is available, a confirmation has been sent\./,
+    );
+  }
+
+  // 6th attempt for this rate-limit key must be blocked by the rate limiter.
+  await assert.rejects(
+    async () => mockAuth.signUp(email, "Rate Limit Test", "password123"),
+    /Too many sign-up attempts\. Please try again later\./,
+  );
+});
