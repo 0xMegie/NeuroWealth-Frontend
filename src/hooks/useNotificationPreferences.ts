@@ -10,7 +10,16 @@ export function useNotificationPreferences() {
     const stored = localStorage.getItem(NOTIFICATION_PREFERENCES_STORAGE_KEY);
     if (!stored) return DEFAULT_PREFERENCES;
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Merge against defaults so pre-migration stored values missing
+      // emailDigest (or any future section) don't crash on access.
+      return {
+        ...DEFAULT_PREFERENCES,
+        ...parsed,
+        categories: { ...DEFAULT_PREFERENCES.categories, ...parsed.categories },
+        channels: { ...DEFAULT_PREFERENCES.channels, ...parsed.channels },
+        emailDigest: { ...DEFAULT_PREFERENCES.emailDigest, ...parsed.emailDigest },
+      };
     } catch {
       // Malformed JSON - fallback to defaults and repair corrupted storage
       localStorage.setItem(
