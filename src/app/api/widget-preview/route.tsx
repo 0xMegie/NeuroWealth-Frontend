@@ -8,7 +8,6 @@ import { buildScenarioPayload } from "@/lib/portfolio";
 import { parseWidgetPreviewSearchParams } from "@/lib/preview-route-query";
 import { ImageResponse } from "next/og";
 
-export const dynamic = "force-dynamic";
 
 type ThemeMode = "light" | "dark";
 
