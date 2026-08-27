@@ -38,7 +38,7 @@ const MOCK_USERS: Record<string, { password: string; user: MockAuthUserRecord }>
  * Uses crypto.randomUUID (Web Crypto API) to ensure unpredictability,
  * independent of NEXT_PUBLIC_DEMO_SEED or any seeded RNG.
  */
-export function generateToken(): string {
+function generateToken(): string {
   // Use crypto API for secure randomness
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return `mock_token_${crypto.randomUUID()}`;
@@ -61,7 +61,7 @@ function isLegacyMockAuthUserRecord(value: unknown): value is MockAuthUserRecord
   );
 }
 
-export function normalizeSession(value: unknown): AuthSession | null {
+function normalizeSession(value: unknown): AuthSession | null {
   if (!value || typeof value !== "object") {
     return null;
   }
