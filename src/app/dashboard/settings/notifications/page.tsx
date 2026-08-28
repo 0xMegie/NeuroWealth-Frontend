@@ -4,6 +4,7 @@ import { AlertCircle, Bell, Mail, Save, ShieldAlert, X } from "lucide-react";
 import { useToast } from "@/components/notifications/ToastProvider";
 import { useI18n } from "@/contexts/I18nContext";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
+import { getApiErrorPresentation } from "@/lib/logger";
 import {
   DEFAULT_PREFERENCES,
   type NotificationPreferences,
@@ -98,11 +99,15 @@ export default function NotificationsSettingsPage() {
         duration: 4000,
       });
     },
-    onSaveError: () => {
-      pushToast({
-        variant: "error",
+    onSaveError: (error) => {
+      const copy = getApiErrorPresentation(error, {
         title: t.toast.failTitle,
         description: t.toast.failDesc,
+      });
+      pushToast({
+        variant: "error",
+        title: copy.title,
+        description: copy.description,
         duration: 6000,
       });
     },
