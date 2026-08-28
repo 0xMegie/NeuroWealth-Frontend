@@ -24,8 +24,11 @@ Set these in `.env.local`:
 | --- | --- | --- |
 | `NEXT_PUBLIC_WEBHOOK_URL` | Yes | WhatsApp / webhook receiver URL |
 | `NEXT_PUBLIC_API_URL` | Yes | Base URL for internal Next.js `/api/*` routes |
+| `NEXT_PUBLIC_APP_ENV` | Yes | Current environment name (`development`, `staging`, `production`). Used by server-env validation. |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public base URL of the deployed application (e.g. `https://neurowealth.app`). Used by server-env validation. |
 | `NEXT_PUBLIC_STELLAR_NETWORK` | Optional | Network name — `testnet` or `mainnet` (default: `testnet`) |
 | `NEXT_PUBLIC_STELLAR_HORIZON_URL` | Optional | Stellar Horizon endpoint (overrides the SDK default) |
+| `NEXT_PUBLIC_ENABLE_DASHBOARD_SANDBOX` | Optional | Set to `"true"` to enable the `/dashboard/sandbox` route (default: disabled) |
 | `NEXT_PUBLIC_DEMO_SEED` | Optional | String seed for deterministic mock data in demos and visual baselines. Any non-empty string activates the Mulberry32 seeded PRNG; unset or empty uses `Math.random()`. See `docs/qa/demo-seed.md`. |
 
 Example `.env.local`:
@@ -33,8 +36,11 @@ Example `.env.local`:
 ```bash
 NEXT_PUBLIC_WEBHOOK_URL=http://localhost:2000
 NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_APP_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_STELLAR_NETWORK=testnet
 NEXT_PUBLIC_STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+NEXT_PUBLIC_ENABLE_DASHBOARD_SANDBOX=true
 NEXT_PUBLIC_DEMO_SEED=demo-seed-2026
 ```
 
