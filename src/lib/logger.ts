@@ -172,6 +172,101 @@ const emitToConsole = (level: LogLevel, message: string, context?: unknown) => {
   }
 };
 
+
+export interface ApiErrorPresentation {
+  title: string;
+  description: string;
+  actionLabel: string;
+  retryable: boolean;
+  code: string;
+  status?: number;
+}
+
+type ApiErrorShape = {
+  code?: unknown;
+  status?: unknown;
+  message?: unknown;
+};
+
+const API_ERROR_PRESENTATION: Record<string, Omit<ApiErrorPresentation, "code" | "status">> = {
+  NETWORK_ERROR: {
+    title: "Connection problem",
+    description: "We could not reach the service. Check your connection and try again.",
+    actionLabel: "Retry",
+    retryable: true,
+  },
+  REQUEST_TIMEOUT: {
+    title: "Request timed out",
+    description: "The service took too long to respond. Try again in a moment.",
+    actionLabel: "Retry",
+    retryable: true,
+  },
+  VALIDATION_FAILED: {
+    title: "Check your changes",
+    description: "Some values could not be saved. Review the highlighted fields and try again.",
+    actionLabel: "Review",
+    retryable: false,
+  },
+  INVALID_AMOUNT: {
+    title: "Check your amount",
+    description: "The amount could not be accepted. Update it and try again.",
+    actionLabel: "Edit",
+    retryable: false,
+  },
+  RATE_LIMITED: {
+    title: "Too many attempts",
+    description: "The service is receiving too many requests. Wait a moment before trying again.",
+    actionLabel: "Try later",
+    retryable: true,
+  },
+  STATE_CONFLICT: {
+    title: "Refresh required",
+    description: "This data changed before your update completed. Refresh and try again.",
+    actionLabel: "Refresh",
+    retryable: true,
+  },
+  INTERNAL_SERVER_ERROR: {
+    title: "Service unavailable",
+    description: "The service could not complete the request. Try again in a moment.",
+    actionLabel: "Retry",
+    retryable: true,
+  },
+};
+
+function getApiErrorShape(error: unknown): ApiErrorShape {
+  if (typeof error !== "object" || error === null) {
+    return {};
+  }
+  return error as ApiErrorShape;
+}
+
+export function getApiErrorPresentation(
+  error: unknown,
+  fallback: Partial<Pick<ApiErrorPresentation, "title" | "description" | "actionLabel">> = {},
+): ApiErrorPresentation {
+  const shape = getApiErrorShape(error);
+  const code = typeof shape.code === "string" ? shape.code : "UNKNOWN_ERROR";
+  const status = typeof shape.status === "number" ? shape.status : undefined;
+  const copy = API_ERROR_PRESENTATION[code] ?? {
+    title: fallback.title ?? "Something went wrong",
+    description:
+      fallback.description ??
+      (typeof shape.message === "string"
+        ? shape.message
+        : "The request could not be completed. Please try again."),
+    actionLabel: fallback.actionLabel ?? "Retry",
+    retryable: true,
+  };
+
+  return {
+    ...copy,
+    title: fallback.title ?? copy.title,
+    description: fallback.description ?? copy.description,
+    actionLabel: fallback.actionLabel ?? copy.actionLabel,
+    code,
+    status,
+  };
+}
 export const logger = {
   info: (message: string, context?: unknown) => {
     const entry = createEntry("info", message, context);
