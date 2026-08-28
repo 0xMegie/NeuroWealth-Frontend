@@ -1,3 +1,4 @@
+import React from "react";
 import { formatCurrency, formatTimestamp } from "@/lib/formatters";
 import {
   buildPreviewSnapshot,
