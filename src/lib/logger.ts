@@ -258,14 +258,12 @@ export function getApiErrorPresentation(
     retryable: true,
   };
 
-  return {
+  const presentation = {
     ...copy,
-    title: fallback.title ?? copy.title,
-    description: fallback.description ?? copy.description,
-    actionLabel: fallback.actionLabel ?? copy.actionLabel,
     code,
-    status,
   };
+
+  return status === undefined ? presentation : { ...presentation, status };
 }
 export const logger = {
   info: (message: string, context?: unknown) => {
