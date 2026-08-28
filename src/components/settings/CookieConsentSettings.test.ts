@@ -11,6 +11,7 @@ setupDomGlobals();
 
 test.afterEach(() => {
   localStorage.clear();
+  cleanup();
 });
 
 test("CookieConsentSettings — renders preferences and trigger", () => {
@@ -30,6 +31,7 @@ test("CookieConsentSettings — renders preferences and trigger", () => {
   // Should render the manage preferences button
   assert.ok(container.textContent?.includes("Manage preferences"));
 });
+
 test("CookieConsentSettings resets malformed stored consent state", async () => {
   localStorage.setItem(
     STORAGE_KEYS.COOKIE_CONSENT,
