@@ -6,12 +6,14 @@ import Pagination from "./Pagination";
 import { useTransactionList, buildFilterOptions, MOCK_TRANSACTIONS, type Transaction } from "../../hooks/useTransactionList";
 import { formatNumber } from "@/lib/formatters";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
+import { Badge } from "@/components/ui/Badge";
 
-const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  completed: { bg: "rgba(16,185,129,0.12)", color: "#10b981" },
-  pending:   { bg: "rgba(245,158,11,0.12)",  color: "#f59e0b" },
-  failed:    { bg: "rgba(239,68,68,0.12)",   color: "#ef4444" },
-  cancelled: { bg: "rgba(107,114,128,0.12)", color: "#6b7280" },
+// Map transaction statuses onto the shared Badge variants (success/warning/error; neutral default).
+const STATUS_VARIANT: Record<string, "success" | "warning" | "error" | "default"> = {
+  completed: "success",
+  pending: "warning",
+  failed: "error",
+  cancelled: "default",
 };
 
 const COLUMNS: DataTableColumn<Transaction>[] = [
@@ -22,9 +24,9 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     header: "Type",
     accessor: (tx) => tx.type,
     render: (tx) => (
-      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <Badge variant="default" size="sm">
         {tx.type}
-      </span>
+      </Badge>
     ),
   },
   {
@@ -43,15 +45,9 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     header: "Status",
     accessor: (tx) => tx.status,
     render: (tx) => (
-      <span
-        className="rounded px-2 py-0.5 text-[11px]"
-        style={{
-          background: STATUS_COLORS[tx.status]?.bg,
-          color: STATUS_COLORS[tx.status]?.color,
-        }}
-      >
+      <Badge variant={STATUS_VARIANT[tx.status] ?? "default"} size="sm">
         {tx.status}
-      </span>
+      </Badge>
     ),
   },
 ];
