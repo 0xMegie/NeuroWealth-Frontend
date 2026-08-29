@@ -30,8 +30,9 @@ The app runs in demo/mock mode with no backend required by default.
 | `yarn typecheck` | TypeScript — no emit |
 | `yarn lint` | ESLint via `next lint` (CI gate) |
 | `yarn test` | Node test runner — `src/**/*.test.ts` |
-| `yarn test:e2e` | Playwright E2E tests — runs against local dev or production build |
-| `yarn validate:env` | Validate env vars using custom hand-rolled checks |
+| `yarn validate:config` | Validate JSON config files (package.json, tsconfig.json) |
+| `yarn test:e2e` | Run Playwright end-to-end tests (CI gate) |
+| `yarn validate:env` | Validate env vars against Zod schemas |
 | `yarn analyze` | Bundle analysis (writes to `.next/analyze/`) |
 
 ## CI gates

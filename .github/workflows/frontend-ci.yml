@@ -66,6 +66,12 @@ jobs:
       - name: Unit tests
         run: yarn test
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: yarn test:e2e
+
       - name: Lint
         run: yarn lint
 
