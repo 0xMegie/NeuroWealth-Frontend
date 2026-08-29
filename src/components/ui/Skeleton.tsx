@@ -37,8 +37,14 @@
 
 "use client";
 
-import { CSSProperties, HTMLAttributes } from "react";
-import styles from "./Skeleton.module.css";
+import React, { CSSProperties, HTMLAttributes } from "react";
+import rawStyles from "./Skeleton.module.css";
+
+const styles: Record<string, string> =
+  rawStyles ||
+  new Proxy({}, {
+    get: (_target, prop) => (typeof prop === "string" ? prop : ""),
+  });
 
 // ─── Primitive: Skeleton ───────────────────────────────────────────────────────
 

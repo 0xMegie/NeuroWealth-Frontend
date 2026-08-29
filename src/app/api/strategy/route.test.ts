@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { GET, PUT, getRateLimitKey } from "./route";
+import { GET, PUT } from "./route";
+import { getRateLimitKey } from "@/lib/rate-limit";
 import { NextRequest } from "next/server";
 import { ERROR_CODE, HTTP_STATUS, MAX_BODY_BYTES } from "@/lib/api-response";
 

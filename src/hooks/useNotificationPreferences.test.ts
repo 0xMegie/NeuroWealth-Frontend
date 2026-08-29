@@ -26,6 +26,7 @@ describe("useNotificationPreferences", () => {
     const stored = {
       categories: { transactions: false, system: true, promotions: true },
       channels: { inApp: true, email: false, push: true },
+      emailDigest: { weeklyDigest: true, securityAlerts: true },
     };
     localStorage.setItem(NOTIFICATION_PREFERENCES_STORAGE_KEY, JSON.stringify(stored));
 

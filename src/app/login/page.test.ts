@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isValidRedirect } from "./page";
+import { isValidRedirect } from "./utils";
 
 test("isValidRedirect — accepts valid relative redirect paths", () => {
   assert.equal(isValidRedirect("/dashboard"), true);

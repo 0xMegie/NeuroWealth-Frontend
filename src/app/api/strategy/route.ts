@@ -13,38 +13,10 @@ import {
 } from "@/lib/api-response";
 import { strategyUpdateSchema, zodErrorToDetails } from "@/lib/validation/api";
 import { createServerFetcher } from "@/lib/api-client";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { requireAuth } from "@/lib/api-auth";
 
 const STRATEGY_COOKIE_KEY = STORAGE_KEYS.STRATEGY_PREFERENCE;
-
-function parseClientIp(value: string | null): string | null {
-  if (!value) return null;
-
-  const firstCandidate = value
-    .split(",")
-    .map((segment) => segment.trim())
-    .find((segment) => segment.length > 0);
-
-  return firstCandidate ?? null;
-}
-
-export function getRateLimitKey(request: Pick<Request, "headers">): string {
-  const trustedHeaders = [
-    "x-real-ip",
-    "cf-connecting-ip",
-    "x-client-ip",
-    "fastly-client-ip",
-    "true-client-ip",
-  ];
-
-  for (const headerName of trustedHeaders) {
-    const ip = parseClientIp(request.headers.get(headerName));
-    if (ip) return ip;
-  }
-
-  return parseClientIp(request.headers.get("x-forwarded-for")) ?? "unknown";
-}
 
 export async function GET(request: NextRequest) {
   const authError = requireAuth(request);

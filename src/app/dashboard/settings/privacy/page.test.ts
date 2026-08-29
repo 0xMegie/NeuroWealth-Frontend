@@ -3,7 +3,6 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { render, cleanup } from "@testing-library/react";
-import PrivacyPage from "./page";
 import { I18nProvider } from "@/contexts/I18nContext";
 import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
 import { setupDomGlobals } from "@/test-setup";
@@ -18,7 +17,8 @@ function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-test("PrivacyPage — hydration guard skeleton-to-content transition", () => {
+test("PrivacyPage — hydration guard skeleton-to-content transition", async () => {
+  const { default: PrivacyPage } = await import("./page");
   // 1. Initial mount (SSR) should return the skeleton
   const html = renderToString(createElement(Providers, null, createElement(PrivacyPage)));
   assert.ok(html.includes('aria-hidden="true"'), "Should render skeleton with aria-hidden");
