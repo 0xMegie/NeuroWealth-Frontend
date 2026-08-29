@@ -18,6 +18,34 @@ import { requireAuth } from "@/lib/api-auth";
 
 const STRATEGY_COOKIE_KEY = STORAGE_KEYS.STRATEGY_PREFERENCE;
 
+function parseClientIp(value: string | null): string | null {
+  if (!value) return null;
+
+  const firstCandidate = value
+    .split(",")
+    .map((segment) => segment.trim())
+    .find((segment) => segment.length > 0);
+
+  return firstCandidate ?? null;
+}
+
+export function getRateLimitKey(request: Pick<Request, "headers">): string {
+  const trustedHeaders = [
+    "x-real-ip",
+    "cf-connecting-ip",
+    "x-client-ip",
+    "fastly-client-ip",
+    "true-client-ip",
+  ];
+
+  for (const headerName of trustedHeaders) {
+    const ip = parseClientIp(request.headers.get(headerName));
+    if (ip) return ip;
+  }
+
+  return parseClientIp(request.headers.get("x-forwarded-for")) ?? "unknown";
+}
+
 export async function GET(request: NextRequest) {
   const authError = requireAuth(request);
   if (authError) return authError;
@@ -56,7 +84,7 @@ export async function PUT(request: NextRequest) {
   const authError = requireAuth(request);
   if (authError) return authError;
 
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = getRateLimitKey(request);
   const limit = checkRateLimit(`PUT:/api/strategy:${ip}`, {
     maxRequests: 10,
     windowMs: 60_000,
