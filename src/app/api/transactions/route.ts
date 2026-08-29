@@ -18,11 +18,27 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { isSandboxScenario, parseSandboxScenario } from "@/lib/sandbox-scenario";
 import { createServerFetcher } from "@/lib/api-client";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { requireAuth } from "@/lib/api-auth";
 
 export async function POST(request: NextRequest) {
-  const authError = requireAuth(request);
+  const authError = requireAuth(request, { requireSameOrigin: true });
   if (authError) return authError;
+
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const limit = checkRateLimit(`POST:/api/transactions:${ip}`, {
+    maxRequests: 20,
+    windowMs: 60_000,
+  });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      errorResponse(ERROR_CODE.RATE_LIMITED, "Too many requests. Please try again later."),
+      {
+        status: HTTP_STATUS.TOO_MANY_REQUESTS,
+        headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+      },
+    );
+  }
 
   const bodyResult = await readJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;

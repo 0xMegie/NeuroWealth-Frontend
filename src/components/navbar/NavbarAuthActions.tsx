@@ -15,13 +15,16 @@ export function NavbarAuthActions() {
           <span className="text-[10px] text-slate-500 uppercase font-bold leading-none">{messages.navbar.account}</span>
           <span className="text-xs text-white font-medium">{user.displayName}</span>
         </div>
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={signOut}
           aria-label={`Sign out of ${user.displayName}'s account`}
-          className="min-h-9 rounded-md px-2 py-1 text-xs text-slate-500 hover:text-red-400 hover:bg-white/5 transition-colors uppercase font-bold"
+          className="min-h-9 rounded-md px-2 py-1 text-xs text-slate-500 hover:text-red-400 hover:bg-white/5 uppercase font-bold"
         >
           {messages.navbar.signOut}
-        </button>
+        </Button>
       </div>
     );
   }
