@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 
 if (typeof require !== "undefined" && require.extensions) {
-  const cssProxy: any = new Proxy({}, {
+  const cssProxy: Record<string, unknown> = new Proxy({}, {
     get: (_target, prop) => {
       if (prop === "__esModule") return true;
       if (prop === "default") return cssProxy;

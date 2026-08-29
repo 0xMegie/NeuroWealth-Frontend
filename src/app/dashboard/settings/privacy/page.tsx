@@ -5,7 +5,13 @@ import { ShieldCheck } from "lucide-react";
 import { CookieConsentSettings } from "@/components/settings/CookieConsentSettings";
 import { useI18n } from "@/contexts/I18nContext";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
-import styles from "../settings.module.css";
+import rawStyles from "../settings.module.css";
+
+const styles: Record<string, string> =
+  rawStyles ||
+  new Proxy({}, {
+    get: (_target, prop) => (typeof prop === "string" ? prop : ""),
+  });
 
 export const dynamic = "force-dynamic";
 
