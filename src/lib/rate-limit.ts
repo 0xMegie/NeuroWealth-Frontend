@@ -67,3 +67,32 @@ export function checkRateLimit(
 export function resetRateLimitStore(): void {
   store.clear();
 }
+
+export function parseClientIp(value: string | null): string | null {
+  if (!value) return null;
+
+  const firstCandidate = value
+    .split(",")
+    .map((segment) => segment.trim())
+    .find((segment) => segment.length > 0);
+
+  return firstCandidate ?? null;
+}
+
+export function getRateLimitKey(request: Pick<Request, "headers">): string {
+  const trustedHeaders = [
+    "x-real-ip",
+    "cf-connecting-ip",
+    "x-client-ip",
+    "fastly-client-ip",
+    "true-client-ip",
+  ];
+
+  for (const headerName of trustedHeaders) {
+    const ip = parseClientIp(request.headers.get(headerName));
+    if (ip) return ip;
+  }
+
+  return parseClientIp(request.headers.get("x-forwarded-for")) ?? "unknown";
+}
+

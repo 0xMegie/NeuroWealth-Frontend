@@ -34,14 +34,8 @@ jobs:
           WHATSAPP_ACCESS_TOKEN: ${{ secrets.STAGING_WHATSAPP_ACCESS_TOKEN }}
           WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.STAGING_WHATSAPP_PHONE_NUMBER_ID }}
           WHATSAPP_WABA_ID: ${{ secrets.STAGING_WHATSAPP_WABA_ID }}
-          DB_HOST: ${{ secrets.STAGING_DB_HOST }}
-          DB_PORT: ${{ secrets.STAGING_DB_PORT }}
-          DB_NAME: ${{ secrets.STAGING_DB_NAME }}
-          DB_USER: ${{ secrets.STAGING_DB_USER }}
-          DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
           STELLAR_NETWORK: testnet
           STELLAR_HORIZON_URL: https://horizon-testnet.stellar.org
-          WALLET_ENCRYPTION_KEY: ${{ secrets.STAGING_WALLET_ENCRYPTION_KEY }}
 
       - name: Typecheck
         run: yarn typecheck

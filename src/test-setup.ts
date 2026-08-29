@@ -1,5 +1,18 @@
 import { JSDOM } from "jsdom";
 
+if (typeof require !== "undefined" && require.extensions) {
+  const cssProxy: any = new Proxy({}, {
+    get: (_target, prop) => {
+      if (prop === "__esModule") return true;
+      if (prop === "default") return cssProxy;
+      return typeof prop === "string" ? prop : undefined;
+    },
+  });
+  require.extensions[".css"] = (module) => {
+    module.exports = cssProxy;
+  };
+}
+
 let initialized = false;
 
 export function setupDomGlobals() {

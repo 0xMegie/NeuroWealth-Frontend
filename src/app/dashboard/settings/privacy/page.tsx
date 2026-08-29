@@ -1,10 +1,10 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { ShieldCheck } from "lucide-react";
 import { CookieConsentSettings } from "@/components/settings/CookieConsentSettings";
 import { useI18n } from "@/contexts/I18nContext";
 import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
-import { useState, useEffect } from "react";
 import styles from "../settings.module.css";
 
 export const dynamic = "force-dynamic";

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
-const DEV_ERRORS_ENABLED = process.env.NODE_ENV !== "production";
+const DEV_ERRORS_ENABLED = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_E2E_TESTING === "true";
 
 export default function DevErrorsLayout({ children }: { children: ReactNode }) {
   if (!DEV_ERRORS_ENABLED) {

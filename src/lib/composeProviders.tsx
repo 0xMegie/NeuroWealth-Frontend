@@ -7,7 +7,7 @@ import {
 type ProviderComponent =
   | ComponentType<{ children: ReactNode }>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | [ComponentType<any>, Record<string, any>];
+  | [ComponentType<any>, Record<string, unknown>];
 
 /**
  * Composes an array of providers into a single wrapper, eliminating deep nesting.

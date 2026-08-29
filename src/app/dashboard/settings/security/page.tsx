@@ -12,6 +12,7 @@ import { SettingsSectionSkeleton } from "@/components/ui/Skeleton";
 import { useI18n } from "@/contexts/I18nContext";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
+import { logger } from "@/lib/logger";
 import styles from "../settings.module.css";
 
 interface SecurityData {
@@ -74,7 +75,8 @@ export default function SecurityPage() {
       setNewPassword("");
       mockAuditService.logEvent("password_change", { timestamp: new Date().toISOString() });
       setTimeout(() => setStatus("idle"), 3000);
-    } catch {
+    } catch (error) {
+      logger.error("security_password_change_failed", error);
       setStatus("error");
     } finally {
       setSaving(false);

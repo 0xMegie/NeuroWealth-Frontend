@@ -13,7 +13,7 @@ import {
 } from "@/lib/api-response";
 import { strategyUpdateSchema, zodErrorToDetails } from "@/lib/validation/api";
 import { createServerFetcher } from "@/lib/api-client";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { requireAuth } from "@/lib/api-auth";
 
 const STRATEGY_COOKIE_KEY = STORAGE_KEYS.STRATEGY_PREFERENCE;
@@ -53,10 +53,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const authError = requireAuth(request);
+  const authError = requireAuth(request, { requireSameOrigin: true });
   if (authError) return authError;
 
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = getRateLimitKey(request);
   const limit = checkRateLimit(`PUT:/api/strategy:${ip}`, {
     maxRequests: 10,
     windowMs: 60_000,

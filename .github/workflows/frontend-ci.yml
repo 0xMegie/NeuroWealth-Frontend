@@ -10,6 +10,10 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_WEBHOOK_URL: "http://localhost:2000"
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+      NEXT_PUBLIC_E2E_TESTING: "true"
 
     steps:
       - name: Checkout repository
@@ -62,17 +66,14 @@ jobs:
       - name: Unit tests
         run: yarn test
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: E2E tests
-        run: yarn playwright test
-
       - name: Lint
         run: yarn lint
 
       - name: Build
         run: yarn build
-        env:
-          NEXT_PUBLIC_WEBHOOK_URL: "http://localhost:2000"
-          NEXT_PUBLIC_API_URL: "http://localhost:3001"
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: yarn playwright test

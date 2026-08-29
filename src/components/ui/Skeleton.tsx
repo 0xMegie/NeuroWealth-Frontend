@@ -37,7 +37,7 @@
 
 "use client";
 
-import { CSSProperties, HTMLAttributes } from "react";
+import React, { CSSProperties, HTMLAttributes } from "react";
 import styles from "./Skeleton.module.css";
 
 // ─── Primitive: Skeleton ───────────────────────────────────────────────────────

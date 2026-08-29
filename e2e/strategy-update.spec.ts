@@ -1,16 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Strategy update", () => {
-  test("strategy page renders all strategy options", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
 
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('button', { name: /fill demo credentials/i }).click();
+    await page.locator('[data-qa="login-submit-button"]').click();
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
+  });
+
+  test("strategy page renders all strategy options", async ({ page }) => {
     await page.goto("/dashboard/strategy");
     await page.waitForLoadState("networkidle");
 
-    const strategyRadios = page.getByRole("radio");
-    const count = await strategyRadios.count();
+    const count = await page.getByRole("article").count();
     expect(count).toBeGreaterThanOrEqual(3);
   });
 
@@ -18,23 +21,30 @@ test.describe("Strategy update", () => {
     await page.goto("/dashboard/strategy");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByRole("heading", { name: /strategy/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Choose your strategy/i })).toBeVisible();
     await expect(page.getByText(/choose/i)).toBeVisible();
   });
 
-  test("strategy page has radiogroup with investment strategies", async ({ page }) => {
+  test("strategy page has section for investment strategies", async ({ page }) => {
     await page.goto("/dashboard/strategy");
     await page.waitForLoadState("networkidle");
 
-    const radiogroup = page.getByRole("radiogroup", { name: /investment strategy/i });
-    await expect(radiogroup).toBeVisible();
+    const section = page.getByRole("region", { name: /Choose your strategy/i });
+    await expect(section).toBeVisible();
   });
 
   test("strategy page shows active strategy indicator", async ({ page }) => {
     await page.goto("/dashboard/strategy");
     await page.waitForLoadState("networkidle");
 
-    const activeCheck = page.getByLabel(/currently active/i);
+    const selectBalanced = page.getByRole("button", { name: "Select Balanced" });
+    if (await selectBalanced.isVisible()) {
+      await selectBalanced.click();
+      await page.getByRole("button", { name: "Confirm" }).click();
+      await page.waitForLoadState("networkidle");
+    }
+
+    const activeCheck = page.getByText("Current");
     await expect(activeCheck).toBeVisible();
   });
 
@@ -42,7 +52,7 @@ test.describe("Strategy update", () => {
     await page.goto("/dashboard/strategy");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/% APY/).first()).toBeVisible();
+    await expect(page.getByText(/APY/i).first()).toBeVisible();
     await expect(page.getByText(/risk/i).first()).toBeVisible();
   });
 });

@@ -19,7 +19,7 @@ import {
   formatTimestamp,
   formatSyncLabel,
 } from "@/lib/formatters";
-import { ApiRequestError, apiRequest } from "@/lib/api-client";
+import { apiRequest } from "@/lib/api-client";
 import { useSandbox, ScenarioType } from "@/contexts/SandboxContext";
 import { AllocationChart } from "./AllocationChart";
 import { useI18n } from "@/contexts/I18nContext";
@@ -35,6 +35,7 @@ import {
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SandboxBadge } from "@/components/ui/SandboxBadge";
+import { getApiErrorPresentation, logger } from "@/lib/logger";
 
 const toneMap: Record<string, string> = {
   primary: "#3b82f6",
@@ -171,12 +172,16 @@ export function PortfolioDashboard() {
         setPortfolio(payload);
       } catch (loadError) {
         if (controller.signal.aborted) return;
-        const message =
-          loadError instanceof ApiRequestError || loadError instanceof Error
-            ? loadError.message
-            : "Unable to load portfolio widgets.";
-        logger.error("portfolio_fetch_failed", loadError);
-        setError(message);
+        const copy = getApiErrorPresentation(loadError, {
+          description: "Unable to load portfolio widgets.",
+          actionLabel: t.retryWidgets,
+        });
+        logger.error("portfolio_fetch_failed", {
+          code: copy.code,
+          status: copy.status,
+          retryable: copy.retryable,
+        });
+        setError(copy.description);
         setPortfolio(null);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -335,7 +340,7 @@ export function PortfolioDashboard() {
               </p>
               <button
                 className={styles.emptyButton}
-                onClick={resetToLivePreview}
+                onClick={retryPortfolio}
                 type="button"
               >{t.retryWidgets}</button>
             </div>
