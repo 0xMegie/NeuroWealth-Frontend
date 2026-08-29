@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { GET, PUT } from "./route";
+import { GET, PUT, getRateLimitKey } from "./route";
 import { NextRequest } from "next/server";
 import { ERROR_CODE, HTTP_STATUS, MAX_BODY_BYTES } from "@/lib/api-response";
 
@@ -146,4 +146,25 @@ test("PUT /api/strategy accepts all valid strategy values", async () => {
     assert.equal(res.status, 200, `Strategy ${strategy} should return 200`);
     assert.equal(body.data.strategy, strategy, `Strategy should be ${strategy}`);
   }
+});
+
+test("getRateLimitKey uses the first forwarded client IP", () => {
+  const req = new NextRequest("http://localhost:3000/api/strategy", {
+    headers: {
+      "x-forwarded-for": "203.0.113.9, 198.51.100.1",
+    },
+  });
+
+  assert.equal(getRateLimitKey(req), "203.0.113.9");
+});
+
+test("getRateLimitKey prefers trusted platform headers over a spoofed x-forwarded-for", () => {
+  const req = new NextRequest("http://localhost:3000/api/strategy", {
+    headers: {
+      "x-forwarded-for": "198.51.100.88, 10.0.0.5",
+      "x-real-ip": "203.0.113.42",
+    },
+  });
+
+  assert.equal(getRateLimitKey(req), "203.0.113.42");
 });
