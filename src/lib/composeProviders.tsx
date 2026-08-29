@@ -6,7 +6,8 @@ import {
 
 type ProviderComponent =
   | ComponentType<{ children: ReactNode }>
-  | [ComponentType<{ children: ReactNode } & Record<string, unknown>>, Record<string, unknown>];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | [ComponentType<any>, Record<string, unknown>];
 
 /**
  * Composes an array of providers into a single wrapper, eliminating deep nesting.
@@ -30,7 +31,7 @@ export function composeProviders(providers: ProviderComponent[]) {
     return providers.reduceRight<ReactNode>((acc, entry) => {
       if (Array.isArray(entry)) {
         const [Provider, props] = entry;
-        return createElement(Provider, { ...props, children: acc });
+        return createElement(Provider, props, acc);
       }
       const Provider = entry;
       return createElement(Provider, null, acc);

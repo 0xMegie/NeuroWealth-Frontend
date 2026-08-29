@@ -33,14 +33,8 @@ jobs:
           WHATSAPP_ACCESS_TOKEN: ${{ secrets.PROD_WHATSAPP_ACCESS_TOKEN }}
           WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.PROD_WHATSAPP_PHONE_NUMBER_ID }}
           WHATSAPP_WABA_ID: ${{ secrets.PROD_WHATSAPP_WABA_ID }}
-          DB_HOST: ${{ secrets.PROD_DB_HOST }}
-          DB_PORT: ${{ secrets.PROD_DB_PORT }}
-          DB_NAME: ${{ secrets.PROD_DB_NAME }}
-          DB_USER: ${{ secrets.PROD_DB_USER }}
-          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
           STELLAR_NETWORK: mainnet
           STELLAR_HORIZON_URL: https://horizon.stellar.org
-          WALLET_ENCRYPTION_KEY: ${{ secrets.PROD_WALLET_ENCRYPTION_KEY }}
 
       - name: Typecheck
         run: yarn typecheck

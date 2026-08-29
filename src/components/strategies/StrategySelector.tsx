@@ -23,6 +23,7 @@ import {
 import { apiRequest, ApiRequestError } from "@/lib/api-client";
 import { formatApyRange } from "@/lib/formatters";
 import { Button } from "@/components/ui/Button";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useI18n } from "@/contexts/I18nContext";
 import { logger } from "@/lib/logger";
 import type { AppMessages } from "@/lib/i18n/messages";
@@ -233,10 +234,13 @@ function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const saving = saveStatus === "saving";
 
-  // Trap focus and handle Escape
+  // Real focus trap via shared hook; Escape still cancels when not saving.
+  useFocusTrap(containerRef, true);
+
   useEffect(() => {
     confirmRef.current?.focus();
     function onKey(e: KeyboardEvent) {
@@ -248,7 +252,8 @@ function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      ref={containerRef}
+      className="fixed inset-0 z-modal flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-modal-title"

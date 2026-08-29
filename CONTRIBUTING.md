@@ -39,14 +39,14 @@ The app runs in demo/mock mode with no backend required by default.
 
 Every PR runs `frontend-ci.yml` on GitHub Actions:
 
-1. Config validation (`yarn validate:config`)
+1. Config validation (`package.json` and `tsconfig.json`)
 2. `yarn typecheck`
 3. `yarn test`
-4. E2E tests (`yarn test:e2e`)
-5. `yarn lint`
-6. `yarn build`
+4. `yarn lint`
+5. `yarn build`
+6. `yarn test:e2e` (Playwright E2E tests)
 
-All six must pass before merge. If CI is red, fix it before requesting review.
+All steps must pass before merge. If CI is red, fix it before requesting review.
 
 ## Branch rules
 
@@ -63,6 +63,7 @@ Before opening a PR, confirm:
 - [ ] `yarn lint` passes locally (or lint-staged ran on your staged files)
 - [ ] `yarn test` passes locally
 - [ ] `yarn build` succeeds (required if you touched routes, layouts, or env vars)
+- [ ] `yarn test:e2e` passes locally
 - [ ] New behaviour is verifiable — attach screenshots, a test, or written QA steps
 - [ ] No new duplicate abstractions introduced without a one-line comment explaining why
 - [ ] `.env.example` updated if you added or renamed an env variable

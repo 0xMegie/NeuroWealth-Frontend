@@ -70,16 +70,23 @@ because analyzer builds are slower than the normal test/lint/build pipeline.
 ```
 src/
 ├── app/                   # Next.js App Router — routes and layouts
-│   ├── (auth)/            # Auth-gated route group (login, onboarding)
+│   ├── (auth)/            # Signup flow route group only
 │   ├── (errors)/          # Standalone error pages (401 unauthorized, 403 forbidden)
-│   ├── api/               # Route handlers
+│   ├── api/               # Route handlers for app APIs and mock backends
 │   ├── dashboard/         # Protected dashboard shell and sub-routes
 │   │   ├── dev-errors/    # Dev-only error trigger routes (hidden in production)
 │   │   ├── portfolio/
 │   │   ├── activity/
 │   │   ├── strategy/
 │   │   └── settings/
+│   ├── demo/              # Dev-only demo pages and UI probes
+│   ├── docs/              # Reference docs pages and examples
+│   ├── login/             # Login entry flow and redirect handling
 │   ├── not-found.tsx      # Global 404 page
+│   ├── onboarding/        # Multi-step onboarding flow
+│   ├── page.tsx           # Landing page and marketing entry screen
+│   ├── profile/           # Account and profile pages
+│   ├── settings/          # Top-level settings shell and pages
 │   └── error.tsx          # Global 500 / uncaught error boundary
 ├── components/            # Shared UI components (ui/, dashboard/, auth/, layout/)
 ├── features/              # Feature-scoped logic co-located with its UI
@@ -147,23 +154,29 @@ for full endpoint schemas and integration checklists.
 
 ## Provider tree & data flow
 
-The React provider tree is composed in `src/components/ClientProviders.tsx` in the following order (outer to inner):
+The React provider tree is composed in `src/components/ClientProviders.tsx` using grouped sub-composers and a conditional wallet mount:
 
 ```
 ClientProviders
-├── SandboxProvider          # Dev-only error trigger context
-├── ThemeProvider            # Dark/light theme with localStorage persistence
-├── I18nProvider             # Internationalization & locale state
-├── AuthProvider             # User session: localStorage ↔ cookie sync
-├── WalletProvider           # Stellar wallet connection (network-aware)
-├── ToastProvider            # Toast notifications & alerts
-└── CookieConsentProvider    # Privacy & cookie banner state
-    └── ErrorTrackingMount   # Global error tracking (unhandledrejection, window errors)
-        └── children
-            └── CookieBanner, PrivacyModal
+├── Providers
+│   ├── AppShellProviders
+│   │   ├── SandboxProvider          # Dev-only error trigger context
+│   │   ├── ThemeProvider            # Dark/light theme with localStorage persistence
+│   │   └── I18nProvider             # Internationalization & locale state
+│   ├── AuthProviders
+│   │   └── AuthProvider             # User session: localStorage ↔ cookie sync
+│   └── FeedbackProviders
+│       ├── ToastProvider            # Toast notifications & alerts
+│       └── CookieConsentProvider    # Privacy & cookie banner state
+├── ErrorTrackingMount               # Global error tracking (window errors + unhandledrejections)
+├── WalletProvider                   # Conditional: only on /dashboard and /profile
+│   └── children
+├── CookieBanner                     # Cookie consent banner
+├── PrivacyModal                     # Consent modal
+└── children
 ```
 
-**Provider order matters**: Each provider depends on layers below it. For example, `ThemeProvider` is initialized before `AuthProvider` so theme preferences load before the user checks authentication.
+**Provider order matters**: Each provider depends on layers below it. For example, `ThemeProvider` initializes before `AuthProvider` so theme preferences load before the user checks authentication, and the wallet context is mounted only on wallet-capable routes.
 
 ### Key data flows
 

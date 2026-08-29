@@ -30,17 +30,23 @@ All localStorage keys are now centralized in `src/lib/storage-keys.ts`:
 ```typescript
 STORAGE_KEYS = {
   COOKIE_CONSENT: "nw_cookie_consent",
-  THEME: "nw_theme",
+  THEME: "nw-theme",
   PREFERENCES: "nw_preferences",
   NOTIFICATIONS: "nw_notifications",
+  NOTIFICATIONS_LIST: "nw_notifications_list",
   SECURITY: "nw_security",
   PROFILE: "nw_profile",
-  ONBOARDING_STATE: "nw_onboarding_state",
-  SANDBOX_SCENARIOS: "nw_sandbox_scenarios",
+  STRATEGY_PREFERENCE: "nw_strategy_preference",
+  SANDBOX_SCENARIOS: "sandbox-scenarios",
+  ONBOARDING_STATE: "onboarding-state",
+  ONBOARDING_USER_STRATEGY: "user-strategy",
+  ONBOARDING_FIRST_DEPOSIT: "first-deposit",
   WALLET_CONNECTED: "nw_wallet_connected",
   WALLET_PUBLIC_KEY: "nw_wallet_public_key",
   WALLET_NETWORK: "nw_wallet_network",
   WALLET_PROVIDER: "nw_wallet_provider",
+  WALLET_DISPLAY_NAME: "nw_wallet_display_name",
+  LOCALE: "neurowealth.locale",
 };
 ```
 

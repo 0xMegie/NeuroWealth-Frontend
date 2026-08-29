@@ -19,6 +19,7 @@ import {
     type TransactionRecoveryUI,
 } from "@/lib/transactions";
 import { ApiRequestError, apiRequest } from "@/lib/api-client";
+import { getApiErrorPresentation, logger } from "@/lib/logger";
 import { detailsToFieldErrors } from "../utils/transaction-utils";
 
 export interface TransactionAPIState {
@@ -93,10 +94,14 @@ export function useTransactionAPI() {
                     return { status: "aborted" };
                 }
 
-                const recovery =
-                    error instanceof ApiRequestError
-                        ? getTransactionRecoveryUI(error.code, quoteReference)
-                        : getTransactionRecoveryUI("unknown_error", quoteReference);
+                const copy = getApiErrorPresentation(error);
+                const recovery = getTransactionRecoveryUI(copy.code, quoteReference);
+                logger.error("transaction_quote_failed", {
+                    code: copy.code,
+                    status: copy.status,
+                    retryable: copy.retryable,
+                    reference: quoteReference ?? null,
+                });
 
                 // Surface server-side field errors to the caller instead of
                 // discarding them, so the form can highlight the offending inputs.
@@ -157,10 +162,14 @@ export function useTransactionAPI() {
                     return { status: "aborted" };
                 }
 
-                const recovery =
-                    error instanceof ApiRequestError
-                        ? getTransactionRecoveryUI(error.code, quoteReference)
-                        : getTransactionRecoveryUI("unknown_error", quoteReference);
+                const copy = getApiErrorPresentation(error);
+                const recovery = getTransactionRecoveryUI(copy.code, quoteReference);
+                logger.error("transaction_submit_failed", {
+                    code: copy.code,
+                    status: copy.status,
+                    retryable: copy.retryable,
+                    reference: quoteReference ?? null,
+                });
 
                 // Surface server-side field errors to the caller instead of
                 // discarding them, so the form can highlight the offending inputs.

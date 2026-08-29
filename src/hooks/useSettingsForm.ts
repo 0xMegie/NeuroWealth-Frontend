@@ -67,6 +67,11 @@ export function useSettingsForm<T>(
       options.onSaveSuccess?.(draft);
       setTimeout(() => setStatus("idle"), options.statusResetMs ?? 3000);
     } catch (error) {
+      logger.error("settings_save_failed", {
+        auditSection: options.auditSection,
+        storageKey,
+        error,
+      });
       setStatus("error");
       options.onSaveError?.(error);
     } finally {
