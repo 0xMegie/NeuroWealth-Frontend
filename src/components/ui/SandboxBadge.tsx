@@ -1,3 +1,5 @@
+import React from "react";
+
 interface SandboxBadgeProps {
   scenario: string;
   label?: string;

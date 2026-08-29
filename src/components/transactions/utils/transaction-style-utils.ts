@@ -6,7 +6,11 @@
  * remain unit-testable under the Node test runner (which cannot load .css).
  */
 
-import styles from "../transaction-flow.module.css";
+import rawStyles from "../transaction-flow.module.css";
+
+const styles: Record<string, string> = rawStyles || new Proxy({}, {
+  get: (target, prop) => typeof prop === 'string' ? prop + '_mock' : undefined
+});
 
 export function getToneClassName(
   tone: "error" | "success" | "warning",

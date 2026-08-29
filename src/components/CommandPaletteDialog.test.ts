@@ -65,9 +65,10 @@ test("CommandPaletteDialog — filtering: lowercase query matches uppercase name
 
 test("CommandPaletteDialog — filtering: partial match returns multiple commands", () => {
   const filtered = filterCommands(mockCommands, "l");
-  assert.equal(filtered.length, 2);
-  assert.equal(filtered[0].id, "logout");
-  assert.equal(filtered[1].id, "help");
+  assert.equal(filtered.length, 3);
+  assert.equal(filtered[0].id, "profile");
+  assert.equal(filtered[1].id, "logout");
+  assert.equal(filtered[2].id, "help");
 });
 
 test("CommandPaletteDialog — filtering: empty query returns all commands", () => {
@@ -214,6 +215,10 @@ test("CommandPaletteDialog — integration: query change clamps, then navigation
   selectedIndex = navigateArrowDown(selectedIndex, filtered.length);
   assert.equal(selectedIndex, 1);
 
+  // Navigate down again
+  selectedIndex = navigateArrowDown(selectedIndex, filtered.length);
+  assert.equal(selectedIndex, 2);
+  
   // Navigate down again, should wrap
   selectedIndex = navigateArrowDown(selectedIndex, filtered.length);
   assert.equal(selectedIndex, 0);

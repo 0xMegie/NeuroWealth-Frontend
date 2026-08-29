@@ -12,21 +12,19 @@ describe("parseSandboxScenario", () => {
   const originalEnv = process.env.NODE_ENV;
 
   // Helper to temporarily override NODE_ENV for testing
-  function setNodeEnv(value: string) {
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value,
-      writable: true,
-      configurable: true,
-    });
+  function setNodeEnv(value: string | undefined) {
+    if (value === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (process.env as any).NODE_ENV;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.env as any).NODE_ENV = value;
+    }
   }
 
   afterEach(() => {
     // Restore original NODE_ENV
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value: originalEnv,
-      writable: true,
-      configurable: true,
-    });
+    setNodeEnv(originalEnv);
     
     // Clear the module cache to ensure fresh imports
     delete require.cache[require.resolve("./sandbox-scenario")];

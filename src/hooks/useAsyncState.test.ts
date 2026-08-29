@@ -16,12 +16,18 @@ describe("useAsyncState reducer", () => {
     const { result } = renderHook(() => useAsyncState<number>());
 
     let resolveFn!: (v: number) => void;
+    const pending = new Promise<number>((resolve) => {
+      resolveFn = resolve;
+    });
+
+    let runPromise!: Promise<void>;
+    act(() => {
+      runPromise = result.current.run(() => pending);
+    });
+
+    assert.equal(result.current.state.status, "loading");
+
     await act(async () => {
-      const pending = new Promise<number>((resolve) => {
-        resolveFn = resolve;
-      });
-      const runPromise = result.current.run(() => pending);
-      assert.equal(result.current.state.status, "loading");
       resolveFn(1);
       await runPromise;
     });

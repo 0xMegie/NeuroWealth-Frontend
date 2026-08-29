@@ -1,5 +1,6 @@
 "use client";
 
+import { isValidRedirect } from "./utils";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts";
@@ -12,9 +13,7 @@ export const dynamic = "force-dynamic";
 
 type LoginState = "idle" | "loading" | "error" | "success";
 
-export const isValidRedirect = (url: string): boolean => {
-  return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\");
-};
+
 
 function LoginContent() {
   const { signIn, user, loading } = useAuth();
