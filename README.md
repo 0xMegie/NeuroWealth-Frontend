@@ -70,16 +70,23 @@ because analyzer builds are slower than the normal test/lint/build pipeline.
 ```
 src/
 ├── app/                   # Next.js App Router — routes and layouts
-│   ├── (auth)/            # Signup route group only
+│   ├── (auth)/            # Signup flow route group only
 │   ├── (errors)/          # Standalone error pages (401 unauthorized, 403 forbidden)
-│   ├── api/               # Route handlers
+│   ├── api/               # Route handlers for app APIs and mock backends
 │   ├── dashboard/         # Protected dashboard shell and sub-routes
 │   │   ├── dev-errors/    # Dev-only error trigger routes (hidden in production)
 │   │   ├── portfolio/
 │   │   ├── activity/
 │   │   ├── strategy/
 │   │   └── settings/
+│   ├── demo/              # Dev-only demo pages and UI probes
+│   ├── docs/              # Reference docs pages and examples
+│   ├── login/             # Login entry flow and redirect handling
 │   ├── not-found.tsx      # Global 404 page
+│   ├── onboarding/        # Multi-step onboarding flow
+│   ├── page.tsx           # Landing page and marketing entry screen
+│   ├── profile/           # Account and profile pages
+│   ├── settings/          # Top-level settings shell and pages
 │   └── error.tsx          # Global 500 / uncaught error boundary
 ├── components/            # Shared UI components (ui/, dashboard/, auth/, layout/)
 ├── features/              # Feature-scoped logic co-located with its UI
