@@ -1,11 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Deposit flow", () => {
-  test("deposit page can be navigated to from transactions", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
 
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('button', { name: /fill demo credentials/i }).click();
+    await page.locator('[data-qa="login-submit-button"]').click();
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
+  });
+
+  test("deposit page can be navigated to from transactions", async ({ page }) => {
     await page.goto("/dashboard/transactions");
     await page.waitForLoadState("networkidle");
 
@@ -28,7 +32,7 @@ test.describe("Deposit flow", () => {
     await page.goto("/dashboard/transactions?theme=light&kind=deposit&preview=confirm");
     await page.waitForLoadState("networkidle");
 
-    const confirmButton = page.locator('[data-qa="transaction-confirm-button"]');
+    const confirmButton = page.locator('[data-qa="transaction-submit-button"]');
     await expect(confirmButton).toBeVisible();
   });
 
@@ -36,20 +40,20 @@ test.describe("Deposit flow", () => {
     await page.goto("/dashboard/transactions?theme=light&kind=deposit&preview=pending");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/pending/i)).toBeVisible();
+    await expect(page.getByText(/Pending on Stellar/i).first()).toBeVisible();
   });
 
   test("deposit flow displays success receipt", async ({ page }) => {
     await page.goto("/dashboard/transactions?theme=light&kind=deposit&preview=success");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/success/i)).toBeVisible();
+    await expect(page.getByText(/NW-DEP-PREVIEW-SUCCESS/)).toBeVisible();
   });
 
   test("deposit flow displays failure state", async ({ page }) => {
     await page.goto("/dashboard/transactions?theme=light&kind=deposit&preview=failure");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/failed/i)).toBeVisible();
+    await expect(page.getByText('Failed', { exact: true })).toBeVisible();
   });
 });

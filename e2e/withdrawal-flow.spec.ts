@@ -1,11 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Withdrawal flow", () => {
-  test("withdrawal tab is accessible", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
 
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('button', { name: /fill demo credentials/i }).click();
+    await page.locator('[data-qa="login-submit-button"]').click();
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
+  });
+
+  test("withdrawal tab is accessible", async ({ page }) => {
     await page.goto("/dashboard/transactions");
     await page.waitForLoadState("networkidle");
 
@@ -14,11 +18,6 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal form has wallet address input", async ({ page }) => {
-    // Authenticate first before accessing protected route
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=interactive");
     await page.waitForLoadState("networkidle");
 
@@ -30,48 +29,28 @@ test.describe("Withdrawal flow", () => {
   });
 
   test("withdrawal shows confirm step", async ({ page }) => {
-    // Authenticate first before accessing protected route
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=confirm");
     await page.waitForLoadState("networkidle");
 
-    const confirmButton = page.locator('[data-qa="transaction-confirm-button"]');
+    const confirmButton = page.locator('[data-qa="transaction-submit-button"]');
     await expect(confirmButton).toBeVisible();
   });
 
   test("withdrawal shows pending state", async ({ page }) => {
-    // Authenticate first before accessing protected route
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=pending");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/pending/i)).toBeVisible();
+    await expect(page.getByText(/Pending on Stellar/i).first()).toBeVisible();
   });
 
   test("withdrawal shows success receipt", async ({ page }) => {
-    // Authenticate first before accessing protected route
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=success");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/success/i)).toBeVisible();
+    await expect(page.getByText(/NW-WDR-PREVIEW-SUCCESS/)).toBeVisible();
   });
 
   test("withdrawal handles error recovery", async ({ page }) => {
-    // Authenticate first before accessing protected route
-    await page.goto("/login");
-    await page.getByRole("button", { name: /continue with demo/i }).click();
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
-
     await page.goto("/dashboard/transactions?theme=light&kind=withdrawal&preview=interactive");
     await page.waitForLoadState("networkidle");
 

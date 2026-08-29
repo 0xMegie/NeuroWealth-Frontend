@@ -23,6 +23,15 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/signin",
+        destination: "/login",
+        permanent: true,
+      },
+    ];
+  },
   // Fixes issue 653: Basename security headers applied to all routes
   async headers() {
     return [
