@@ -70,7 +70,7 @@ because analyzer builds are slower than the normal test/lint/build pipeline.
 ```
 src/
 ├── app/                   # Next.js App Router — routes and layouts
-│   ├── (auth)/            # Auth-gated route group (login, onboarding)
+│   ├── (auth)/            # Signup route group only
 │   ├── (errors)/          # Standalone error pages (401 unauthorized, 403 forbidden)
 │   ├── api/               # Route handlers
 │   ├── dashboard/         # Protected dashboard shell and sub-routes
