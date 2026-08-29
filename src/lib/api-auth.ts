@@ -9,6 +9,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME } from "./auth-constants";
 
+interface RequireAuthOptions {
+  /** Enforce same-origin browser requests for state-changing endpoints. */
+  requireSameOrigin?: boolean;
+}
+
 /**
  * Checks cookie shape and expiry only — no signature verification.
  *
@@ -82,7 +87,10 @@ export function getSessionFromRequest(request: NextRequest): {
  *     // Proceed with authenticated request
  *   }
  */
-export function requireAuth(request: NextRequest): NextResponse | null {
+export function requireAuth(
+  request: NextRequest,
+  { requireSameOrigin = false }: RequireAuthOptions = {},
+): NextResponse | null {
   const session = getSessionFromRequest(request);
   
   if (!session) {
@@ -96,6 +104,28 @@ export function requireAuth(request: NextRequest): NextResponse | null {
       },
       { status: 401 }
     );
+  }
+
+  if (requireSameOrigin) {
+    const origin = request.headers.get("origin");
+    const expectedOrigin = request.nextUrl.origin;
+    const fetchSite = request.headers.get("sec-fetch-site");
+
+    if (
+      (origin !== null && origin !== expectedOrigin) ||
+      fetchSite === "cross-site"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "Cross-origin requests are not allowed.",
+          },
+        },
+        { status: 403 },
+      );
+    }
   }
 
   return null;

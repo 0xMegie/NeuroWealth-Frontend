@@ -22,7 +22,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { requireAuth } from "@/lib/api-auth";
 
 export async function POST(request: NextRequest) {
-  const authError = requireAuth(request);
+  const authError = requireAuth(request, { requireSameOrigin: true });
   if (authError) return authError;
 
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";

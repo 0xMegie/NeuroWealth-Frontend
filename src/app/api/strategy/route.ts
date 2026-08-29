@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const authError = requireAuth(request);
+  const authError = requireAuth(request, { requireSameOrigin: true });
   if (authError) return authError;
 
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
