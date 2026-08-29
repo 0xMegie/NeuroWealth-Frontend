@@ -1,5 +1,31 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+
+const source = readFileSync(
+  new URL("./DiagnosticsPanelContent.tsx", import.meta.url),
+  "utf8",
+);
+
+test("DiagnosticsPanelContent — switcher uses real tab semantics", () => {
+  assert.match(source, /role="tablist"/);
+  assert.match(source, /role="tab"/);
+  assert.match(source, /role="tabpanel"/);
+  assert.match(source, /aria-selected=\{activeTab === tab\}/);
+  assert.match(source, /aria-controls=\{\`diag-panel-\$\{tab\}\`\}/);
+  assert.match(source, /aria-labelledby="diag-tab-logs"/);
+  assert.match(source, /aria-labelledby="diag-tab-events"/);
+  assert.match(source, /aria-labelledby="diag-tab-env"/);
+});
+
+test("DiagnosticsPanelContent — tab panels carry unique ids and remain hidden when inactive", () => {
+  for (const id of ["diag-panel-logs", "diag-panel-events", "diag-panel-env"]) {
+    assert.match(source, new RegExp(`id="${id}"`));
+  }
+  assert.match(source, /hidden=\{activeTab !== "logs"\}/);
+  assert.match(source, /hidden=\{activeTab !== "events"\}/);
+  assert.match(source, /hidden=\{activeTab !== "env"\}/);
+});
 
 interface PanelLayoutClasses {
   width: string;

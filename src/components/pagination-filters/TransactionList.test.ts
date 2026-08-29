@@ -19,3 +19,19 @@ test("TransactionList renders type, amount, and status columns", () => {
   const source = readFileSync(new URL("./TransactionList.tsx", import.meta.url), "utf8");
   assert.match(source, /emptyMessage="No transactions match the selected filters\."/);
 });
+
+test("TransactionList status/type pills use the shared Badge component", () => {
+  const source = readFileSync(new URL("./TransactionList.tsx", import.meta.url), "utf8");
+  assert.match(source, /import \{ Badge \} from "@\/components\/ui\/Badge";/);
+  assert.match(source, /<Badge variant="default" size="sm">\s*\{\s*tx\.type\s*\}\s*<\/Badge>/);
+  assert.match(
+    source,
+    /<Badge variant=\{STATUS_VARIANT\[tx\.status\] \?\? "default"\} size="sm">\s*\{\s*tx\.status\s*\}\s*<\/Badge>/,
+  );
+  assert.match(source, /completed: "success"/);
+  assert.match(source, /pending: "warning"/);
+  assert.match(source, /failed: "error"/);
+  assert.doesNotMatch(source, /STATUS_COLORS/);
+  assert.doesNotMatch(source, /rgba\(16,185,129/);
+  assert.doesNotMatch(source, /\#10b981/);
+});
